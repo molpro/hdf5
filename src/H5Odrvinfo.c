@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -25,10 +24,10 @@
 #include "H5Opkg.h"      /* Object headers			*/
 #include "H5MMprivate.h" /* Memory management			*/
 
-static void * H5O__drvinfo_decode(H5F_t *f, H5O_t *open_oh, unsigned mesg_flags, unsigned *ioflags,
+static void  *H5O__drvinfo_decode(H5F_t *f, H5O_t *open_oh, unsigned mesg_flags, unsigned *ioflags,
                                   size_t p_size, const uint8_t *p);
 static herr_t H5O__drvinfo_encode(H5F_t *f, hbool_t disable_shared, uint8_t *p, const void *_mesg);
-static void * H5O__drvinfo_copy(const void *_mesg, void *_dest);
+static void  *H5O__drvinfo_copy(const void *_mesg, void *_dest);
 static size_t H5O__drvinfo_size(const H5F_t *f, hbool_t disable_shared, const void *_mesg);
 static herr_t H5O__drvinfo_reset(void *_mesg);
 static herr_t H5O__drvinfo_debug(H5F_t *f, const void *_mesg, FILE *stream, int indent, int fwidth);
@@ -80,9 +79,9 @@ H5O__drvinfo_decode(H5F_t H5_ATTR_UNUSED *f, H5O_t H5_ATTR_UNUSED *open_oh,
                     size_t H5_ATTR_UNUSED p_size, const uint8_t *p)
 {
     H5O_drvinfo_t *mesg;             /* Native message */
-    void *         ret_value = NULL; /* Return value */
+    void          *ret_value = NULL; /* Return value */
 
-    FUNC_ENTER_STATIC
+    FUNC_ENTER_PACKAGE
 
     /* Sanity check */
     HDassert(f);
@@ -139,7 +138,7 @@ H5O__drvinfo_encode(H5F_t H5_ATTR_UNUSED *f, hbool_t H5_ATTR_UNUSED disable_shar
 {
     const H5O_drvinfo_t *mesg = (const H5O_drvinfo_t *)_mesg;
 
-    FUNC_ENTER_STATIC_NOERR
+    FUNC_ENTER_PACKAGE_NOERR
 
     /* Sanity check */
     HDassert(f);
@@ -175,10 +174,10 @@ static void *
 H5O__drvinfo_copy(const void *_mesg, void *_dest)
 {
     const H5O_drvinfo_t *mesg      = (const H5O_drvinfo_t *)_mesg;
-    H5O_drvinfo_t *      dest      = (H5O_drvinfo_t *)_dest;
-    void *               ret_value = NULL; /* Return value */
+    H5O_drvinfo_t       *dest      = (H5O_drvinfo_t *)_dest;
+    void                *ret_value = NULL; /* Return value */
 
-    FUNC_ENTER_STATIC
+    FUNC_ENTER_PACKAGE
 
     /* Sanity check */
     HDassert(mesg);
@@ -225,7 +224,7 @@ H5O__drvinfo_size(const H5F_t H5_ATTR_UNUSED *f, hbool_t H5_ATTR_UNUSED disable_
     const H5O_drvinfo_t *mesg      = (const H5O_drvinfo_t *)_mesg;
     size_t               ret_value = 0; /* Return value */
 
-    FUNC_ENTER_STATIC_NOERR
+    FUNC_ENTER_PACKAGE_NOERR
 
     /* Sanity check */
     HDassert(f);
@@ -257,7 +256,7 @@ H5O__drvinfo_reset(void *_mesg)
 {
     H5O_drvinfo_t *mesg = (H5O_drvinfo_t *)_mesg;
 
-    FUNC_ENTER_STATIC_NOERR
+    FUNC_ENTER_PACKAGE_NOERR
 
     /* check args */
     HDassert(mesg);
@@ -285,7 +284,7 @@ H5O__drvinfo_debug(H5F_t H5_ATTR_UNUSED *f, const void *_mesg, FILE *stream, int
 {
     const H5O_drvinfo_t *mesg = (const H5O_drvinfo_t *)_mesg;
 
-    FUNC_ENTER_STATIC_NOERR
+    FUNC_ENTER_PACKAGE_NOERR
 
     /* Sanity check */
     HDassert(f);

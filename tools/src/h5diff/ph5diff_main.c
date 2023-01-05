@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -312,5 +311,5 @@ h5diff_exit(int status)
     /* Always exit(0), since MPI implementations do weird stuff when they
      *  receive a non-zero exit value. - QAK
      */
-    HDexit(0);
+    HDexit(status);
 }

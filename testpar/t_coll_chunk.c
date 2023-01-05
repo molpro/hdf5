@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -53,7 +52,7 @@ static void coll_chunktest(const char *filename, int chunk_factor, int select_fa
  */
 
 /* ------------------------------------------------------------------------
- *  Descriptions for the selection: One big singluar selection inside one chunk
+ *  Descriptions for the selection: One big singular selection inside one chunk
  *  Two dimensions,
  *
  *  dim1       = SPACE_DIM1(5760)*mpi_size
@@ -591,8 +590,8 @@ coll_chunktest(const char *filename, int chunk_factor, int select_factor, int ap
     hid_t acc_plist, xfer_plist, crp_plist;
 
     hsize_t dims[RANK], chunk_dims[RANK];
-    int *   data_array1  = NULL;
-    int *   data_origin1 = NULL;
+    int    *data_array1  = NULL;
+    int    *data_origin1 = NULL;
 
     hsize_t start[RANK], count[RANK], stride[RANK], block[RANK];
 
@@ -832,7 +831,10 @@ coll_chunktest(const char *filename, int chunk_factor, int select_factor, int ap
     VRFY((status >= 0), "dataset write succeeded");
 
 #ifdef H5_HAVE_INSTRUMENTED_LIBRARY
-    if (facc_type == FACC_MPIO) {
+    /* Only check chunk optimization mode if selection I/O is not being used -
+     * selection I/O bypasses this IO mode decision - it's effectively always
+     * multi chunk currently */
+    if (facc_type == FACC_MPIO && !H5_use_selection_io_g) {
         switch (api_option) {
             case API_LINK_HARD:
                 status = H5Pget(xfer_plist, H5D_XFER_COLL_CHUNK_LINK_HARD_NAME, &prop_value);

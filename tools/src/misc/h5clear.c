@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -34,7 +33,7 @@
 /* Default increment is 1 megabytes for the --increment option */
 #define DEFAULT_INCREMENT (1024 * 1024)
 
-static char *  fname_g            = NULL;
+static char   *fname_g            = NULL;
 static hbool_t clear_status_flags = FALSE;
 static hbool_t remove_cache_image = FALSE;
 static hbool_t print_filesize     = FALSE;
@@ -44,8 +43,8 @@ static hsize_t increment          = DEFAULT_INCREMENT;
 /*
  * Command-line options: only publicize long options
  */
-static const char *        s_opts   = "hVsmzi*";
-static struct long_options l_opts[] = {
+static const char            *s_opts   = "hVsmzi*";
+static struct h5_long_options l_opts[] = {
     {"help", no_arg, 'h'},  {"version", no_arg, 'V'},  {"status", no_arg, 's'},
     {"image", no_arg, 'm'}, {"filesize", no_arg, 'z'}, {"increment", optional_arg, 'i'},
     {NULL, 0, '\0'}};
@@ -121,7 +120,7 @@ parse_command_line(int argc, const char *const *argv)
     }
 
     /* parse command line options */
-    while ((opt = get_option(argc, argv, s_opts, l_opts)) != EOF) {
+    while ((opt = H5_get_option(argc, argv, s_opts, l_opts)) != EOF) {
         switch ((char)opt) {
             case 'h':
                 usage(h5tools_getprogname());
@@ -147,12 +146,12 @@ parse_command_line(int argc, const char *const *argv)
 
             case 'i':
                 increment_eoa_eof = TRUE;
-                if (opt_arg != NULL) {
-                    if (HDatoi(opt_arg) < 0) {
+                if (H5_optarg != NULL) {
+                    if (HDatoi(H5_optarg) < 0) {
                         usage(h5tools_getprogname());
                         goto done;
                     }
-                    increment = (hsize_t)HDatoi(opt_arg);
+                    increment = (hsize_t)HDatoi(H5_optarg);
                 }
                 break;
 
@@ -164,14 +163,14 @@ parse_command_line(int argc, const char *const *argv)
     }     /* end while */
 
     /* check for file name to be processed */
-    if (argc <= opt_ind) {
+    if (argc <= H5_optind) {
         error_msg("missing file name\n");
         usage(h5tools_getprogname());
         h5tools_setstatus(EXIT_FAILURE);
         goto error;
     } /* end if */
 
-    fname_g = HDstrdup(argv[opt_ind]);
+    fname_g = HDstrdup(argv[H5_optind]);
 
 done:
     return (0);
@@ -226,7 +225,7 @@ leave(int ret)
 int
 main(int argc, char *argv[])
 {
-    char *   fname = NULL;            /* File name */
+    char    *fname = NULL;            /* File name */
     hid_t    fapl  = H5I_INVALID_HID; /* File access property list */
     hid_t    fid   = H5I_INVALID_HID; /* File ID */
     haddr_t  image_addr;

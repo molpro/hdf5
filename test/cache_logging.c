@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -16,7 +15,8 @@
 #include "h5test.h"
 
 #define LOG_LOCATION "cache_logging.out"
-#define FILE_NAME    "cache_logging"
+
+const char *FILENAME[] = {"cache_logging", NULL};
 
 #define N_GROUPS 100
 
@@ -37,7 +37,7 @@ test_logging_api(void)
     hbool_t is_enabled_out;
     hbool_t start_on_access;
     hbool_t start_on_access_out;
-    char *  location = NULL;
+    char   *location = NULL;
     size_t  size;
 
     hid_t   fid = -1;
@@ -50,7 +50,7 @@ test_logging_api(void)
     TESTING("metadata cache log api calls");
 
     fapl = h5_fileaccess();
-    h5_fixname(FILE_NAME, fapl, filename, sizeof filename);
+    h5_fixname(FILENAME[0], fapl, filename, sizeof filename);
 
     /* Set up metadata cache logging */
     is_enabled      = TRUE;
@@ -89,8 +89,6 @@ test_logging_api(void)
     if (H5Pset_libver_bounds(fapl, H5F_LIBVER_LATEST, H5F_LIBVER_LATEST) < 0)
         TEST_ERROR;
     if ((fid = H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, fapl)) < 0)
-        TEST_ERROR;
-    if (H5Pclose(fapl) < 0)
         TEST_ERROR;
 
     /* Check to see if the logging flags were set correctly */
@@ -133,10 +131,19 @@ test_logging_api(void)
     if (H5Fclose(fid) < 0)
         TEST_ERROR;
 
+    HDremove(LOG_LOCATION);
+    h5_clean_files(FILENAME, fapl);
+
     PASSED();
     return 0;
 
 error:
+    H5E_BEGIN_TRY
+    {
+        H5Pclose(fapl);
+    }
+    H5E_END_TRY
+
     return 1;
 } /* test_logging_api() */
 

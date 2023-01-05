@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -55,16 +54,20 @@ main(void)
     hid_t       fapl, file, space, dset;
     hsize_t     size[1] = {2};
     time_t      now;
-    struct tm * tm;
+    struct tm  *tm;
     H5O_info2_t oi1, oi2;
     signed char buf1[32], buf2[32];
     char        filename[1024];
     int         token_cmp;
+    hbool_t     driver_is_default_compatible;
 
     h5_reset();
     fapl = h5_fileaccess();
 
     TESTING("modification time messages");
+
+    if (h5_driver_is_default_vfd_compatible(fapl, &driver_is_default_compatible) < 0)
+        TEST_ERROR;
 
     /* Create the file, create a dataset, then close the file */
     h5_fixname(FILENAME[0], fapl, filename, sizeof filename);
@@ -131,67 +134,71 @@ main(void)
     }
     PASSED();
 
-    /* Check opening existing file with old-style modification time information
-     * and make certain that the time is correct
-     */
-    TESTING("accessing old modification time messages");
+    if (driver_is_default_compatible) {
+        /* Check opening existing file with old-style modification time information
+         * and make certain that the time is correct
+         */
+        TESTING("accessing old modification time messages");
 
-    {
-        const char *testfile = H5_get_srcdir_filename(TESTFILE1); /* Corrected test file name */
+        {
+            const char *testfile = H5_get_srcdir_filename(TESTFILE1); /* Corrected test file name */
 
-        file = H5Fopen(testfile, H5F_ACC_RDONLY, H5P_DEFAULT);
-        if (file >= 0) {
-            if (H5Oget_info_by_name3(file, "/Dataset1", &oi1, H5O_INFO_TIME, H5P_DEFAULT) < 0)
-                TEST_ERROR;
-            if (oi1.ctime != MTIME1) {
-                H5_FAILED();
-                /* If this fails, examine H5Omtime.c.  Modification time is very
-                 * system dependent (e.g., on Windows DST must be hardcoded). */
-                HDputs("    Old modification time incorrect");
-                goto error;
+            file = H5Fopen(testfile, H5F_ACC_RDONLY, H5P_DEFAULT);
+            if (file >= 0) {
+                if (H5Oget_info_by_name3(file, "/Dataset1", &oi1, H5O_INFO_TIME, H5P_DEFAULT) < 0)
+                    TEST_ERROR;
+                if (oi1.ctime != MTIME1) {
+                    H5_FAILED();
+                    /* If this fails, examine H5Omtime.c.  Modification time is very
+                     * system dependent (e.g., on Windows DST must be hardcoded). */
+                    HDputs("    Old modification time incorrect");
+                    goto error;
+                }
+                if (H5Fclose(file) < 0)
+                    TEST_ERROR;
             }
-            if (H5Fclose(file) < 0)
-                TEST_ERROR;
-        }
-        else {
-            H5_FAILED();
-            HDprintf("***cannot open the pre-created old modification test file (%s)\n", testfile);
-            goto error;
-        } /* end else */
-    }
-    PASSED();
-
-    /* Check opening existing file with new-style modification time information
-     * and make certain that the time is correct
-     */
-    TESTING("accessing new modification time messages");
-
-    {
-        const char *testfile = H5_get_srcdir_filename(TESTFILE2); /* Corrected test file name */
-
-        file = H5Fopen(testfile, H5F_ACC_RDONLY, H5P_DEFAULT);
-        if (file >= 0) {
-            if (H5Oget_info_by_name3(file, "/Dataset1", &oi2, H5O_INFO_TIME, H5P_DEFAULT) < 0)
-                TEST_ERROR;
-            if (oi2.ctime != MTIME2) {
+            else {
                 H5_FAILED();
-                HDputs("    Modification time incorrect.");
+                HDprintf("***cannot open the pre-created old modification test file (%s)\n", testfile);
                 goto error;
-            }
-            if (H5Fclose(file) < 0)
-                TEST_ERROR;
+            } /* end else */
         }
-        else {
-            H5_FAILED();
-            HDprintf("***cannot open the pre-created old modification test file (%s)\n", testfile);
-            goto error;
-        } /* end else */
+        PASSED();
     }
-    PASSED();
+
+    if (driver_is_default_compatible) {
+        /* Check opening existing file with new-style modification time information
+         * and make certain that the time is correct
+         */
+        TESTING("accessing new modification time messages");
+
+        {
+            const char *testfile = H5_get_srcdir_filename(TESTFILE2); /* Corrected test file name */
+
+            file = H5Fopen(testfile, H5F_ACC_RDONLY, H5P_DEFAULT);
+            if (file >= 0) {
+                if (H5Oget_info_by_name3(file, "/Dataset1", &oi2, H5O_INFO_TIME, H5P_DEFAULT) < 0)
+                    TEST_ERROR;
+                if (oi2.ctime != MTIME2) {
+                    H5_FAILED();
+                    HDputs("    Modification time incorrect.");
+                    goto error;
+                }
+                if (H5Fclose(file) < 0)
+                    TEST_ERROR;
+            }
+            else {
+                H5_FAILED();
+                HDprintf("***cannot open the pre-created old modification test file (%s)\n", testfile);
+                goto error;
+            } /* end else */
+        }
+        PASSED();
+    }
 
     /* Verify symbol table messages are cached */
     if (h5_verify_cached_stabs(FILENAME, fapl) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /* All looks good */
     HDputs("All modification time tests passed.");

@@ -9,7 +9,6 @@
 ! COPYRIGHT
 ! * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 !   Copyright by The HDF Group.                                               *
-!   Copyright by the Board of Trustees of the University of Illinois.         *
 !   All rights reserved.                                                      *
 !                                                                             *
 !   This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -1923,7 +1922,7 @@ SUBROUTINE lapl_nlinks( fapl, total_error)
   ! Open file
 
   CALL h5fopen_f(FileName, H5F_ACC_RDWR_F, fid, error, fapl)
-  CALL check("h5open_f",error,total_error)
+  CALL check("h5fopen_f",error,total_error)
 
   ! Create LAPL with higher-than-usual nlinks value
   ! Create a non-default lapl with udata set to point to the first group

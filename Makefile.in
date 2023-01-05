@@ -16,7 +16,6 @@
 
 #
 # Copyright by The HDF Group.
-# Copyright by the Board of Trustees of the University of Illinois.
 # All rights reserved.
 #
 # This file is part of HDF5.  The full HDF5 copyright notice, including
@@ -147,7 +146,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/src/H5config.h \
 	$(top_builddir)/fortran/src/H5config_f.inc
-CONFIG_CLEAN_FILES = doxygen/Doxyfile
+CONFIG_CLEAN_FILES = doxygen/Doxyfile utils/subfiling_vfd/h5fuse.sh
 CONFIG_CLEAN_VPATH_FILES =
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -208,7 +207,8 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/bin/compile \
 	$(top_srcdir)/bin/config.guess $(top_srcdir)/bin/config.sub \
 	$(top_srcdir)/bin/install-sh $(top_srcdir)/bin/ltmain.sh \
 	$(top_srcdir)/bin/missing $(top_srcdir)/config/commence.am \
-	$(top_srcdir)/doxygen/Doxyfile.in COPYING
+	$(top_srcdir)/doxygen/Doxyfile.in \
+	$(top_srcdir)/utils/subfiling_vfd/h5fuse.sh.in COPYING
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -304,6 +304,7 @@ DIAGS = @DIAGS@
 DIMENSION_SCALES_WITH_NEW_REF = @DIMENSION_SCALES_WITH_NEW_REF@
 DIRECT_VFD = @DIRECT_VFD@
 DLLTOOL = @DLLTOOL@
+DOXYGEN_DIR = @DOXYGEN_DIR@
 DOXYGEN_EXAMPLES_DIRECTORY = @DOXYGEN_EXAMPLES_DIRECTORY@
 DOXYGEN_EXTERNAL_SEARCH = @DOXYGEN_EXTERNAL_SEARCH@
 DOXYGEN_HTML_EXTRA_FILES = @DOXYGEN_HTML_EXTRA_FILES@
@@ -379,6 +380,9 @@ H5CONFIG_F_NUM_IKIND = @H5CONFIG_F_NUM_IKIND@
 H5CONFIG_F_NUM_RKIND = @H5CONFIG_F_NUM_RKIND@
 H5CONFIG_F_RKIND = @H5CONFIG_F_RKIND@
 H5CONFIG_F_RKIND_SIZEOF = @H5CONFIG_F_RKIND_SIZEOF@
+H5DWALK_CPPFLAGS = @H5DWALK_CPPFLAGS@
+H5DWALK_LDFLAGS = @H5DWALK_LDFLAGS@
+H5DWALK_LIBS = @H5DWALK_LIBS@
 H5_CFLAGS = @H5_CFLAGS@
 H5_CLASSPATH = @H5_CLASSPATH@
 H5_CPPFLAGS = @H5_CPPFLAGS@
@@ -394,12 +398,13 @@ H5_TEST_BUILDDIR = @H5_TEST_BUILDDIR@
 H5_UTILS_TEST_BUILDDIR = @H5_UTILS_TEST_BUILDDIR@
 H5_VERSION = @H5_VERSION@
 HADDR_T = @HADDR_T@
-HAVE_DMALLOC = @HAVE_DMALLOC@
 HAVE_Fortran_INTEGER_SIZEOF_16 = @HAVE_Fortran_INTEGER_SIZEOF_16@
 HAVE_LIBHDFS = @HAVE_LIBHDFS@
+HAVE_MERCURY = @HAVE_MERCURY@
 HAVE_PTHREAD = @HAVE_PTHREAD@
 HDF5_DOXYGEN = @HDF5_DOXYGEN@
 HDF5_HL = @HDF5_HL@
+HDF5_HL_GIF_TOOLS = @HDF5_HL_GIF_TOOLS@
 HDF5_HL_TOOLS = @HDF5_HL_TOOLS@
 HDF5_INTERFACES = @HDF5_INTERFACES@
 HDF5_TESTS = @HDF5_TESTS@
@@ -450,10 +455,8 @@ MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MAP_API = @MAP_API@
-MEMORYALLOCSANITYCHECK = @MEMORYALLOCSANITYCHECK@
 MIRROR_VFD = @MIRROR_VFD@
 MKDIR_P = @MKDIR_P@
-MPE = @MPE@
 NM = @NM@
 NMEDIT = @NMEDIT@
 OBJDUMP = @OBJDUMP@
@@ -484,11 +487,11 @@ PAC_FORTRAN_NATIVE_REAL_SIZEOF = @PAC_FORTRAN_NATIVE_REAL_SIZEOF@
 PAC_FORTRAN_NUM_INTEGER_KINDS = @PAC_FORTRAN_NUM_INTEGER_KINDS@
 PARALLEL = @PARALLEL@
 PARALLEL_FILTERED_WRITES = @PARALLEL_FILTERED_WRITES@
+PARALLEL_TOOLS = @PARALLEL_TOOLS@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PREADWRITE = @PREADWRITE@
 PROFILING = @PROFILING@
 RANLIB = @RANLIB@
-RECURSIVE_RW_LOCKS = @RECURSIVE_RW_LOCKS@
 ROOT = @ROOT@
 ROS3_VFD = @ROS3_VFD@
 RUNPARALLEL = @RUNPARALLEL@
@@ -504,6 +507,7 @@ STATIC_EXEC = @STATIC_EXEC@
 STATIC_SHARED = @STATIC_SHARED@
 STRICT_FORMAT_CHECKS = @STRICT_FORMAT_CHECKS@
 STRIP = @STRIP@
+SUBFILING_VFD = @SUBFILING_VFD@
 SYMBOLS = @SYMBOLS@
 TESTPARALLEL = @TESTPARALLEL@
 TESTS_JUNIT = @TESTS_JUNIT@
@@ -550,6 +554,7 @@ enable_shared = @enable_shared@
 enable_static = @enable_static@
 examplesdir = @examplesdir@
 exec_prefix = @exec_prefix@
+fmoddir = @fmoddir@
 fortran_linux_linker_option = @fortran_linux_linker_option@
 host = @host@
 host_alias = @host_alias@
@@ -631,10 +636,9 @@ TRACE = perl $(top_srcdir)/bin/trace
 
 # .chkexe files are used to mark tests that have run successfully.
 # .chklog files are output from those tests.
-# *.clog and *.clog2 are from the MPE option.
 
 # Some files/directories generated during check that should be cleaned
-CHECK_CLEANFILES = *.chkexe *.chklog *.clog *.clog2 *-tmp
+CHECK_CLEANFILES = *.chkexe *.chklog *-tmp
 @BUILD_CXX_CONDITIONAL_FALSE@CXX_DIR = 
 
 # Define subdirectories to build.
@@ -660,10 +664,10 @@ CHECK_CLEANFILES = *.chkexe *.chklog *.clog *.clog2 *-tmp
 @BUILD_TESTS_PARALLEL_CONDITIONAL_TRUE@TESTPARALLEL_DIR = testpar
 @BUILD_TOOLS_CONDITIONAL_FALSE@TOOLS_DIR = 
 @BUILD_TOOLS_CONDITIONAL_TRUE@TOOLS_DIR = tools
-SUBDIRS = src $(TESTSERIAL_DIR) $(TESTPARALLEL_DIR) bin utils $(TOOLS_DIR) . \
+SUBDIRS = src $(TESTSERIAL_DIR) $(TESTPARALLEL_DIR) bin $(TOOLS_DIR) utils . \
           $(CXX_DIR) $(FORTRAN_DIR) $(JAVA_DIR) $(HDF5_HL_DIR)
 
-DIST_SUBDIRS = src test testpar utils tools . c++ fortran hl examples java
+DIST_SUBDIRS = src test testpar tools utils . c++ fortran hl examples java
 
 # Some files generated during configure that should be cleaned
 DISTCLEANFILES = config/stamp1 config/stamp2
@@ -702,6 +706,8 @@ $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	$(am__cd) $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 $(am__aclocal_m4_deps):
 doxygen/Doxyfile: $(top_builddir)/config.status $(top_srcdir)/doxygen/Doxyfile.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+utils/subfiling_vfd/h5fuse.sh: $(top_builddir)/config.status $(top_srcdir)/utils/subfiling_vfd/h5fuse.sh.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 mostlyclean-libtool:

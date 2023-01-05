@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -19,23 +18,23 @@
 #define PROGRAMNAME "h5copy"
 
 /* command-line options: short and long-named parameters */
-static const char *        s_opts    = "d:f:hi:o:ps:vVE*";
-static struct long_options l_opts[]  = {{"destination", require_arg, 'd'},
-                                       {"flag", require_arg, 'f'},
-                                       {"help", no_arg, 'h'},
-                                       {"input", require_arg, 'i'},
-                                       {"output", require_arg, 'o'},
-                                       {"parents", no_arg, 'p'},
-                                       {"source", require_arg, 's'},
-                                       {"verbose", no_arg, 'v'},
-                                       {"version", no_arg, 'V'},
-                                       {"enable-error-stack", optional_arg, 'E'},
-                                       {NULL, 0, '\0'}};
-char *                     fname_src = NULL;
-char *                     fname_dst = NULL;
-char *                     oname_src = NULL;
-char *                     oname_dst = NULL;
-char *                     str_flag  = NULL;
+static const char            *s_opts    = "d:f:hi:o:ps:vVE*";
+static struct h5_long_options l_opts[]  = {{"destination", require_arg, 'd'},
+                                          {"flag", require_arg, 'f'},
+                                          {"help", no_arg, 'h'},
+                                          {"input", require_arg, 'i'},
+                                          {"output", require_arg, 'o'},
+                                          {"parents", no_arg, 'p'},
+                                          {"source", require_arg, 's'},
+                                          {"verbose", no_arg, 'v'},
+                                          {"version", no_arg, 'V'},
+                                          {"enable-error-stack", optional_arg, 'E'},
+                                          {NULL, 0, '\0'}};
+char                         *fname_src = NULL;
+char                         *fname_dst = NULL;
+char                         *oname_src = NULL;
+char                         *oname_dst = NULL;
+char                         *str_flag  = NULL;
 
 /*-------------------------------------------------------------------------
  * Function:    leave
@@ -244,19 +243,19 @@ main(int argc, char *argv[])
     } /* end if */
 
     /* parse command line options */
-    while ((opt = get_option(argc, (const char *const *)argv, s_opts, l_opts)) != EOF) {
+    while ((opt = H5_get_option(argc, (const char *const *)argv, s_opts, l_opts)) != EOF) {
         switch ((char)opt) {
             case 'd':
-                oname_dst = HDstrdup(opt_arg);
+                oname_dst = HDstrdup(H5_optarg);
                 break;
 
             case 'f':
                 /* validate flag */
-                if (parse_flag(opt_arg, &flag) < 0) {
+                if (parse_flag(H5_optarg, &flag) < 0) {
                     usage();
                     leave(EXIT_FAILURE);
                 }
-                str_flag = HDstrdup(opt_arg);
+                str_flag = HDstrdup(H5_optarg);
                 break;
 
             case 'h':
@@ -265,11 +264,11 @@ main(int argc, char *argv[])
                 break;
 
             case 'i':
-                fname_src = HDstrdup(opt_arg);
+                fname_src = HDstrdup(H5_optarg);
                 break;
 
             case 'o':
-                fname_dst = HDstrdup(opt_arg);
+                fname_dst = HDstrdup(H5_optarg);
                 break;
 
             case 'p':
@@ -277,7 +276,7 @@ main(int argc, char *argv[])
                 break;
 
             case 's':
-                oname_src = HDstrdup(opt_arg);
+                oname_src = HDstrdup(H5_optarg);
                 break;
 
             case 'V':
@@ -290,8 +289,8 @@ main(int argc, char *argv[])
                 break;
 
             case 'E':
-                if (opt_arg != NULL)
-                    enable_error_stack = HDatoi(opt_arg);
+                if (H5_optarg != NULL)
+                    enable_error_stack = HDatoi(H5_optarg);
                 else
                     enable_error_stack = 1;
                 break;

@@ -2,7 +2,7 @@
  * Copyright by The HDF Group.                                               *
  * All rights reserved.                                                      *
  *                                                                           *
- * This file is part of HDF5. The full HDF5 copyright notice, including      *
+ * This file is part of HDF5.  The full HDF5 copyright notice, including     *
  * terms governing use, modification, and redistribution, is contained in    *
  * the COPYING file, which can be found at the root of the source code       *
  * distribution tree, or in https://www.hdfgroup.org/licenses.               *
@@ -90,8 +90,8 @@ test_unregister_filters(hid_t fapl_id)
     char          filename[FILENAME_BUF_SIZE];
     const hsize_t chunk_dims[2] = {FILTER_CHUNK_DIM1, FILTER_CHUNK_DIM2}; /* Chunk dimensions */
     hsize_t       dims[2];
-    int **        buf      = NULL;
-    int *         buf_data = NULL;
+    int         **buf      = NULL;
+    int          *buf_data = NULL;
     herr_t        ret;
 
     TESTING("Unregistering filter");
@@ -288,7 +288,7 @@ main(void)
 
     /* Push API context */
     if (H5CX_push() < 0)
-        FAIL_STACK_ERROR
+        FAIL_STACK_ERROR;
     api_ctx_pushed = TRUE;
 
     /* Test unregistering filter in its own file */
@@ -301,8 +301,8 @@ main(void)
     HDprintf("All filter unregistration tests passed.\n");
 
     /* Pop API context */
-    if (api_ctx_pushed && H5CX_pop() < 0)
-        FAIL_STACK_ERROR
+    if (api_ctx_pushed && H5CX_pop(FALSE) < 0)
+        FAIL_STACK_ERROR;
     api_ctx_pushed = FALSE;
 
     HDexit(EXIT_SUCCESS);
@@ -312,7 +312,7 @@ error:
     HDprintf("***** %d FILTER UNREGISTRATION TEST%s FAILED! *****\n", nerrors, 1 == nerrors ? "" : "S");
 
     if (api_ctx_pushed)
-        H5CX_pop();
+        H5CX_pop(FALSE);
 
     HDexit(EXIT_FAILURE);
 } /* end main() */

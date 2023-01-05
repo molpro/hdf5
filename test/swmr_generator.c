@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -188,7 +187,7 @@ gen_skeleton(const char *filename, hbool_t verbose, hbool_t swmr_write, int comp
             hbool_t move_dataspace_message =
                 FALSE; /* Whether to move the dataspace message out of object header chunk #0 */
 
-            generate_name(name_buf, u, v);
+            generate_name(name_buf, sizeof(name_buf), u, v);
             if ((dsid = H5Dcreate2(fid, name_buf, tid, sid, H5P_DEFAULT, dcpl, H5P_DEFAULT)) < 0)
                 return -1;
 

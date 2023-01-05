@@ -23,9 +23,11 @@ set (VOL_LIST
     vol_pass_through2
 )
 
+# native VOL = 0
+# pass-through VOL = 1
 set (vol_native native)
 set (vol_pass_through1 "pass_through under_vol=0\;under_info={}")
-set (vol_pass_through2 "pass_through under_vol=505\;under_info={under_vol=0\;under_info={}}")
+set (vol_pass_through2 "pass_through under_vol=1\;under_info={under_vol=0\;under_info={}}")
 
 foreach (voltest ${VOL_LIST})
   file (MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/${voltest}")
@@ -140,7 +142,7 @@ add_custom_target(HDF5_VOLTEST_LIB_files ALL COMMENT "Copying files needed by HD
               -P "${HDF_RESOURCES_DIR}/volTest.cmake"
       )
       set_tests_properties (VOL-${volname}-${voltest} PROPERTIES
-          ENVIRONMENT "srcdir=${HDF5_TEST_BINARY_DIR}/${volname};HDF5TestExpress=${HDF_TEST_EXPRESS}"
+          ENVIRONMENT "srcdir=${HDF5_TEST_BINARY_DIR}/${volname}"
           WORKING_DIRECTORY ${HDF5_TEST_BINARY_DIR}/${volname}
       )
     endif ()
@@ -197,7 +199,7 @@ add_custom_target(HDF5_VOLTEST_LIB_files ALL COMMENT "Copying files needed by HD
       )
       set_tests_properties (VOL-${volname}-fheap PROPERTIES
           TIMEOUT ${CTEST_VERY_LONG_TIMEOUT}
-          ENVIRONMENT "srcdir=${HDF5_TEST_BINARY_DIR}/${volname};HDF5TestExpress=${HDF_TEST_EXPRESS}"
+          ENVIRONMENT "srcdir=${HDF5_TEST_BINARY_DIR}/${volname}"
           WORKING_DIRECTORY ${HDF5_TEST_BINARY_DIR}/${volname}
       )
     endif ()

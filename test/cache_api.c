@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -69,8 +68,8 @@ check_fapl_mdc_api_calls(unsigned paged, hid_t fcpl_id)
     hid_t               fapl_id        = -1;
     hid_t               test_fapl_id   = -1;
     hid_t               file_id        = -1;
-    H5F_t *             file_ptr       = NULL;
-    H5C_t *             cache_ptr      = NULL;
+    H5F_t              *file_ptr       = NULL;
+    H5C_t              *cache_ptr      = NULL;
     H5AC_cache_config_t default_config = H5AC__DEFAULT_CACHE_CONFIG;
     H5AC_cache_config_t mod_config     = {
         /* int         version                = */ H5AC__CURR_CACHE_CONFIG_VERSION,
@@ -110,9 +109,9 @@ check_fapl_mdc_api_calls(unsigned paged, hid_t fcpl_id)
     H5C_auto_size_ctl_t mod_auto_size_ctl;
 
     if (paged)
-        TESTING("MDC/FAPL related API calls for paged aggregation strategy")
+        TESTING("MDC/FAPL related API calls for paged aggregation strategy");
     else
-        TESTING("MDC/FAPL related API calls")
+        TESTING("MDC/FAPL related API calls");
 
     pass = TRUE;
 
@@ -306,10 +305,10 @@ check_fapl_mdc_api_calls(unsigned paged, hid_t fcpl_id)
             pass         = FALSE;
             failure_mssg = "H5Fclose() failed.\n";
         }
-        else if (HDremove(filename) < 0) {
+        else if (H5Fdelete(filename, H5P_DEFAULT) < 0) {
 
             pass         = FALSE;
-            failure_mssg = "HDremove() failed.\n";
+            failure_mssg = "H5Fdelete() failed.\n";
         }
     }
 
@@ -442,16 +441,6 @@ check_fapl_mdc_api_calls(unsigned paged, hid_t fcpl_id)
         }
     }
 
-    /* close the fapl used to create the file */
-    if (pass) {
-
-        if (H5Pclose(fapl_id) < 0) {
-
-            pass         = FALSE;
-            failure_mssg = "H5Pclose() failed.\n";
-        }
-    }
-
     /* close the file and delete it */
     if (pass) {
 
@@ -460,10 +449,20 @@ check_fapl_mdc_api_calls(unsigned paged, hid_t fcpl_id)
             pass         = FALSE;
             failure_mssg = "H5Fclose() failed.\n";
         }
-        else if (HDremove(filename) < 0) {
+        else if (H5Fdelete(filename, fapl_id) < 0) {
 
             pass         = FALSE;
-            failure_mssg = "HDremove() failed.\n";
+            failure_mssg = "H5Fdelete() failed.\n";
+        }
+    }
+
+    /* close the fapl used to create the file */
+    if (pass) {
+
+        if (H5Pclose(fapl_id) < 0) {
+
+            pass         = FALSE;
+            failure_mssg = "H5Pclose() failed.\n";
         }
     }
 
@@ -478,7 +477,7 @@ check_fapl_mdc_api_calls(unsigned paged, hid_t fcpl_id)
 
     if (!pass) {
 
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
     }
 
     return pass;
@@ -652,9 +651,9 @@ check_file_mdc_api_calls(unsigned paged, hid_t fcpl_id)
         H5AC__DEFAULT_METADATA_WRITE_STRATEGY};
 
     if (paged)
-        TESTING("MDC/FILE related API calls for paged aggregation strategy")
+        TESTING("MDC/FILE related API calls for paged aggregation strategy");
     else
-        TESTING("MDC/FILE related API calls")
+        TESTING("MDC/FILE related API calls");
 
     pass = TRUE;
 
@@ -803,10 +802,10 @@ check_file_mdc_api_calls(unsigned paged, hid_t fcpl_id)
             pass         = FALSE;
             failure_mssg = "H5Fclose() failed.\n";
         }
-        else if (HDremove(filename) < 0) {
+        else if (H5Fdelete(filename, H5P_DEFAULT) < 0) {
 
             pass         = FALSE;
-            failure_mssg = "HDremove() failed.\n";
+            failure_mssg = "H5Fdelete() failed.\n";
         }
     }
 
@@ -821,7 +820,7 @@ check_file_mdc_api_calls(unsigned paged, hid_t fcpl_id)
 
     if (!pass) {
 
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
     }
 
     return pass;
@@ -835,7 +834,7 @@ check_file_mdc_api_calls(unsigned paged, hid_t fcpl_id)
  *              with the cache API calls.
  *
  *              NOTE: This test takes some time to run and checks the
- *                    HDF5TestExpress environment variable.
+ *                    testing express level value.
  *
  * Return:      Test pass status (TRUE/FALSE)
  *
@@ -975,9 +974,9 @@ mdc_api_call_smoke_check(int express_test, unsigned paged, hid_t fcpl_id)
         H5AC__DEFAULT_METADATA_WRITE_STRATEGY};
 
     if (paged)
-        TESTING("MDC API smoke check for paged aggregation strategy")
+        TESTING("MDC API smoke check for paged aggregation strategy");
     else
-        TESTING("MDC API smoke check")
+        TESTING("MDC API smoke check");
 
     pass = TRUE;
 
@@ -1445,10 +1444,10 @@ mdc_api_call_smoke_check(int express_test, unsigned paged, hid_t fcpl_id)
             pass         = FALSE;
             failure_mssg = "H5Fclose() failed.\n";
         }
-        else if (HDremove(filename) < 0) {
+        else if (H5Fdelete(filename, H5P_DEFAULT) < 0) {
 
             pass         = FALSE;
-            failure_mssg = "HDremove() failed.\n";
+            failure_mssg = "H5Fdelete() failed.\n";
         }
     }
 
@@ -1463,7 +1462,7 @@ mdc_api_call_smoke_check(int express_test, unsigned paged, hid_t fcpl_id)
 
     if (!pass) {
 
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
     }
 
     return pass;
@@ -1841,7 +1840,7 @@ check_fapl_mdc_api_errs(void)
 
     if (!pass) {
 
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
     }
 
     return pass;
@@ -1879,9 +1878,9 @@ check_file_mdc_api_errs(unsigned paged, hid_t fcpl_id)
     H5AC_cache_config_t scratch;
 
     if (paged)
-        TESTING("MDC/FILE related API input errors for paged aggregation strategy")
+        TESTING("MDC/FILE related API input errors for paged aggregation strategy");
     else
-        TESTING("MDC/FILE related API input errors")
+        TESTING("MDC/FILE related API input errors");
 
     pass = TRUE;
 
@@ -1894,7 +1893,7 @@ check_file_mdc_api_errs(unsigned paged, hid_t fcpl_id)
 
         if (show_progress) {
 
-            HDfprintf(stdout, "%s: calling h5_fixname().\n", FUNC);
+            HDfprintf(stdout, "%s: calling h5_fixname().\n", __func__);
         }
 
         if (h5_fixname(FILENAME[0], H5P_DEFAULT, filename, sizeof(filename)) == NULL) {
@@ -1908,7 +1907,7 @@ check_file_mdc_api_errs(unsigned paged, hid_t fcpl_id)
 
         if (show_progress) {
 
-            HDfprintf(stdout, "%s: calling H5Fcreate().\n", FUNC);
+            HDfprintf(stdout, "%s: calling H5Fcreate().\n", __func__);
         }
 
         file_id = H5Fcreate(filename, H5F_ACC_TRUNC, fcpl_id, H5P_DEFAULT);
@@ -1929,7 +1928,7 @@ check_file_mdc_api_errs(unsigned paged, hid_t fcpl_id)
 
         if (show_progress) {
 
-            HDfprintf(stdout, "%s: testing H5Fget_mdc_config() 1.\n", FUNC);
+            HDfprintf(stdout, "%s: testing H5Fget_mdc_config() 1.\n", __func__);
         }
 
         H5E_BEGIN_TRY
@@ -1949,7 +1948,7 @@ check_file_mdc_api_errs(unsigned paged, hid_t fcpl_id)
 
         if (show_progress) {
 
-            HDfprintf(stdout, "%s: testing H5Fget_mdc_config() 2.\n", FUNC);
+            HDfprintf(stdout, "%s: testing H5Fget_mdc_config() 2.\n", __func__);
         }
 
         H5E_BEGIN_TRY
@@ -1970,7 +1969,7 @@ check_file_mdc_api_errs(unsigned paged, hid_t fcpl_id)
 
         if (show_progress) {
 
-            HDfprintf(stdout, "%s: testing H5Fget_mdc_config() 3.\n", FUNC);
+            HDfprintf(stdout, "%s: testing H5Fget_mdc_config() 3.\n", __func__);
         }
 
         H5E_BEGIN_TRY
@@ -1993,7 +1992,7 @@ check_file_mdc_api_errs(unsigned paged, hid_t fcpl_id)
 
         if (show_progress) {
 
-            HDfprintf(stdout, "%s: testing H5Fset_mdc_config() 1.\n", FUNC);
+            HDfprintf(stdout, "%s: testing H5Fset_mdc_config() 1.\n", __func__);
         }
 
         H5E_BEGIN_TRY
@@ -2013,7 +2012,7 @@ check_file_mdc_api_errs(unsigned paged, hid_t fcpl_id)
 
         if (show_progress) {
 
-            HDfprintf(stdout, "%s: testing H5Fset_mdc_config() 2.\n", FUNC);
+            HDfprintf(stdout, "%s: testing H5Fset_mdc_config() 2.\n", __func__);
         }
 
         H5E_BEGIN_TRY
@@ -2033,7 +2032,7 @@ check_file_mdc_api_errs(unsigned paged, hid_t fcpl_id)
     while ((pass) && (i < NUM_INVALID_CONFIGS)) {
         if (show_progress) {
 
-            HDfprintf(stdout, "%s: testing H5Fset_mdc_config() with invalid config %d.\n", FUNC, i);
+            HDfprintf(stdout, "%s: testing H5Fset_mdc_config() with invalid config %d.\n", __func__, i);
         }
 
         H5E_BEGIN_TRY
@@ -2061,7 +2060,7 @@ check_file_mdc_api_errs(unsigned paged, hid_t fcpl_id)
 
         if (show_progress) {
 
-            HDfprintf(stdout, "%s: testing H5Fget_mdc_hit_rate() 1.\n", FUNC);
+            HDfprintf(stdout, "%s: testing H5Fget_mdc_hit_rate() 1.\n", __func__);
         }
 
         H5E_BEGIN_TRY
@@ -2081,7 +2080,7 @@ check_file_mdc_api_errs(unsigned paged, hid_t fcpl_id)
 
         if (show_progress) {
 
-            HDfprintf(stdout, "%s: testing H5Fget_mdc_hit_rate() 2.\n", FUNC);
+            HDfprintf(stdout, "%s: testing H5Fget_mdc_hit_rate() 2.\n", __func__);
         }
 
         H5E_BEGIN_TRY
@@ -2102,7 +2101,7 @@ check_file_mdc_api_errs(unsigned paged, hid_t fcpl_id)
 
         if (show_progress) {
 
-            HDfprintf(stdout, "%s: testing H5Freset_mdc_hit_rate_stats().\n", FUNC);
+            HDfprintf(stdout, "%s: testing H5Freset_mdc_hit_rate_stats().\n", __func__);
         }
 
         H5E_BEGIN_TRY
@@ -2123,7 +2122,7 @@ check_file_mdc_api_errs(unsigned paged, hid_t fcpl_id)
 
         if (show_progress) {
 
-            HDfprintf(stdout, "%s: testing H5Fget_mdc_size() 1.\n", FUNC);
+            HDfprintf(stdout, "%s: testing H5Fget_mdc_size() 1.\n", __func__);
         }
 
         H5E_BEGIN_TRY
@@ -2143,7 +2142,7 @@ check_file_mdc_api_errs(unsigned paged, hid_t fcpl_id)
 
         if (show_progress) {
 
-            HDfprintf(stdout, "%s: testing H5Fget_mdc_size() 2.\n", FUNC);
+            HDfprintf(stdout, "%s: testing H5Fget_mdc_size() 2.\n", __func__);
         }
 
         if ((H5Fget_mdc_size(file_id, &max_size, NULL, NULL, NULL) < 0) ||
@@ -2162,7 +2161,7 @@ check_file_mdc_api_errs(unsigned paged, hid_t fcpl_id)
 
         if (show_progress) {
 
-            HDfprintf(stdout, "%s: cleaning up from tests.\n", FUNC);
+            HDfprintf(stdout, "%s: cleaning up from tests.\n", __func__);
         }
 
         if (H5Fclose(file_id) < 0) {
@@ -2170,10 +2169,10 @@ check_file_mdc_api_errs(unsigned paged, hid_t fcpl_id)
             pass         = FALSE;
             failure_mssg = "H5Fclose() failed.\n";
         }
-        else if (HDremove(filename) < 0) {
+        else if (H5Fdelete(filename, H5P_DEFAULT) < 0) {
 
             pass         = FALSE;
-            failure_mssg = "HDremove() failed.\n";
+            failure_mssg = "H5Fdelete() failed.\n";
         }
     }
 
@@ -2188,7 +2187,7 @@ check_file_mdc_api_errs(unsigned paged, hid_t fcpl_id)
 
     if (!pass) {
 
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
     }
 
     return pass;
@@ -2230,26 +2229,26 @@ main(void)
     invalid_configs = init_invalid_configs();
     if (NULL == invalid_configs) {
         failure_mssg = "Unable to allocate memory for invalid configs.";
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
         return EXIT_FAILURE;
     } /* end if */
 
     if ((fcpl_id = H5Pcreate(H5P_FILE_CREATE)) < 0) {
         failure_mssg = "H5Pcreate(H5P_FILE_CREATE) failed.\n";
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
         return EXIT_FAILURE;
     } /* end if */
 
     /* Set file space strategy to default or paged aggregation strategy */
     if ((fcpl2_id = H5Pcopy(fcpl_id)) < 0) {
         failure_mssg = "H5Pcreate(H5P_FILE_CREATE) failed.\n";
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
         return EXIT_FAILURE;
     } /* end if */
 
     if (H5Pset_file_space_strategy(fcpl2_id, H5F_FSPACE_STRATEGY_PAGE, 1, (hsize_t)1) < 0) {
         failure_mssg = "H5Pset_file_space_strategy() failed.\n";
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
         return EXIT_FAILURE;
     } /* end if */
 
@@ -2258,8 +2257,13 @@ main(void)
     for (paged = FALSE; paged <= TRUE; paged++) {
         hid_t my_fcpl = fcpl_id;
 
-        if (paged)
-            my_fcpl = fcpl2_id;
+        if (paged) {
+            /* Only run paged aggregation tests with sec2/default driver */
+            if (!h5_using_default_driver(NULL))
+                continue;
+            else
+                my_fcpl = fcpl2_id;
+        }
 
         if (!check_fapl_mdc_api_calls(paged, my_fcpl))
             nerrs += 1;
@@ -2282,7 +2286,7 @@ main(void)
 
     if (H5Pclose(fcpl_id) < 0) {
         failure_mssg = "H5Pclose() failed.\n";
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
         return EXIT_FAILURE;
     } /* end if */
 

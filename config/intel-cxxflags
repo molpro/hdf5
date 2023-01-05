@@ -81,7 +81,8 @@ if test "X-icpc" = "X-$cxx_vendor"; then
     # General #
     ###########
 
-    H5_CXXFLAGS="$H5_CXXFLAGS $arch"
+    # Default to C++11 standard
+    H5_CXXFLAGS="$H5_CXXFLAGS $arch -std=c++11"
 
     ##############
     # Production #

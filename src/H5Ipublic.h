@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -51,6 +50,7 @@ typedef enum H5I_type_t {
     H5I_ERROR_MSG,      /**< type ID for error messages                */
     H5I_ERROR_STACK,    /**< type ID for error stacks                  */
     H5I_SPACE_SEL_ITER, /**< type ID for dataspace selection iterator  */
+    H5I_EVENTSET,       /**< type ID for event sets                    */
     H5I_NTYPES          /**< number of library types, MUST BE LAST!    */
 } H5I_type_t;
 //! <!-- [H5I_type_t_snip] -->
@@ -76,13 +76,15 @@ typedef int64_t hid_t;
 #define H5I_INVALID_HID (-1)
 
 /**
- * A function for freeing objects. This function will be called with an object
- * ID type number and a pointer to the object. The function should free the
- * object and return non-negative to indicate that the object
- * can be removed from the ID type. If the function returns negative
- * (failure) then the object will remain in the ID type.
+ * A function for freeing objects. This function will be called with a pointer
+ * to the object and a pointer to a pointer to the asynchronous request object.
+ * The function should free the object and return non-negative to indicate that
+ * the object can be removed from the ID type. If the function returns negative
+ * (failure) then the object will remain in the ID type. For asynchronous
+ * operations and handling the request parameter, see the HDF5 user guide and
+ * VOL connector author guide.
  */
-typedef herr_t (*H5I_free_t)(void *);
+typedef herr_t (*H5I_free_t)(void *obj, void **request);
 
 /**
  * The type of a function to compare objects & keys

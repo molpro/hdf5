@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -116,7 +115,7 @@ H5T__print_stats(H5T_path_t H5_ATTR_UNUSED *path, int H5_ATTR_UNUSED *nprint /*i
         else
             nbytes = 0;
         nbytes *= path->stats.nelmts;
-        H5_bandwidth(bandwidth, (double)nbytes, path->stats.times.elapsed);
+        H5_bandwidth(bandwidth, sizeof(bandwidth), (double)nbytes, path->stats.times.elapsed);
         HDfprintf(H5DEBUG(T), "   %-16s %10" PRIdHSIZE " %10u %8s %8s %8s %10s\n", path->name,
                   path->stats.nelmts, path->stats.ncalls, timestrs.user, timestrs.system, timestrs.elapsed,
                   bandwidth);

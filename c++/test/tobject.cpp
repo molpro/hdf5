@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -761,4 +760,7 @@ extern "C" void
 cleanup_object()
 {
     HDremove(FILE_OBJECTS.c_str());
+    HDremove(FILE_OBJHDR.c_str());
+    HDremove(FILE_OBJINFO.c_str());
+    HDremove(FILE_INTERGRPS.c_str());
 } // cleanup_objects

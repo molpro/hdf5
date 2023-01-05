@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -54,7 +53,7 @@
 /* Struct used with test_array_bkg() test */
 typedef struct {
     int    nsubfields;
-    char * name[NMAX];
+    char  *name[NMAX];
     size_t offset[NMAX];
     hid_t  datatype[NMAX];
 
@@ -157,8 +156,9 @@ test_array_atomic_1d(void)
     /* Check the array dimensions */
     for (i = 0; i < ndims; i++)
         if (rdims1[i] != tdims1[i]) {
-            TestErrPrintf("Array dimension information doesn't match!, rdims1[%d]=%llu, tdims1[%d]=%llu\n", i,
-                          rdims1[i], i, tdims1[i]);
+            TestErrPrintf("Array dimension information doesn't match!, rdims1[%d]=%" PRIuHSIZE
+                          ", tdims1[%d]=%" PRIuHSIZE "\n",
+                          i, rdims1[i], i, tdims1[i]);
             continue;
         } /* end if */
 
@@ -490,8 +490,9 @@ test_array_array_atomic(void)
     /* Check the array dimensions */
     for (i = 0; i < ndims1; i++)
         if (rdims1[i] != tdims1[i]) {
-            TestErrPrintf("Array dimension information doesn't match!, rdims1[%d]=%llu, tdims1[%d]=%llu\n", i,
-                          rdims1[i], i, tdims1[i]);
+            TestErrPrintf("Array dimension information doesn't match!, rdims1[%d]=%" PRIuHSIZE
+                          ", tdims1[%d]=%" PRIuHSIZE "\n",
+                          i, rdims1[i], i, tdims1[i]);
             continue;
         } /* end if */
 
@@ -577,7 +578,7 @@ test_array_compound_atomic(void)
     int     ndims;                /* Array rank for reading       */
     hsize_t rdims1[H5S_MAX_RANK]; /* Array dimensions for reading */
     int     nmemb;                /* Number of compound members   */
-    char *  mname;                /* Name of compound field       */
+    char   *mname;                /* Name of compound field       */
     size_t  off;                  /* Offset of compound field     */
     hid_t   mtid;                 /* Datatype ID for field        */
     int     i, j;                 /* counting variables           */
@@ -668,8 +669,9 @@ test_array_compound_atomic(void)
     /* Check the array dimensions */
     for (i = 0; i < ndims; i++)
         if (rdims1[i] != tdims1[i]) {
-            TestErrPrintf("Array dimension information doesn't match!, rdims1[%d]=%llu, tdims1[%d]=%llu\n", i,
-                          rdims1[i], i, tdims1[i]);
+            TestErrPrintf("Array dimension information doesn't match!, rdims1[%d]=%" PRIuHSIZE
+                          ", tdims1[%d]=%" PRIuHSIZE "\n",
+                          i, rdims1[i], i, tdims1[i]);
             continue;
         } /* end if */
 
@@ -788,7 +790,7 @@ test_array_compound_array(void)
     int         ndims;                /* Array rank for reading       */
     hsize_t     rdims1[H5S_MAX_RANK]; /* Array dimensions for reading */
     int         nmemb;                /* Number of compound members   */
-    char *      mname;                /* Name of compound field       */
+    char       *mname;                /* Name of compound field       */
     size_t      off;                  /* Offset of compound field     */
     hid_t       mtid;                 /* Datatype ID for field        */
     H5T_class_t mclass;               /* Datatype class for field     */
@@ -889,8 +891,9 @@ test_array_compound_array(void)
     /* Check the array dimensions */
     for (i = 0; i < ndims; i++)
         if (rdims1[i] != tdims1[i]) {
-            TestErrPrintf("Array dimension information doesn't match!, rdims1[%d]=%llu, tdims1[%d]=%llu\n", i,
-                          rdims1[i], i, tdims1[i]);
+            TestErrPrintf("Array dimension information doesn't match!, rdims1[%d]=%" PRIuHSIZE
+                          ", tdims1[%d]=%" PRIuHSIZE "\n",
+                          i, rdims1[i], i, tdims1[i]);
             continue;
         } /* end if */
 
@@ -951,9 +954,9 @@ test_array_compound_array(void)
     /* Check the array dimensions */
     for (i = 0; i < ndims; i++)
         if (rdims1[i] != tdims1[i]) {
-            TestErrPrintf(
-                "Nested array dimension information doesn't match!, rdims1[%d]=%llu, tdims1[%d]=%llu\n", i,
-                rdims1[i], i, tdims1[i]);
+            TestErrPrintf("Nested array dimension information doesn't match!, rdims1[%d]=%" PRIuHSIZE
+                          ", tdims1[%d]=%" PRIuHSIZE "\n",
+                          i, rdims1[i], i, tdims1[i]);
             continue;
         } /* end if */
 
@@ -1042,7 +1045,7 @@ test_array_compound_array(void)
 void *
 test_array_alloc_custom(size_t size, void *info)
 {
-    void *  ret_value = NULL;           /* Pointer to return            */
+    void   *ret_value = NULL;           /* Pointer to return            */
     size_t *mem_used  = (size_t *)info; /* Pointer to the memory used   */
     size_t  extra;                      /* Extra space needed           */
 
@@ -1078,7 +1081,7 @@ void
 test_array_free_custom(void *_mem, void *info)
 {
     unsigned char *mem      = NULL;           /* Pointer to mem to be freed   */
-    size_t *       mem_used = (size_t *)info; /* Pointer to the memory used   */
+    size_t        *mem_used = (size_t *)info; /* Pointer to the memory used   */
     size_t         extra;                     /* Extra space needed           */
 
     /*
@@ -1210,8 +1213,9 @@ test_array_vlen_atomic(void)
     /* Check the array dimensions */
     for (i = 0; i < ndims; i++)
         if (rdims1[i] != tdims1[i]) {
-            TestErrPrintf("Array dimension information doesn't match!, rdims1[%d]=%llu, tdims1[%d]=%llu\n", i,
-                          rdims1[i], i, tdims1[i]);
+            TestErrPrintf("Array dimension information doesn't match!, rdims1[%d]=%" PRIuHSIZE
+                          ", tdims1[%d]=%" PRIuHSIZE "\n",
+                          i, rdims1[i], i, tdims1[i]);
             continue;
         } /* end if */
 
@@ -1440,8 +1444,9 @@ test_array_vlen_array(void)
     /* Check the array dimensions */
     for (i = 0; i < ndims; i++)
         if (rdims1[i] != tdims1[i]) {
-            TestErrPrintf("Array dimension information doesn't match!, rdims1[%d]=%llu, tdims1[%d]=%llu\n", i,
-                          rdims1[i], i, tdims1[i]);
+            TestErrPrintf("Array dimension information doesn't match!, rdims1[%d]=%" PRIuHSIZE
+                          ", tdims1[%d]=%" PRIuHSIZE "\n",
+                          i, rdims1[i], i, tdims1[i]);
             continue;
         } /* end if */
 
@@ -1472,8 +1477,9 @@ test_array_vlen_array(void)
     /* Check the array dimensions */
     for (i = 0; i < ndims; i++)
         if (rdims1[i] != tdims1[i]) {
-            TestErrPrintf("Array dimension information doesn't match!, rdims1[%d]=%llu, tdims1[%d]=%llu\n", i,
-                          rdims1[i], i, tdims1[i]);
+            TestErrPrintf("Array dimension information doesn't match!, rdims1[%d]=%" PRIuHSIZE
+                          ", tdims1[%d]=%" PRIuHSIZE "\n",
+                          i, rdims1[i], i, tdims1[i]);
             continue;
         } /* end if */
 
@@ -1908,11 +1914,12 @@ test_compat(void)
     hsize_t     rdims1[H5S_MAX_RANK]; /* Array dimensions for reading     */
     H5T_class_t mclass;               /* Datatype class for VL            */
     int         nmemb;                /* Number of compound members       */
-    char *      mname;                /* Name of compound field           */
+    char       *mname;                /* Name of compound field           */
     size_t      off;                  /* Offset of compound field         */
     hid_t       mtid;                 /* Datatype ID for field            */
     int         i;                    /* Index variables                  */
-    herr_t      ret;                  /* Generic return value             */
+    hbool_t     driver_is_default_compatible;
+    herr_t      ret; /* Generic return value             */
 
     /* Output message about test being performed */
     MESSAGE(5, ("Testing Array Datatypes Compatibility Functionality\n"));
@@ -1926,6 +1933,13 @@ test_compat(void)
      *  changed, follow the instructions in gen_old_array.c for regenerating
      *  the tarrold.h5 file.
      */
+
+    if (h5_driver_is_default_vfd_compatible(H5P_DEFAULT, &driver_is_default_compatible) < 0)
+        TestErrPrintf("can't check if VFD is default VFD compatible\n");
+    if (!driver_is_default_compatible) {
+        HDprintf(" -- SKIPPED --\n");
+        return;
+    }
 
     /* Open the testfile */
     fid1 = H5Fopen(testfile, H5F_ACC_RDONLY, H5P_DEFAULT);
@@ -2081,9 +2095,9 @@ test_compat(void)
         /* Check the array dimensions */
         for (i = 0; i < ndims; i++)
             if (rdims1[i] != tdims1[i]) {
-                TestErrPrintf(
-                    "Array dimension information doesn't match!, rdims1[%d]=%llu, tdims1[%d]=%llu\n", i,
-                    rdims1[i], i, tdims1[i]);
+                TestErrPrintf("Array dimension information doesn't match!, rdims1[%d]=%" PRIuHSIZE
+                              ", tdims1[%d]=%" PRIuHSIZE "\n",
+                              i, rdims1[i], i, tdims1[i]);
                 continue;
             } /* end if */
 
@@ -2129,9 +2143,9 @@ test_compat(void)
         /* Check the array dimensions */
         for (i = 0; i < ndims; i++)
             if (rdims1[i] != tdims1[i]) {
-                TestErrPrintf(
-                    "Array dimension information doesn't match!, rdims1[%d]=%llu, tdims1[%d]=%llu\n", i,
-                    rdims1[i], i, tdims1[i]);
+                TestErrPrintf("Array dimension information doesn't match!, rdims1[%d]=%" PRIuHSIZE
+                              ", tdims1[%d]=%" PRIuHSIZE "\n",
+                              i, rdims1[i], i, tdims1[i]);
                 continue;
             } /* end if */
 

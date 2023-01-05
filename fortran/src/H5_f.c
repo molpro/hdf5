@@ -5,7 +5,6 @@
  * COPYRIGHT
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -65,12 +64,6 @@ h5init_types_c(hid_t_f *types, hid_t_f *floatingtypes, hid_t_f *integertypes)
      * Find the HDF5 type of the Fortran Integer KIND.
      */
 
-    /* Initialized INTEGER KIND types to default to native integer */
-    for (i = 0; i < 5; i++) {
-        if ((types[i] = (hid_t_f)H5Tcopy(H5T_NATIVE_INT)) < 0)
-            return ret_value;
-    }
-
     for (i = 0; i < H5_FORTRAN_NUM_INTEGER_KINDS; i++) {
         if (IntKinds_SizeOf[i] == sizeof(char)) {
             if ((types[i] = (hid_t_f)H5Tcopy(H5T_NATIVE_CHAR)) < 0)
@@ -94,6 +87,12 @@ h5init_types_c(hid_t_f *types, hid_t_f *floatingtypes, hid_t_f *integertypes)
             if (H5Tset_precision(types[i], 128) < 0)
                 return ret_value;
         } /*end else */
+    }
+
+    /* Initialized missing INTEGER KIND types to default to native integer */
+    for (i = H5_FORTRAN_NUM_INTEGER_KINDS; i < 5; i++) {
+        if ((types[i] = (hid_t_f)H5Tcopy(H5T_NATIVE_INT)) < 0)
+            return ret_value;
     }
 
     if (sizeof(int_f) == sizeof(int)) {
@@ -509,6 +508,7 @@ h5init_flags_c(int_f *h5d_flags, size_t_f *h5d_size_flags, int_f *h5e_flags, hid
     h5f_flags[21] = (int_f)H5F_LIBVER_V18;
     h5f_flags[22] = (int_f)H5F_LIBVER_V110;
     h5f_flags[23] = (int_f)H5F_LIBVER_V112;
+    h5f_flags[24] = (int_f)H5F_LIBVER_V114;
 
     /*
      *  H5FD flags
@@ -524,6 +524,31 @@ h5init_flags_c(int_f *h5d_flags, size_t_f *h5d_size_flags, int_f *h5e_flags, hid
     h5fd_flags[8]  = (int_f)H5FD_MEM_LHEAP;
     h5fd_flags[9]  = (int_f)H5FD_MEM_OHDR;
     h5fd_flags[10] = (int_f)H5FD_MEM_NTYPES;
+#ifdef H5_HAVE_SUBFILING_VFD
+    h5fd_flags[11] = (int_f)H5FD_SUBFILING_CURR_FAPL_VERSION;
+    h5fd_flags[12] = (int_f)H5FD_SUBFILING_FAPL_MAGIC;
+    h5fd_flags[13] = (int_f)H5FD_SUBFILING_DEFAULT_STRIPE_COUNT;
+    h5fd_flags[14] = (int_f)H5FD_IOC_FAPL_MAGIC;
+    h5fd_flags[15] = (int_f)H5FD_IOC_CURR_FAPL_VERSION;
+    h5fd_flags[16] = (int_f)H5FD_IOC_DEFAULT_THREAD_POOL_SIZE;
+    h5fd_flags[17] = (int_f)SELECT_IOC_ONE_PER_NODE;
+    h5fd_flags[18] = (int_f)SELECT_IOC_EVERY_NTH_RANK;
+    h5fd_flags[19] = (int_f)SELECT_IOC_WITH_CONFIG;
+    h5fd_flags[20] = (int_f)SELECT_IOC_TOTAL;
+    h5fd_flags[21] = (int_f)ioc_selection_options;
+#else
+    h5fd_flags[11]    = 0;
+    h5fd_flags[12]    = 0;
+    h5fd_flags[13]    = 0;
+    h5fd_flags[14]    = 0;
+    h5fd_flags[15]    = 0;
+    h5fd_flags[16]    = 0;
+    h5fd_flags[17]    = 0;
+    h5fd_flags[18]    = 0;
+    h5fd_flags[19]    = 0;
+    h5fd_flags[20]    = 0;
+    h5fd_flags[21]    = 0;
+#endif
 
     /*
      *  H5FD flags of type hid_t
@@ -535,6 +560,34 @@ h5init_flags_c(int_f *h5d_flags, size_t_f *h5d_size_flags, int_f *h5e_flags, hid
     h5fd_hid_flags[4] = (hid_t_f)H5FD_MULTI;
     h5fd_hid_flags[5] = (hid_t_f)H5FD_SEC2;
     h5fd_hid_flags[6] = (hid_t_f)H5FD_STDIO;
+
+    /* Calling H5FD_subfiling_init here requires the
+       subfiling requirements to be met.  Only set the
+       subfiling if it meets the below conditions */
+
+    h5fd_hid_flags[7] = (hid_t_f)H5I_INVALID_HID;
+
+#ifdef H5_HAVE_PARALLEL
+    int mpi_initialized = 0;
+    int provided        = 0;
+    int mpi_code;
+
+    if (MPI_SUCCESS == (mpi_code = MPI_Initialized(&mpi_initialized))) {
+        if (mpi_initialized) {
+            /* If MPI is initialized, validate that it was initialized with MPI_THREAD_MULTIPLE */
+            if (MPI_SUCCESS == (mpi_code = MPI_Query_thread(&provided))) {
+                if (provided == MPI_THREAD_MULTIPLE) {
+                    h5fd_hid_flags[7] = (hid_t_f)H5FD_SUBFILING;
+                }
+            }
+        }
+    }
+#endif
+#ifdef H5_HAVE_SUBFILING_VFD
+    h5fd_hid_flags[8] = (hid_t_f)H5FD_SUBFILING_DEFAULT_STRIPE_SIZE;
+#else
+    h5fd_hid_flags[8] = 0;
+#endif
 
     /*
      *  H5G flags

@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -86,7 +85,7 @@
 htri_t
 H5G__is_empty_test(hid_t gid)
 {
-    H5G_t * grp            = NULL;  /* Pointer to group */
+    H5G_t  *grp            = NULL;  /* Pointer to group */
     htri_t  msg_exists     = FALSE; /* Indicate that a header message is present */
     htri_t  linfo_exists   = FALSE; /* Indicate that the 'link info' message is present */
     hbool_t api_ctx_pushed = FALSE; /* Whether API context pushed */
@@ -178,7 +177,7 @@ H5G__is_empty_test(hid_t gid)
     } /* end if */
 
 done:
-    if (api_ctx_pushed && H5CX_pop() < 0)
+    if (api_ctx_pushed && H5CX_pop(FALSE) < 0)
         HDONE_ERROR(H5E_SYM, H5E_CANTRESET, FAIL, "can't reset API context")
 
     FUNC_LEAVE_NOAPI(ret_value)
@@ -206,7 +205,7 @@ done:
 htri_t
 H5G__has_links_test(hid_t gid, unsigned *nmsgs)
 {
-    H5G_t * grp            = NULL;  /* Pointer to group */
+    H5G_t  *grp            = NULL;  /* Pointer to group */
     htri_t  msg_exists     = 0;     /* Indicate that a header message is present */
     hbool_t api_ctx_pushed = FALSE; /* Whether API context pushed */
     htri_t  ret_value      = TRUE;  /* Return value */
@@ -245,7 +244,7 @@ H5G__has_links_test(hid_t gid, unsigned *nmsgs)
     } /* end if */
 
 done:
-    if (api_ctx_pushed && H5CX_pop() < 0)
+    if (api_ctx_pushed && H5CX_pop(FALSE) < 0)
         HDONE_ERROR(H5E_SYM, H5E_CANTRESET, FAIL, "can't reset API context")
 
     FUNC_LEAVE_NOAPI(ret_value)
@@ -272,7 +271,7 @@ done:
 htri_t
 H5G__has_stab_test(hid_t gid)
 {
-    H5G_t * grp            = NULL;  /* Pointer to group */
+    H5G_t  *grp            = NULL;  /* Pointer to group */
     htri_t  msg_exists     = 0;     /* Indicate that a header message is present */
     hbool_t api_ctx_pushed = FALSE; /* Whether API context pushed */
     htri_t  ret_value      = TRUE;  /* Return value */
@@ -301,7 +300,7 @@ H5G__has_stab_test(hid_t gid)
         HGOTO_ERROR(H5E_SYM, H5E_BADVALUE, FAIL, "both symbol table and link messages found")
 
 done:
-    if (api_ctx_pushed && H5CX_pop() < 0)
+    if (api_ctx_pushed && H5CX_pop(FALSE) < 0)
         HDONE_ERROR(H5E_SYM, H5E_CANTRESET, FAIL, "can't reset API context")
 
     FUNC_LEAVE_NOAPI(ret_value)
@@ -330,7 +329,7 @@ done:
 htri_t
 H5G__is_new_dense_test(hid_t gid)
 {
-    H5G_t * grp            = NULL;  /* Pointer to group */
+    H5G_t  *grp            = NULL;  /* Pointer to group */
     htri_t  msg_exists     = 0;     /* Indicate that a header message is present */
     hbool_t api_ctx_pushed = FALSE; /* Whether API context pushed */
     htri_t  ret_value      = TRUE;  /* Return value */
@@ -376,7 +375,7 @@ H5G__is_new_dense_test(hid_t gid)
     } /* end if */
 
 done:
-    if (api_ctx_pushed && H5CX_pop() < 0)
+    if (api_ctx_pushed && H5CX_pop(FALSE) < 0)
         HDONE_ERROR(H5E_SYM, H5E_CANTRESET, FAIL, "can't reset API context")
 
     FUNC_LEAVE_NOAPI(ret_value)
@@ -406,10 +405,10 @@ done:
 herr_t
 H5G__new_dense_info_test(hid_t gid, hsize_t *name_count, hsize_t *corder_count)
 {
-    H5B2_t *    bt2_name   = NULL;        /* v2 B-tree handle for name index */
-    H5B2_t *    bt2_corder = NULL;        /* v2 B-tree handle for creation order index */
+    H5B2_t     *bt2_name   = NULL;        /* v2 B-tree handle for name index */
+    H5B2_t     *bt2_corder = NULL;        /* v2 B-tree handle for creation order index */
     H5O_linfo_t linfo;                    /* Link info message */
-    H5G_t *     grp            = NULL;    /* Pointer to group */
+    H5G_t      *grp            = NULL;    /* Pointer to group */
     hbool_t     api_ctx_pushed = FALSE;   /* Whether API context pushed */
     herr_t      ret_value      = SUCCEED; /* Return value */
 
@@ -469,7 +468,7 @@ done:
         HDONE_ERROR(H5E_SYM, H5E_CANTCLOSEOBJ, FAIL, "can't close v2 B-tree for name index")
     if (bt2_corder && H5B2_close(bt2_corder) < 0)
         HDONE_ERROR(H5E_SYM, H5E_CANTCLOSEOBJ, FAIL, "can't close v2 B-tree for creation order index")
-    if (api_ctx_pushed && H5CX_pop() < 0)
+    if (api_ctx_pushed && H5CX_pop(FALSE) < 0)
         HDONE_ERROR(H5E_SYM, H5E_CANTRESET, FAIL, "can't reset API context")
 
     FUNC_LEAVE_NOAPI(ret_value)
@@ -497,7 +496,7 @@ done:
 herr_t
 H5G__lheap_size_test(hid_t gid, size_t *lheap_size)
 {
-    H5G_t *    grp = NULL;               /* Pointer to group */
+    H5G_t     *grp = NULL;               /* Pointer to group */
     H5O_stab_t stab;                     /* Symbol table message	*/
     hbool_t    api_ctx_pushed = FALSE;   /* Whether API context pushed */
     herr_t     ret_value      = SUCCEED; /* Return value */
@@ -522,7 +521,7 @@ H5G__lheap_size_test(hid_t gid, size_t *lheap_size)
         HGOTO_ERROR(H5E_SYM, H5E_CANTGETSIZE, FAIL, "can't query local heap size")
 
 done:
-    if (api_ctx_pushed && H5CX_pop() < 0)
+    if (api_ctx_pushed && H5CX_pop(FALSE) < 0)
         HDONE_ERROR(H5E_SYM, H5E_CANTRESET, FAIL, "can't reset API context")
 
     FUNC_LEAVE_NOAPI(ret_value)
@@ -553,10 +552,10 @@ done:
 herr_t
 H5G__user_path_test(hid_t obj_id, char *user_path, size_t *user_path_len, unsigned *obj_hidden)
 {
-    void *      obj_ptr;                  /* Pointer to object for ID */
-    H5G_name_t *obj_path;                 /* Pointer to group hier. path for obj */
-    hbool_t     api_ctx_pushed = FALSE;   /* Whether API context pushed */
-    herr_t      ret_value      = SUCCEED; /* Return value */
+    void             *obj_ptr;                  /* Pointer to object for ID */
+    const H5G_name_t *obj_path;                 /* Pointer to group hier. path for obj */
+    hbool_t           api_ctx_pushed = FALSE;   /* Whether API context pushed */
+    herr_t            ret_value      = SUCCEED; /* Return value */
 
     FUNC_ENTER_PACKAGE
 
@@ -607,6 +606,7 @@ H5G__user_path_test(hid_t obj_id, char *user_path, size_t *user_path_len, unsign
         case H5I_ERROR_MSG:
         case H5I_ERROR_STACK:
         case H5I_SPACE_SEL_ITER:
+        case H5I_EVENTSET:
         case H5I_NTYPES:
         default:
             HGOTO_ERROR(H5E_ARGS, H5E_BADTYPE, FAIL, "unknown data object type")
@@ -615,14 +615,14 @@ H5G__user_path_test(hid_t obj_id, char *user_path, size_t *user_path_len, unsign
 
     /* Retrieve a copy of the user path and put it into the buffer */
     if (obj_path->user_path_r) {
-        ssize_t len = H5RS_len(obj_path->user_path_r);
+        size_t len = H5RS_len(obj_path->user_path_r);
 
         /* Set the user path, if given */
         if (user_path)
-            HDstrncpy(user_path, H5RS_get_str(obj_path->user_path_r), (size_t)(len + 1));
+            HDstrncpy(user_path, H5RS_get_str(obj_path->user_path_r), (len + 1));
 
         /* Set the length of the path */
-        *user_path_len = (size_t)len;
+        *user_path_len = len;
 
         /* Set the user path hidden flag */
         *obj_hidden = obj_path->obj_hidden;
@@ -633,7 +633,7 @@ H5G__user_path_test(hid_t obj_id, char *user_path, size_t *user_path_len, unsign
     } /* end else */
 
 done:
-    if (api_ctx_pushed && H5CX_pop() < 0)
+    if (api_ctx_pushed && H5CX_pop(FALSE) < 0)
         HDONE_ERROR(H5E_SYM, H5E_CANTRESET, FAIL, "can't reset API context")
 
     FUNC_LEAVE_NOAPI(ret_value)
@@ -658,7 +658,7 @@ herr_t
 H5G__verify_cached_stab_test(H5O_loc_t *grp_oloc, H5G_entry_t *ent)
 {
     H5O_stab_t stab;                /* Symbol table             */
-    H5HL_t *   heap      = NULL;    /* Pointer to local heap    */
+    H5HL_t    *heap      = NULL;    /* Pointer to local heap    */
     herr_t     ret_value = SUCCEED; /* Return value             */
 
     FUNC_ENTER_PACKAGE_TAG(grp_oloc->addr)
@@ -714,13 +714,13 @@ H5G__verify_cached_stabs_test_cb(H5F_t *f, const void H5_ATTR_UNUSED *_lt_key, h
 {
     H5G_node_t *sn = NULL;
     H5O_loc_t   targ_oloc;
-    H5O_t *     targ_oh = NULL;
+    H5O_t      *targ_oh = NULL;
     htri_t      stab_exists;
     H5O_stab_t  stab;
     unsigned    i;
     int         ret_value = H5_ITER_CONT;
 
-    FUNC_ENTER_STATIC
+    FUNC_ENTER_PACKAGE
 
     /* Check arguments */
     HDassert(f);
@@ -805,7 +805,7 @@ done:
 herr_t
 H5G__verify_cached_stabs_test(hid_t gid)
 {
-    H5G_t *         grp = NULL; /* Group */
+    H5G_t          *grp = NULL; /* Group */
     htri_t          stab_exists;
     H5O_stab_t      stab;                     /* Symbol table message */
     H5G_bt_common_t udata     = {NULL, NULL}; /* Dummy udata so H5B_iterate doesn't freak out */

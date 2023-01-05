@@ -52,7 +52,7 @@
  *     4) Configurable expected-actual order in generated comparison strings.
  *        Some prefer `VERIFY(expected, actual)`, others
  *        `VERIFY(actual, expected)`. Provide preprocessor ifdef switch
- *        to satifsy both parties, assuming one paradigm per test file.
+ *        to satisfy both parties, assuming one paradigm per test file.
  *        (One could #undef and redefine the flag through the file as desired,
  *         but _why_.)
  *
@@ -102,7 +102,7 @@
  */
 #define JSFAILED_AT()                                                                                        \
     {                                                                                                        \
-        HDprintf("*FAILED* at %s:%d in %s()...\n", __FILE__, __LINE__, FUNC);                                \
+        HDprintf("*FAILED* at %s:%d in %s()...\n", __FILE__, __LINE__, __func__);                            \
     }
 
 /*----------------------------------------------------------------------------
@@ -428,7 +428,7 @@ test_fapl_config_validation(void)
      *************************/
 
     struct testcase {
-        const char *     msg;
+        const char      *msg;
         herr_t           expected;
         H5FD_hdfs_fapl_t config;
     };
@@ -1447,15 +1447,6 @@ test_noops_and_autofails(void)
 
     H5E_BEGIN_TRY{
         JSVERIFY(FAIL, H5FDtruncate(file, H5P_DEFAULT, TRUE), "truncate must fail (closing)")} H5E_END_TRY;
-
-    /* no-op calls to `lock()` and `unlock()`
-     */
-    JSVERIFY(SUCCEED, H5FDlock(file, TRUE), "lock always succeeds; has no effect")
-    JSVERIFY(SUCCEED, H5FDlock(file, FALSE), "lock issue")
-    JSVERIFY(SUCCEED, H5FDunlock(file), "unlock issue")
-    /* Lock/unlock with null file or similar error crashes tests.
-     * HDassert in calling hierarchy, `H5FD[un]lock()` and `H5FD_[un]lock()`
-     */
 
     /************
      * TEARDOWN *

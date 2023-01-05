@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -99,10 +98,10 @@ test_reference_params(void)
     H5R_ref_t *wbuf, /* buffer to write to disk          */
         *rbuf,       /* buffer read from disk            */
         *tbuf;       /* temp. buffer read from disk      */
-    unsigned *   obuf;
+    unsigned    *obuf;
     H5R_type_t   type;                   /* Reference type                   */
     unsigned int i;                      /* Counters                         */
-    const char * write_comment = "Foo!"; /* Comments for group   */
+    const char  *write_comment = "Foo!"; /* Comments for group   */
     hid_t        ret_id;                 /* Generic hid_t return value       */
     ssize_t      name_size;              /* Size of reference name           */
     herr_t       ret;                    /* Generic return value             */
@@ -331,7 +330,7 @@ test_reference_obj(void)
     hid_t      dapl_id; /* Dataset access property list     */
     H5R_ref_t *wbuf,    /* buffer to write to disk          */
         *rbuf;          /* buffer read from disk            */
-    unsigned * ibuf, *obuf;
+    unsigned  *ibuf, *obuf;
     unsigned   i, j;     /* Counters                         */
     H5O_type_t obj_type; /* Object type                      */
     herr_t     ret;      /* Generic return value             */
@@ -567,7 +566,7 @@ test_reference_vlen_obj(void)
     hid_t      dapl_id; /* Dataset access property list     */
     H5R_ref_t *wbuf,    /* buffer to write to disk          */
         *rbuf = NULL;   /* buffer read from disk            */
-    unsigned * ibuf, *obuf;
+    unsigned  *ibuf, *obuf;
     unsigned   i, j;     /* Counters                         */
     H5O_type_t obj_type; /* Object type                      */
     herr_t     ret;      /* Generic return value             */
@@ -831,7 +830,7 @@ test_reference_cmpnd_obj(void)
     hsize_t    dims1[]      = {SPACE1_DIM1};
     hsize_t    cmpnd_dims[] = {1};
     hid_t      dapl_id; /* Dataset access property list     */
-    unsigned * ibuf, *obuf;
+    unsigned  *ibuf, *obuf;
     unsigned   i;        /* Counter                          */
     H5O_type_t obj_type; /* Object type                      */
     herr_t     ret;      /* Generic return value             */
@@ -1127,15 +1126,15 @@ test_reference_region(H5F_libver_t libver_low, H5F_libver_t libver_high)
     hsize_t    count[SPACE2_RANK];                         /* Element count of hyperslab */
     hsize_t    block[SPACE2_RANK];                         /* Block size of hyperslab */
     hsize_t    coord1[POINT1_NPOINTS][SPACE2_RANK];        /* Coordinates for point selection */
-    hsize_t *  coords;                                     /* Coordinate buffer */
+    hsize_t   *coords;                                     /* Coordinate buffer */
     hsize_t    low[SPACE2_RANK];                           /* Selection bounds */
     hsize_t    high[SPACE2_RANK];                          /* Selection bounds */
     H5R_ref_t *wbuf     = NULL,                            /* buffer to write to disk */
         *rbuf           = NULL;                            /* buffer read from disk */
     H5R_ref_t nvrbuf[3] = {{{{0}}}, {{{101}}}, {{{255}}}}; /* buffer with non-valid refs */
-    uint8_t * dwbuf     = NULL,                            /* Buffer for writing numeric data to disk */
+    uint8_t  *dwbuf     = NULL,                            /* Buffer for writing numeric data to disk */
         *drbuf          = NULL;                            /* Buffer for reading numeric data from disk */
-    uint8_t *  tu8;                                        /* Temporary pointer to uint8 data */
+    uint8_t   *tu8;                                        /* Temporary pointer to uint8 data */
     H5O_type_t obj_type;                                   /* Type of object */
     int        i, j;                                       /* Counters */
     hssize_t   hssize_ret;                                 /* hssize_t return value */
@@ -1590,14 +1589,14 @@ test_reference_region_1D(H5F_libver_t libver_low, H5F_libver_t libver_high)
     hsize_t    count[SPACE3_RANK];                  /* Element count of hyperslab */
     hsize_t    block[SPACE3_RANK];                  /* Block size of hyperslab */
     hsize_t    coord1[POINT1_NPOINTS][SPACE3_RANK]; /* Coordinates for point selection */
-    hsize_t *  coords;                              /* Coordinate buffer */
+    hsize_t   *coords;                              /* Coordinate buffer */
     hsize_t    low[SPACE3_RANK];                    /* Selection bounds */
     hsize_t    high[SPACE3_RANK];                   /* Selection bounds */
     H5R_ref_t *wbuf = NULL,                         /* buffer to write to disk */
         *rbuf       = NULL;                         /* buffer read from disk */
     uint8_t *dwbuf  = NULL,                         /* Buffer for writing numeric data to disk */
         *drbuf      = NULL;                         /* Buffer for reading numeric data from disk */
-    uint8_t *  tu8;                                 /* Temporary pointer to uint8 data */
+    uint8_t   *tu8;                                 /* Temporary pointer to uint8 data */
     H5O_type_t obj_type;                            /* Object type */
     int        i;                                   /* Counter */
     herr_t     ret;                                 /* Generic return value */
@@ -2011,7 +2010,7 @@ static herr_t
 test_deref_iter_op(hid_t H5_ATTR_UNUSED group, const char *name, const H5L_info2_t H5_ATTR_UNUSED *info,
                    void *op_data)
 {
-    int *  count = (int *)op_data; /* Pointer to name counter */
+    int   *count = (int *)op_data; /* Pointer to name counter */
     herr_t ret_value;
 
     /* Simple check for correct names */
@@ -2738,10 +2737,10 @@ test_reference_compat_conv(void)
     hsize_t          count[SPACE2_RANK];  /* Element count of hyperslab */
     hsize_t          block[SPACE2_RANK];  /* Block size of hyperslab  */
     hsize_t          coord1[POINT1_NPOINTS][SPACE2_RANK]; /* Coordinates for point selection */
-    hobj_ref_t *     wbuf_obj = NULL;                     /* Buffer to write to disk  */
-    H5R_ref_t *      rbuf_obj = NULL;                     /* Buffer read from disk    */
+    hobj_ref_t      *wbuf_obj = NULL;                     /* Buffer to write to disk  */
+    H5R_ref_t       *rbuf_obj = NULL;                     /* Buffer read from disk    */
     hdset_reg_ref_t *wbuf_reg = NULL;                     /* Buffer to write to disk  */
-    H5R_ref_t *      rbuf_reg = NULL;                     /* Buffer read from disk    */
+    H5R_ref_t       *rbuf_reg = NULL;                     /* Buffer read from disk    */
     H5O_type_t       obj_type;                            /* Object type              */
     herr_t           ret;                                 /* Generic return value     */
     unsigned int     i;                                   /* Counter                  */
@@ -3052,7 +3051,7 @@ test_reference_perf(void)
         *rbuf_deprec;                 /* deprecated references            */
     hdset_reg_ref_t *wbuf_reg_deprec, /* deprecated references*/
         *rbuf_reg_deprec;             /* deprecated references*/
-    unsigned * ibuf, *obuf;
+    unsigned  *ibuf, *obuf;
     unsigned   i, j;      /* Counters                         */
     H5O_type_t obj_type;  /* Object type                      */
     herr_t     ret;       /* Generic return value             */
@@ -3452,10 +3451,16 @@ test_reference_perf(void)
 void
 test_reference(void)
 {
-    H5F_libver_t low, high; /* Low and high bounds */
+    H5F_libver_t low, high;   /* Low and high bounds */
+    const char  *env_h5_drvr; /* File Driver value from environment */
 
     /* Output message about test being performed */
     MESSAGE(5, ("Testing References\n"));
+
+    /* Get the VFD to use */
+    env_h5_drvr = HDgetenv(HDF5_DRIVER);
+    if (env_h5_drvr == NULL)
+        env_h5_drvr = "nomatch";
 
     test_reference_params();    /* Test for correct parameter checking */
     test_reference_obj();       /* Test basic H5R object reference code */
@@ -3476,7 +3481,11 @@ test_reference(void)
         } /* end high bound */
     }     /* end low bound */
 
-    test_reference_obj_deleted(); /* Test H5R object reference code for deleted objects */
+    /* The following test is currently broken with the Direct VFD */
+    if (HDstrcmp(env_h5_drvr, "direct") != 0) {
+        test_reference_obj_deleted(); /* Test H5R object reference code for deleted objects */
+    }
+
     test_reference_group();       /* Test operations on dereferenced groups */
     test_reference_attr();        /* Test attribute references */
     test_reference_external();    /* Test external references */

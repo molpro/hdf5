@@ -10,7 +10,6 @@
 ! COPYRIGHT
 ! * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 !   Copyright by The HDF Group.                                               *
-!   Copyright by the Board of Trustees of the University of Illinois.         *
 !   All rights reserved.                                                      *
 !                                                                             *
 !   This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -209,7 +208,6 @@ CONTAINS
     ! Since the name is generated in C and passed to a Fortran string, it
     ! will be NULL terminated, so we need to find the end of the string.
 
-    len = 1
     DO len = 1, 180
        IF(name(len) .EQ. C_NULL_CHAR) EXIT
     ENDDO

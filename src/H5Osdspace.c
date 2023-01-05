@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -24,10 +23,10 @@
 #include "H5Spkg.h"      /* Dataspaces 				*/
 
 /* PRIVATE PROTOTYPES */
-static void * H5O__sdspace_decode(H5F_t *f, H5O_t *open_oh, unsigned mesg_flags, unsigned *ioflags,
+static void  *H5O__sdspace_decode(H5F_t *f, H5O_t *open_oh, unsigned mesg_flags, unsigned *ioflags,
                                   size_t p_size, const uint8_t *p);
 static herr_t H5O__sdspace_encode(H5F_t *f, uint8_t *p, const void *_mesg);
-static void * H5O__sdspace_copy(const void *_mesg, void *_dest);
+static void  *H5O__sdspace_copy(const void *_mesg, void *_dest);
 static size_t H5O__sdspace_size(const H5F_t *f, const void *_mesg);
 static herr_t H5O__sdspace_reset(void *_mesg);
 static herr_t H5O__sdspace_free(void *_mesg);
@@ -108,13 +107,13 @@ static void *
 H5O__sdspace_decode(H5F_t *f, H5O_t H5_ATTR_UNUSED *open_oh, unsigned H5_ATTR_UNUSED mesg_flags,
                     unsigned H5_ATTR_UNUSED *ioflags, size_t p_size, const uint8_t *p)
 {
-    H5S_extent_t * sdim = NULL; /* New extent dimensionality structure */
+    H5S_extent_t  *sdim = NULL; /* New extent dimensionality structure */
     unsigned       flags, version;
     unsigned       i;                          /* Local counting variable */
     const uint8_t *p_end     = p + p_size - 1; /* End of the p buffer */
-    void *         ret_value = NULL;           /* Return value */
+    void          *ret_value = NULL;           /* Return value */
 
-    FUNC_ENTER_STATIC
+    FUNC_ENTER_PACKAGE
 
     /* check args */
     HDassert(f);
@@ -233,7 +232,7 @@ H5O__sdspace_encode(H5F_t *f, uint8_t *p, const void *_mesg)
     unsigned            flags = 0;
     unsigned            u; /* Local counting variable */
 
-    FUNC_ENTER_STATIC_NOERR
+    FUNC_ENTER_PACKAGE_NOERR
 
     /* check args */
     HDassert(f);
@@ -298,10 +297,10 @@ static void *
 H5O__sdspace_copy(const void *_mesg, void *_dest)
 {
     const H5S_extent_t *mesg      = (const H5S_extent_t *)_mesg;
-    H5S_extent_t *      dest      = (H5S_extent_t *)_dest;
-    void *              ret_value = NULL; /* Return value */
+    H5S_extent_t       *dest      = (H5S_extent_t *)_dest;
+    void               *ret_value = NULL; /* Return value */
 
-    FUNC_ENTER_STATIC
+    FUNC_ENTER_PACKAGE
 
     /* check args */
     HDassert(mesg);
@@ -346,7 +345,7 @@ H5O__sdspace_size(const H5F_t *f, const void *_mesg)
     const H5S_extent_t *space     = (const H5S_extent_t *)_mesg;
     size_t              ret_value = 0; /* Return value */
 
-    FUNC_ENTER_STATIC_NOERR
+    FUNC_ENTER_PACKAGE_NOERR
 
     /* Basic information for all dataspace messages */
     ret_value = (size_t)(1 +                                                  /* Version */
@@ -382,7 +381,7 @@ H5O__sdspace_reset(void *_mesg)
 {
     H5S_extent_t *mesg = (H5S_extent_t *)_mesg;
 
-    FUNC_ENTER_STATIC_NOERR
+    FUNC_ENTER_PACKAGE_NOERR
 
     H5S__extent_release(mesg);
 
@@ -404,7 +403,7 @@ H5O__sdspace_reset(void *_mesg)
 static herr_t
 H5O__sdspace_free(void *mesg)
 {
-    FUNC_ENTER_STATIC_NOERR
+    FUNC_ENTER_PACKAGE_NOERR
 
     HDassert(mesg);
 
@@ -436,7 +435,7 @@ H5O__sdspace_pre_copy_file(H5F_t H5_ATTR_UNUSED *file_src, const void *mesg_src,
     H5D_copy_file_ud_t *udata            = (H5D_copy_file_ud_t *)_udata;   /* Dataset copying user data */
     herr_t              ret_value        = SUCCEED;                        /* Return value */
 
-    FUNC_ENTER_STATIC
+    FUNC_ENTER_PACKAGE
 
     /* check args */
     HDassert(file_src);
@@ -492,7 +491,7 @@ H5O__sdspace_debug(H5F_t H5_ATTR_UNUSED *f, const void *mesg, FILE *stream, int 
 {
     const H5S_extent_t *sdim = (const H5S_extent_t *)mesg;
 
-    FUNC_ENTER_STATIC_NOERR
+    FUNC_ENTER_PACKAGE_NOERR
 
     /* check args */
     HDassert(f);

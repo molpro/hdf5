@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -52,7 +51,7 @@
 /* internal variables */
 static const char *prog             = NULL;
 static const char *option_prefix    = NULL;
-static char *      filename         = NULL;
+static char       *filename         = NULL;
 static int         compress_percent = 0;
 static int         compress_level   = Z_DEFAULT_COMPRESSION;
 static int         output, random_test = FALSE;
@@ -64,15 +63,15 @@ static void error(const char *fmt, ...);
 static void compress_buffer(Bytef *dest, uLongf *destLen, const Bytef *source, uLong sourceLen);
 
 /* commandline options : long and short form */
-static const char *        s_opts   = "hB:b:c:p:rs:0123456789";
-static struct long_options l_opts[] = {{"help", no_arg, 'h'},
-                                       {"compressability", require_arg, 'c'},
-                                       {"file-size", require_arg, 's'},
-                                       {"max-buffer-size", require_arg, 'B'},
-                                       {"min-buffer-size", require_arg, 'b'},
-                                       {"prefix", require_arg, 'p'},
-                                       {"random-test", no_arg, 'r'},
-                                       {NULL, 0, '\0'}};
+static const char            *s_opts   = "hB:b:c:p:rs:0123456789";
+static struct h5_long_options l_opts[] = {{"help", no_arg, 'h'},
+                                          {"compressability", require_arg, 'c'},
+                                          {"file-size", require_arg, 's'},
+                                          {"max-buffer-size", require_arg, 'B'},
+                                          {"min-buffer-size", require_arg, 'b'},
+                                          {"prefix", require_arg, 'p'},
+                                          {"random-test", no_arg, 'r'},
+                                          {NULL, 0, '\0'}};
 
 /*
  * Function:    error
@@ -87,7 +86,9 @@ error(const char *fmt, ...)
 
     va_start(ap, fmt);
     HDfprintf(stderr, "%s: error: ", prog);
+    H5_GCC_CLANG_DIAG_OFF("format-nonliteral")
     HDvfprintf(stderr, fmt, ap);
+    H5_GCC_CLANG_DIAG_ON("format-nonliteral")
     HDfprintf(stderr, "\n");
     va_end(ap);
     HDexit(EXIT_FAILURE);
@@ -103,7 +104,7 @@ error(const char *fmt, ...)
 static void
 cleanup(void)
 {
-    if (!HDgetenv("HDF5_NOCLEANUP"))
+    if (!HDgetenv(HDF5_NOCLEANUP))
         HDunlink(filename);
     HDfree(filename);
 }
@@ -111,7 +112,7 @@ cleanup(void)
 static void
 write_file(Bytef *source, uLongf sourceLen)
 {
-    Bytef *        d_ptr, *dest;
+    Bytef         *d_ptr, *dest;
     uLongf         d_len, destLen;
     struct timeval timer_start, timer_stop;
 
@@ -303,7 +304,7 @@ static unsigned long
 parse_size_directive(const char *size)
 {
     unsigned long s;
-    char *        endptr;
+    char         *endptr;
 
     s = HDstrtoul(size, &endptr, 10);
 
@@ -383,7 +384,7 @@ do_write_test(unsigned long file_size, unsigned long min_buf_size, unsigned long
     uLongf         src_len, total_len;
     struct timeval timer_start, timer_stop;
     double         total_time;
-    Bytef *        src;
+    Bytef         *src;
 
     for (src_len = min_buf_size; src_len <= max_buf_size; src_len <<= 1) {
         unsigned long i, iters;
@@ -500,7 +501,7 @@ main(int argc, char *argv[])
     /* Initialize h5tools lib */
     h5tools_init();
 
-    while ((opt = get_option(argc, (const char *const *)argv, s_opts, l_opts)) > 0) {
+    while ((opt = H5_get_option(argc, (const char *const *)argv, s_opts, l_opts)) > 0) {
         switch ((char)opt) {
             case '0':
             case '1':
@@ -515,13 +516,13 @@ main(int argc, char *argv[])
                 compress_level = opt - '0';
                 break;
             case 'B':
-                max_buf_size = parse_size_directive(opt_arg);
+                max_buf_size = parse_size_directive(H5_optarg);
                 break;
             case 'b':
-                min_buf_size = parse_size_directive(opt_arg);
+                min_buf_size = parse_size_directive(H5_optarg);
                 break;
             case 'c':
-                compress_percent = (int)HDstrtol(opt_arg, NULL, 10);
+                compress_percent = (int)HDstrtol(H5_optarg, NULL, 10);
 
                 if (compress_percent < 0)
                     compress_percent = 0;
@@ -530,13 +531,13 @@ main(int argc, char *argv[])
 
                 break;
             case 'p':
-                option_prefix = opt_arg;
+                option_prefix = H5_optarg;
                 break;
             case 'r':
                 random_test = TRUE;
                 break;
             case 's':
-                file_size = parse_size_directive(opt_arg);
+                file_size = parse_size_directive(H5_optarg);
                 break;
             case '?':
                 usage();

@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -117,7 +116,7 @@ H5D__none_idx_create(const H5D_chk_idx_info_t *idx_info)
     haddr_t addr;                /* The address of dataset chunks */
     herr_t  ret_value = SUCCEED; /* Return value */
 
-    FUNC_ENTER_STATIC
+    FUNC_ENTER_PACKAGE
 
     /* Check args */
     HDassert(idx_info);
@@ -158,7 +157,7 @@ done:
 static hbool_t
 H5D__none_idx_is_space_alloc(const H5O_storage_chunk_t *storage)
 {
-    FUNC_ENTER_STATIC_NOERR
+    FUNC_ENTER_PACKAGE_NOERR
 
     /* Check args */
     HDassert(storage);
@@ -181,7 +180,7 @@ H5D__none_idx_is_space_alloc(const H5O_storage_chunk_t *storage)
 static herr_t
 H5D__none_idx_get_addr(const H5D_chk_idx_info_t *idx_info, H5D_chunk_ud_t *udata)
 {
-    FUNC_ENTER_STATIC_NOERR
+    FUNC_ENTER_PACKAGE_NOERR
 
     /* Sanity checks */
     HDassert(idx_info);
@@ -229,7 +228,7 @@ H5D__none_idx_iterate(const H5D_chk_idx_info_t *idx_info, H5D_chunk_cb_func_t ch
     hsize_t         idx;                      /* Array index of chunk */
     int             ret_value = H5_ITER_CONT; /* Return value */
 
-    FUNC_ENTER_STATIC
+    FUNC_ENTER_PACKAGE
 
     /* Sanity checks */
     HDassert(idx_info);
@@ -301,9 +300,9 @@ done:
  */
 static herr_t
 H5D__none_idx_remove(const H5D_chk_idx_info_t H5_ATTR_UNUSED *idx_info,
-                     H5D_chunk_common_ud_t H5_ATTR_UNUSED *udata)
+                     H5D_chunk_common_ud_t H5_ATTR_UNUSED    *udata)
 {
-    FUNC_ENTER_STATIC_NOERR
+    FUNC_ENTER_PACKAGE_NOERR
 
     /* NO OP */
 
@@ -328,7 +327,7 @@ H5D__none_idx_delete(const H5D_chk_idx_info_t *idx_info)
     hsize_t nbytes;              /* Size of all chunks */
     herr_t  ret_value = SUCCEED; /* Return value */
 
-    FUNC_ENTER_STATIC
+    FUNC_ENTER_PACKAGE
 
     /* Sanity checks */
     HDassert(idx_info);
@@ -363,11 +362,11 @@ done:
  */
 static herr_t
 H5D__none_idx_copy_setup(const H5D_chk_idx_info_t H5_ATTR_NDEBUG_UNUSED *idx_info_src,
-                         const H5D_chk_idx_info_t *                      idx_info_dst)
+                         const H5D_chk_idx_info_t                       *idx_info_dst)
 {
     herr_t ret_value = SUCCEED; /* Return value */
 
-    FUNC_ENTER_STATIC
+    FUNC_ENTER_PACKAGE
 
     /* Check args */
     HDassert(idx_info_src);
@@ -414,7 +413,7 @@ done:
 static herr_t
 H5D__none_idx_size(const H5D_chk_idx_info_t H5_ATTR_UNUSED *idx_info, hsize_t *index_size)
 {
-    FUNC_ENTER_STATIC_NOERR
+    FUNC_ENTER_PACKAGE_NOERR
 
     /* Check args */
     HDassert(index_size);
@@ -438,7 +437,7 @@ H5D__none_idx_size(const H5D_chk_idx_info_t H5_ATTR_UNUSED *idx_info, hsize_t *i
 static herr_t
 H5D__none_idx_reset(H5O_storage_chunk_t *storage, hbool_t reset_addr)
 {
-    FUNC_ENTER_STATIC_NOERR
+    FUNC_ENTER_PACKAGE_NOERR
 
     /* Check args */
     HDassert(storage);
@@ -464,7 +463,7 @@ H5D__none_idx_reset(H5O_storage_chunk_t *storage, hbool_t reset_addr)
 static herr_t
 H5D__none_idx_dump(const H5O_storage_chunk_t *storage, FILE *stream)
 {
-    FUNC_ENTER_STATIC_NOERR
+    FUNC_ENTER_PACKAGE_NOERR
 
     /* Check args */
     HDassert(storage);

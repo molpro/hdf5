@@ -80,11 +80,6 @@
 #define PIO_MPI   0x2
 #define PIO_HDF5  0x4
 
-#ifdef STANDALONE
-#define DBL_EPSILON            2.2204460492503131e-16
-#define H5_DBL_ABS_EQUAL(X, Y) (fabs((X) - (Y)) < DBL_EPSILON)
-#endif
-
 /* report 0.0 in case t is zero too */
 #define MB_PER_SEC(bytes, t) (H5_DBL_ABS_EQUAL((t), 0.0) ? 0.0 : ((((double)bytes) / ONE_MB) / (t)))
 
@@ -96,7 +91,7 @@
 #endif /* FALSE */
 
 /* global variables */
-FILE *   output;              /* output file                          */
+FILE    *output;              /* output file                          */
 int      comm_world_rank_g;   /* my rank in MPI_COMM_RANK             */
 int      comm_world_nprocs_g; /* num. of processes of MPI_COMM_WORLD  */
 MPI_Comm pio_comm_g;          /* Communicator to run the PIO          */
@@ -116,7 +111,7 @@ static const char *progname = "h5perf";
 #ifndef HDF5_PARAPREFIX
 #define HDF5_PARAPREFIX ""
 #endif
-char *   paraprefix   = NULL;          /* for command line option para-prefix */
+char    *paraprefix   = NULL;          /* for command line option para-prefix */
 MPI_Info h5_io_info_g = MPI_INFO_NULL; /* MPI INFO object for IO */
 
 /*
@@ -129,31 +124,31 @@ static const char *s_opts = "a:A:B:cCd:D:e:F:ghi:Imno:p:P:stT:wx:X:";
 #else
 static const char *s_opts = "a:A:bB:cCd:D:e:F:ghi:Imno:p:P:stT:wx:X:";
 #endif /* 1 */
-static struct long_options l_opts[] = {{"align", require_arg, 'a'},
-                                       {"api", require_arg, 'A'},
+static struct h5_long_options l_opts[] = {{"align", require_arg, 'a'},
+                                          {"api", require_arg, 'A'},
 #if 0
     /* a sighting of the elusive binary option */
     { "binary", no_arg, 'b' },
 #endif /* 0 */
-                                       {"block-size", require_arg, 'B'},
-                                       {"chunk", no_arg, 'c'},
-                                       {"collective", no_arg, 'C'},
-                                       {"debug", require_arg, 'D'},
-                                       {"geometry", no_arg, 'g'},
-                                       {"help", no_arg, 'h'},
-                                       {"interleaved", require_arg, 'I'},
-                                       {"max-num-processes", require_arg, 'P'},
-                                       {"min-num-processes", require_arg, 'p'},
-                                       {"max-xfer-size", require_arg, 'X'},
-                                       {"min-xfer-size", require_arg, 'x'},
-                                       {"num-bytes", require_arg, 'e'},
-                                       {"num-dsets", require_arg, 'd'},
-                                       {"num-files", require_arg, 'F'},
-                                       {"num-iterations", require_arg, 'i'},
-                                       {"output", require_arg, 'o'},
-                                       {"threshold", require_arg, 'T'},
-                                       {"write-only", require_arg, 'w'},
-                                       {NULL, 0, '\0'}};
+                                          {"block-size", require_arg, 'B'},
+                                          {"chunk", no_arg, 'c'},
+                                          {"collective", no_arg, 'C'},
+                                          {"debug", require_arg, 'D'},
+                                          {"geometry", no_arg, 'g'},
+                                          {"help", no_arg, 'h'},
+                                          {"interleaved", require_arg, 'I'},
+                                          {"max-num-processes", require_arg, 'P'},
+                                          {"min-num-processes", require_arg, 'p'},
+                                          {"max-xfer-size", require_arg, 'X'},
+                                          {"min-xfer-size", require_arg, 'x'},
+                                          {"num-bytes", require_arg, 'e'},
+                                          {"num-dsets", require_arg, 'd'},
+                                          {"num-files", require_arg, 'F'},
+                                          {"num-iterations", require_arg, 'i'},
+                                          {"output", require_arg, 'o'},
+                                          {"threshold", require_arg, 'T'},
+                                          {"write-only", require_arg, 'w'},
+                                          {NULL, 0, '\0'}};
 
 struct options {
     long        io_types;      /* bitmask of which I/O types to test   */
@@ -199,8 +194,8 @@ static int             destroy_comm_world(void);
 static void  output_results(const struct options *options, const char *name, minmax *table, int table_size,
                             off_t data_size);
 static void  output_times(const struct options *options, const char *name, minmax *table, int table_size);
-static void  output_report(const char *fmt, ...);
-static void  print_indent(register int indent);
+static void  output_report(const char *fmt, ...) H5_ATTR_FORMAT(printf, 1, 2);
+static void  print_indent(int indent);
 static void  usage(const char *prog);
 static void  report_parameters(struct options *opts);
 static off_t squareo(off_t);
@@ -220,10 +215,8 @@ main(int argc, char *argv[])
     int             exit_value = EXIT_SUCCESS;
     struct options *opts       = NULL;
 
-#ifndef STANDALONE
     /* Initialize h5tools lib */
     h5tools_init();
-#endif
 
     output = stdout;
 
@@ -336,7 +329,7 @@ run_test_loop(struct options *opts)
     /* start with max_num_procs and decrement it by half for each loop. */
     /* if performance needs restart, fewer processes may be needed. */
     for (num_procs = opts->max_num_procs; num_procs >= opts->min_num_procs; num_procs >>= 1) {
-        register size_t buf_size;
+        size_t buf_size;
 
         parms.num_procs = num_procs;
 
@@ -346,7 +339,7 @@ run_test_loop(struct options *opts)
 
         /* only processes doing PIO will run the tests */
         if (doing_pio) {
-            output_report("Number of processors = %ld\n", parms.num_procs);
+            output_report("Number of processors = %d\n", parms.num_procs);
 
             /* multiply the xfer buffer size by 2 for each loop iteration */
             for (buf_size = opts->min_xfer_size; buf_size <= opts->max_xfer_size; buf_size <<= 1) {
@@ -411,34 +404,34 @@ run_test_loop(struct options *opts)
 static int
 run_test(iotype iot, parameters parms, struct options *opts)
 {
-    results      res;
-    register int i, ret_value = SUCCESS;
-    int          comm_size;
-    off_t        raw_size;
-    minmax *     write_mpi_mm_table   = NULL;
-    minmax *     write_mm_table       = NULL;
-    minmax *     write_gross_mm_table = NULL;
-    minmax *     write_raw_mm_table   = NULL;
-    minmax *     read_mpi_mm_table    = NULL;
-    minmax *     read_mm_table        = NULL;
-    minmax *     read_gross_mm_table  = NULL;
-    minmax *     read_raw_mm_table    = NULL;
-    minmax *     read_open_mm_table   = NULL;
-    minmax *     read_close_mm_table  = NULL;
-    minmax *     write_open_mm_table  = NULL;
-    minmax *     write_close_mm_table = NULL;
-    minmax       write_mpi_mm         = {0.0, 0.0, 0.0, 0};
-    minmax       write_mm             = {0.0, 0.0, 0.0, 0};
-    minmax       write_gross_mm       = {0.0, 0.0, 0.0, 0};
-    minmax       write_raw_mm         = {0.0, 0.0, 0.0, 0};
-    minmax       read_mpi_mm          = {0.0, 0.0, 0.0, 0};
-    minmax       read_mm              = {0.0, 0.0, 0.0, 0};
-    minmax       read_gross_mm        = {0.0, 0.0, 0.0, 0};
-    minmax       read_raw_mm          = {0.0, 0.0, 0.0, 0};
-    minmax       read_open_mm         = {0.0, 0.0, 0.0, 0};
-    minmax       read_close_mm        = {0.0, 0.0, 0.0, 0};
-    minmax       write_open_mm        = {0.0, 0.0, 0.0, 0};
-    minmax       write_close_mm       = {0.0, 0.0, 0.0, 0};
+    results res;
+    int     i, ret_value = SUCCESS;
+    int     comm_size;
+    off_t   raw_size;
+    minmax *write_mpi_mm_table   = NULL;
+    minmax *write_mm_table       = NULL;
+    minmax *write_gross_mm_table = NULL;
+    minmax *write_raw_mm_table   = NULL;
+    minmax *read_mpi_mm_table    = NULL;
+    minmax *read_mm_table        = NULL;
+    minmax *read_gross_mm_table  = NULL;
+    minmax *read_raw_mm_table    = NULL;
+    minmax *read_open_mm_table   = NULL;
+    minmax *read_close_mm_table  = NULL;
+    minmax *write_open_mm_table  = NULL;
+    minmax *write_close_mm_table = NULL;
+    minmax  write_mpi_mm         = {0.0, 0.0, 0.0, 0};
+    minmax  write_mm             = {0.0, 0.0, 0.0, 0};
+    minmax  write_gross_mm       = {0.0, 0.0, 0.0, 0};
+    minmax  write_raw_mm         = {0.0, 0.0, 0.0, 0};
+    minmax  read_mpi_mm          = {0.0, 0.0, 0.0, 0};
+    minmax  read_mm              = {0.0, 0.0, 0.0, 0};
+    minmax  read_gross_mm        = {0.0, 0.0, 0.0, 0};
+    minmax  read_raw_mm          = {0.0, 0.0, 0.0, 0};
+    minmax  read_open_mm         = {0.0, 0.0, 0.0, 0};
+    minmax  read_close_mm        = {0.0, 0.0, 0.0, 0};
+    minmax  write_open_mm        = {0.0, 0.0, 0.0, 0};
+    minmax  write_close_mm       = {0.0, 0.0, 0.0, 0};
 
     raw_size      = parms.num_files * (off_t)parms.num_dsets * (off_t)parms.num_bytes;
     parms.io_type = iot;
@@ -773,7 +766,7 @@ h5_set_info_object(void)
 
         do {
             size_t len;
-            char * key_val, *endp, *namep;
+            char  *key_val, *endp, *namep;
 
             if (*valp == ';')
                 valp++;
@@ -1059,14 +1052,14 @@ output_times(const struct options *opts, const char *name, minmax *table, int ta
     /* Note: The maximum throughput uses the minimum amount of time & vice versa */
 
     print_indent(4);
-    output_report("Minimum Accumulated Time using %d file(s): %7.5f s\n", opts->num_files, (total_mm.min));
+    output_report("Minimum Accumulated Time using %ld file(s): %7.5f s\n", opts->num_files, (total_mm.min));
 
     print_indent(4);
-    output_report("Average Accumulated Time using %d file(s): %7.5f s\n", opts->num_files,
+    output_report("Average Accumulated Time using %ld file(s): %7.5f s\n", opts->num_files,
                   (total_mm.sum / total_mm.num));
 
     print_indent(4);
-    output_report("Maximum Accumulated Time using %d file(s): %7.5f s\n", opts->num_files, (total_mm.max));
+    output_report("Maximum Accumulated Time using %ld file(s): %7.5f s\n", opts->num_files, (total_mm.max));
 }
 
 /*
@@ -1087,7 +1080,9 @@ output_report(const char *fmt, ...)
         va_list ap;
 
         HDva_start(ap, fmt);
+        H5_GCC_CLANG_DIAG_OFF("format-nonliteral")
         HDvfprintf(output, fmt, ap);
+        H5_GCC_CLANG_DIAG_ON("format-nonliteral")
         HDva_end(ap);
     }
 }
@@ -1098,10 +1093,9 @@ output_report(const char *fmt, ...)
  *              things.
  * Return:      Nothing
  * Programmer:  Bill Wendling, 29. October 2001
- * Modifications:
  */
 static void
-print_indent(register int indent)
+print_indent(int indent)
 {
     int myrank;
 
@@ -1122,25 +1116,25 @@ recover_size_and_print(long long val, const char *end)
         if (val >= ONE_MB && (val % ONE_MB) == 0) {
             if (val >= ONE_GB && (val % ONE_GB) == 0)
                 HDfprintf(output,
-                          "%" H5_PRINTF_LL_WIDTH "d"
+                          "%lld"
                           "GB%s",
                           val / ONE_GB, end);
             else
                 HDfprintf(output,
-                          "%" H5_PRINTF_LL_WIDTH "d"
+                          "%lld"
                           "MB%s",
                           val / ONE_MB, end);
         }
         else {
             HDfprintf(output,
-                      "%" H5_PRINTF_LL_WIDTH "d"
+                      "%lld"
                       "KB%s",
                       val / ONE_KB, end);
         }
     }
     else {
         HDfprintf(output,
-                  "%" H5_PRINTF_LL_WIDTH "d"
+                  "%lld"
                   "%s",
                   val, end);
     }
@@ -1278,7 +1272,7 @@ report_parameters(struct options *opts)
 static struct options *
 parse_command_line(int argc, const char *const *argv)
 {
-    register int    opt;
+    int             opt;
     struct options *cl_opts;
 
     cl_opts = (struct options *)malloc(sizeof(struct options));
@@ -1305,13 +1299,13 @@ parse_command_line(int argc, const char *const *argv)
     cl_opts->h5_write_only = FALSE; /* Do both read and write by default */
     cl_opts->verify        = FALSE; /* No Verify data correctness by default */
 
-    while ((opt = get_option(argc, argv, s_opts, l_opts)) != EOF) {
+    while ((opt = H5_get_option(argc, argv, s_opts, l_opts)) != EOF) {
         switch ((char)opt) {
             case 'a':
-                cl_opts->h5_alignment = parse_size_directive(opt_arg);
+                cl_opts->h5_alignment = parse_size_directive(H5_optarg);
                 break;
             case 'A': {
-                const char *end = opt_arg;
+                const char *end = H5_optarg;
 
                 while (end && *end != '\0') {
                     char buf[10];
@@ -1351,7 +1345,7 @@ parse_command_line(int argc, const char *const *argv)
             break;
 #endif /* 0 */
             case 'B':
-                cl_opts->blk_size = (size_t)parse_size_directive(opt_arg);
+                cl_opts->blk_size = (size_t)parse_size_directive(H5_optarg);
                 break;
             case 'c':
                 /* Turn on chunked HDF5 dataset creation */
@@ -1361,10 +1355,10 @@ parse_command_line(int argc, const char *const *argv)
                 cl_opts->collective = 1;
                 break;
             case 'd':
-                cl_opts->num_dsets = atoi(opt_arg);
+                cl_opts->num_dsets = atoi(H5_optarg);
                 break;
             case 'D': {
-                const char *end = opt_arg;
+                const char *end = H5_optarg;
 
                 while (end && *end != '\0') {
                     char buf[10];
@@ -1421,40 +1415,40 @@ parse_command_line(int argc, const char *const *argv)
 
             break;
             case 'e':
-                cl_opts->num_bpp = parse_size_directive(opt_arg);
+                cl_opts->num_bpp = parse_size_directive(H5_optarg);
                 break;
             case 'F':
-                cl_opts->num_files = HDatoi(opt_arg);
+                cl_opts->num_files = HDatoi(H5_optarg);
                 break;
             case 'g':
                 cl_opts->dim2d = 1;
                 break;
             case 'i':
-                cl_opts->num_iters = HDatoi(opt_arg);
+                cl_opts->num_iters = HDatoi(H5_optarg);
                 break;
             case 'I':
                 cl_opts->interleaved = 1;
                 break;
             case 'o':
-                cl_opts->output_file = opt_arg;
+                cl_opts->output_file = H5_optarg;
                 break;
             case 'p':
-                cl_opts->min_num_procs = HDatoi(opt_arg);
+                cl_opts->min_num_procs = HDatoi(H5_optarg);
                 break;
             case 'P':
-                cl_opts->max_num_procs = HDatoi(opt_arg);
+                cl_opts->max_num_procs = HDatoi(H5_optarg);
                 break;
             case 'T':
-                cl_opts->h5_threshold = parse_size_directive(opt_arg);
+                cl_opts->h5_threshold = parse_size_directive(H5_optarg);
                 break;
             case 'w':
                 cl_opts->h5_write_only = TRUE;
                 break;
             case 'x':
-                cl_opts->min_xfer_size = (size_t)parse_size_directive(opt_arg);
+                cl_opts->min_xfer_size = (size_t)parse_size_directive(H5_optarg);
                 break;
             case 'X':
-                cl_opts->max_xfer_size = (size_t)parse_size_directive(opt_arg);
+                cl_opts->max_xfer_size = (size_t)parse_size_directive(H5_optarg);
                 break;
             case 'h':
             case '?':
@@ -1694,7 +1688,7 @@ usage(const char *prog)
         HDprintf("  Environment variables:\n");
         HDprintf("  HDF5_NOCLEANUP   Do not remove data files if set [default remove]\n");
         HDprintf("  HDF5_MPI_INFO    MPI INFO object key=value separated by ;\n");
-        HDprintf("  HDF5_PARAPREFIX  Paralllel data files prefix\n");
+        HDprintf("  HDF5_PARAPREFIX  Parallel data files prefix\n");
         fflush(stdout);
     } /* end if */
 } /* end usage() */

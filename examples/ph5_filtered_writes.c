@@ -102,7 +102,7 @@ fill_databuf(hsize_t start[], hsize_t count[], hsize_t stride[], C_DATATYPE *dat
 static void
 cleanup(char *filename)
 {
-    hbool_t do_cleanup = getenv("HDF5_NOCLEANUP") ? 0 : 1;
+    hbool_t do_cleanup = getenv(HDF5_NOCLEANUP) ? 0 : 1;
 
     if (do_cleanup)
         MPI_File_delete(filename, MPI_INFO_NULL);
@@ -121,7 +121,6 @@ write_dataset_no_overlap(hid_t file_id, hid_t dxpl_id)
 {
     C_DATATYPE data[EXAMPLE_DSET_CHUNK_DIM_SIZE][4 * EXAMPLE_DSET_CHUNK_DIM_SIZE];
     hsize_t    dataset_dims[EXAMPLE_DSET_DIMS];
-    hsize_t    sel_dims[1];
     hsize_t    chunk_dims[EXAMPLE_DSET_DIMS];
     hsize_t    start[EXAMPLE_DSET_DIMS];
     hsize_t    stride[EXAMPLE_DSET_DIMS];
@@ -130,7 +129,6 @@ write_dataset_no_overlap(hid_t file_id, hid_t dxpl_id)
     hid_t      dset_id        = H5I_INVALID_HID;
     hid_t      dcpl_id        = H5I_INVALID_HID;
     hid_t      file_dataspace = H5I_INVALID_HID;
-    hid_t      mem_dataspace  = H5I_INVALID_HID;
 
     /*
      * ------------------------------------
@@ -212,19 +210,11 @@ write_dataset_no_overlap(hid_t file_id, hid_t dxpl_id)
 
     /*
      * ---------------------------------
-     * Create 1-D memory dataspace
-     * ---------------------------------
-     */
-    sel_dims[0]   = count[0] * count[1];
-    mem_dataspace = H5Screate_simple(1, sel_dims, NULL);
-
-    /*
-     * ---------------------------------
      * Write to the dataset collectively
      * ---------------------------------
      */
 
-    H5Dwrite(dset_id, HDF5_DATATYPE, mem_dataspace, file_dataspace, dxpl_id, data);
+    H5Dwrite(dset_id, HDF5_DATATYPE, H5S_BLOCK, file_dataspace, dxpl_id, data);
 
     /*
      * --------------
@@ -232,7 +222,6 @@ write_dataset_no_overlap(hid_t file_id, hid_t dxpl_id)
      * --------------
      */
 
-    H5Sclose(mem_dataspace);
     H5Sclose(file_dataspace);
     H5Pclose(dcpl_id);
     H5Dclose(dset_id);
@@ -251,7 +240,6 @@ write_dataset_overlap(hid_t file_id, hid_t dxpl_id)
 {
     C_DATATYPE *data = NULL;
     hsize_t     dataset_dims[EXAMPLE_DSET_DIMS];
-    hsize_t     sel_dims[1];
     hsize_t     chunk_dims[EXAMPLE_DSET_DIMS];
     hsize_t     start[EXAMPLE_DSET_DIMS];
     hsize_t     stride[EXAMPLE_DSET_DIMS];
@@ -260,7 +248,6 @@ write_dataset_overlap(hid_t file_id, hid_t dxpl_id)
     hid_t       dset_id        = H5I_INVALID_HID;
     hid_t       dcpl_id        = H5I_INVALID_HID;
     hid_t       file_dataspace = H5I_INVALID_HID;
-    hid_t       mem_dataspace  = H5I_INVALID_HID;
 
     /*
      * ------------------------------------
@@ -347,19 +334,11 @@ write_dataset_overlap(hid_t file_id, hid_t dxpl_id)
 
     /*
      * ---------------------------------
-     * Create 1-D memory dataspace
-     * ---------------------------------
-     */
-    sel_dims[0]   = count[0] * count[1];
-    mem_dataspace = H5Screate_simple(1, sel_dims, NULL);
-
-    /*
-     * ---------------------------------
      * Write to the dataset collectively
      * ---------------------------------
      */
 
-    H5Dwrite(dset_id, HDF5_DATATYPE, mem_dataspace, file_dataspace, dxpl_id, data);
+    H5Dwrite(dset_id, HDF5_DATATYPE, H5S_BLOCK, file_dataspace, dxpl_id, data);
 
     free(data);
 
@@ -369,7 +348,6 @@ write_dataset_overlap(hid_t file_id, hid_t dxpl_id)
      * --------------
      */
 
-    H5Sclose(mem_dataspace);
     H5Sclose(file_dataspace);
     H5Pclose(dcpl_id);
     H5Dclose(dset_id);
@@ -383,7 +361,7 @@ main(int argc, char **argv)
     hid_t    file_id    = H5I_INVALID_HID;
     hid_t    fapl_id    = H5I_INVALID_HID;
     hid_t    dxpl_id    = H5I_INVALID_HID;
-    char *   par_prefix = NULL;
+    char    *par_prefix = NULL;
     char     filename[PATH_MAX];
 
     MPI_Init(&argc, &argv);

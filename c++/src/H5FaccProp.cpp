@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -749,12 +748,14 @@ FileAccPropList::getFileLocking(hbool_t &use_file_locking, hbool_t &ignore_when_
 ///             \li \c H5F_LIBVER_18
 ///             \li \c H5F_LIBVER_110
 ///             \li \c H5F_LIBVER_112
+///             \li \c H5F_LIBVER_114
 ///             \li \c H5F_LIBVER_LATEST
 ///
 ///             Valid values of \a libver_high are as follows:
 ///             \li \c H5F_LIBVER_18
 ///             \li \c H5F_LIBVER_110
 ///             \li \c H5F_LIBVER_112
+///             \li \c H5F_LIBVER_114
 ///             \li \c H5F_LIBVER_LATEST   (Default)
 ///
 ///             For more detail, please refer to the H5Pset_libver_bounds API in
@@ -786,12 +787,14 @@ FileAccPropList::setLibverBounds(H5F_libver_t libver_low, H5F_libver_t libver_hi
 ///             \li \c H5F_LIBVER_18
 ///             \li \c H5F_LIBVER_110
 ///             \li \c H5F_LIBVER_112
+///             \li \c H5F_LIBVER_114
 ///             \li \c H5F_LIBVER_LATEST
 ///
 ///             and \a libver_high:
 ///             \li \c H5F_LIBVER_18
 ///             \li \c H5F_LIBVER_110
 ///             \li \c H5F_LIBVER_112
+///             \li \c H5F_LIBVER_114
 ///             \li \c H5F_LIBVER_LATEST
 // Programmer   Binh-Minh Ribler - March, 2015
 //--------------------------------------------------------------------------

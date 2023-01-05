@@ -16,12 +16,10 @@
 
 #include "hdf5.h"
 
-#ifdef H5_STDC_HEADERS
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#endif
 
 #ifdef H5_HAVE_UNISTD_H
 #include <sys/types.h>
@@ -120,7 +118,7 @@ typedef union _file_descr {
 } file_descr;
 
 /* local functions */
-static char * pio_create_filename(iotype iot, const char *base_name, char *fullname, size_t size);
+static char  *pio_create_filename(iotype iot, const char *base_name, char *fullname, size_t size);
 static herr_t do_write(results *res, file_descr *fd, parameters *parms, long ndsets, off_t nelmts,
                        size_t buf_size, void *buffer);
 static herr_t do_read(results *res, file_descr *fd, parameters *parms, long ndsets, off_t nelmts,
@@ -148,14 +146,14 @@ do_pio(parameters param)
     file_descr fd;
     iotype     iot;
 
-    char  fname[FILENAME_MAX];
+    char *fname = NULL;
     long  nf;
     long  ndsets;
     off_t nbytes;         /*number of bytes per dataset  */
     off_t snbytes;        /*general dataset size          */
                           /*for 1D, it is the actual dataset size */
                           /*for 2D, it is the size of a side of the dataset square */
-    char * buffer = NULL; /*data buffer pointer           */
+    char  *buffer = NULL; /*data buffer pointer           */
     size_t buf_size;      /*general buffer size in bytes     */
                           /*for 1D, it is the actual buffer size */
                           /*for 2D, it is the length of the buffer rectangle */
@@ -169,6 +167,9 @@ do_pio(parameters param)
 
     /* IO type */
     iot = param.io_type;
+
+    if (NULL == (fname = HDcalloc(FILENAME_MAX, sizeof(char))))
+        GOTOERROR(FAIL);
 
     switch (iot) {
         case MPIO:
@@ -236,7 +237,7 @@ do_pio(parameters param)
     }
     if ((snbytes % pio_mpi_nprocs_g) != 0) {
         HDfprintf(stderr,
-                  "Dataset size (%" H5_PRINTF_LL_WIDTH "d) must be a multiple of the "
+                  "Dataset size (%lld) must be a multiple of the "
                   "number of processes (%d)\n",
                   (long long)snbytes, pio_mpi_nprocs_g);
         GOTOERROR(FAIL);
@@ -245,7 +246,7 @@ do_pio(parameters param)
     if (!param.dim2d) {
         if (((size_t)(snbytes / pio_mpi_nprocs_g) % buf_size) != 0) {
             HDfprintf(stderr,
-                      "Dataset size/process (%" H5_PRINTF_LL_WIDTH "d) must be a multiple of the "
+                      "Dataset size/process (%lld) must be a multiple of the "
                       "transfer buffer size (%zu)\n",
                       (long long)(snbytes / pio_mpi_nprocs_g), buf_size);
             GOTOERROR(FAIL);
@@ -254,7 +255,7 @@ do_pio(parameters param)
     else {
         if (((size_t)snbytes % buf_size) != 0) {
             HDfprintf(stderr,
-                      "Dataset side size (%" H5_PRINTF_LL_WIDTH "d) must be a multiple of the "
+                      "Dataset side size (%lld) must be a multiple of the "
                       "transfer buffer size (%zu)\n",
                       (long long)snbytes, buf_size);
             GOTOERROR(FAIL);
@@ -285,7 +286,7 @@ do_pio(parameters param)
         char base_name[256];
 
         HDsnprintf(base_name, sizeof(base_name), "#pio_tmp_%lu", nf);
-        pio_create_filename(iot, base_name, fname, sizeof(fname));
+        pio_create_filename(iot, base_name, fname, FILENAME_MAX);
         if (pio_debug_level > 0)
             HDfprintf(output, "rank %d: data filename=%s\n", pio_mpi_rank_g, fname);
 
@@ -367,8 +368,8 @@ done:
     }
 
     /* release generic resources */
-    if (buffer)
-        HDfree(buffer);
+    HDfree(buffer);
+    HDfree(fname);
     res.ret_code = ret_code;
     return res;
 }
@@ -387,7 +388,7 @@ static char *
 pio_create_filename(iotype iot, const char *base_name, char *fullname, size_t size)
 {
     const char *prefix, *suffix = "";
-    char *      ptr, last       = '\0';
+    char       *ptr, last       = '\0';
     size_t      i, j;
 
     if (!base_name || !fullname || size < 1)
@@ -422,7 +423,7 @@ pio_create_filename(iotype iot, const char *base_name, char *fullname, size_t si
         /* If the prefix specifies the HDF5_PARAPREFIX directory, then
          * default to using the "/tmp/$USER" or "/tmp/$LOGIN"
          * directory instead. */
-        register char *user, *login, *subdir;
+        char *user, *login, *subdir;
 
         user   = HDgetenv("USER");
         login  = HDgetenv("LOGIN");
@@ -627,15 +628,13 @@ do_write(results *res, file_descr *fd, parameters *parms, long ndsets, off_t nby
         if (!parms->dim2d) {
             HDfprintf(output,
                       "Debug(do_write): "
-                      "buf_size=%zu, bytes_begin=%" H5_PRINTF_LL_WIDTH "d, bytes_count=%" H5_PRINTF_LL_WIDTH
-                      "d\n",
+                      "buf_size=%zu, bytes_begin=%lld, bytes_count=%lld\n",
                       buf_size, (long long)bytes_begin[0], (long long)bytes_count);
         }
         else {
             HDfprintf(output,
                       "Debug(do_write): "
-                      "linear buf_size=%zu, bytes_begin=(%" H5_PRINTF_LL_WIDTH "d,%" H5_PRINTF_LL_WIDTH
-                      "d), bytes_count=%" H5_PRINTF_LL_WIDTH "d\n",
+                      "linear buf_size=%zu, bytes_begin=(%lld,%lld), bytes_count=%lld\n",
                       buf_size * blk_size, (long long)bytes_begin[0], (long long)bytes_begin[1],
                       (long long)bytes_count);
         }
@@ -1223,15 +1222,14 @@ do_write(results *res, file_descr *fd, parameters *parms, long ndsets, off_t nby
                             /* Interleaved access pattern */
                             else {
                                 /* Compute offset in file */
-                                mpi_offset =
-                                    mpi_file_offset +
-                                    (MPI_Offset)(
-                                        ((((size_t)nbytes_xfer / buf_size) * (size_t)pio_mpi_nprocs_g) /
-                                         (size_t)snbytes) *
-                                        (buf_size * (size_t)snbytes)) +
-                                    (MPI_Offset)(
-                                        (((size_t)nbytes_xfer / buf_size) * (size_t)pio_mpi_nprocs_g) %
-                                        (size_t)snbytes);
+                                mpi_offset = mpi_file_offset +
+                                             (MPI_Offset)(((((size_t)nbytes_xfer / buf_size) *
+                                                            (size_t)pio_mpi_nprocs_g) /
+                                                           (size_t)snbytes) *
+                                                          (buf_size * (size_t)snbytes)) +
+                                             (MPI_Offset)((((size_t)nbytes_xfer / buf_size) *
+                                                           (size_t)pio_mpi_nprocs_g) %
+                                                          (size_t)snbytes);
 
                                 /* Number of bytes to be transferred per I/O operation */
                                 nbytes_xfer_advance = blk_size;
@@ -1642,15 +1640,13 @@ do_read(results *res, file_descr *fd, parameters *parms, long ndsets, off_t nbyt
         if (!parms->dim2d) {
             HDfprintf(output,
                       "Debug(do_write): "
-                      "buf_size=%zu, bytes_begin=%" H5_PRINTF_LL_WIDTH "d, bytes_count=%" H5_PRINTF_LL_WIDTH
-                      "d\n",
+                      "buf_size=%zu, bytes_begin=%lld, bytes_count=%lld\n",
                       buf_size, (long long)bytes_begin[0], (long long)bytes_count);
         }
         else {
             HDfprintf(output,
                       "Debug(do_write): "
-                      "linear buf_size=%zu, bytes_begin=(%" H5_PRINTF_LL_WIDTH "d,%" H5_PRINTF_LL_WIDTH
-                      "d), bytes_count=%" H5_PRINTF_LL_WIDTH "d\n",
+                      "linear buf_size=%zu, bytes_begin=(%lld,%lld), bytes_count=%lld\n",
                       buf_size * blk_size, (long long)bytes_begin[0], (long long)bytes_begin[1],
                       (long long)bytes_count);
         }
@@ -2194,15 +2190,14 @@ do_read(results *res, file_descr *fd, parameters *parms, long ndsets, off_t nbyt
                             /* Interleaved access pattern */
                             else {
                                 /* Compute offset in file */
-                                mpi_offset =
-                                    mpi_file_offset +
-                                    (MPI_Offset)(
-                                        ((((size_t)nbytes_xfer / buf_size) * (size_t)pio_mpi_nprocs_g) /
-                                         (size_t)snbytes) *
-                                        (buf_size * (size_t)snbytes)) +
-                                    (MPI_Offset)(
-                                        (((size_t)nbytes_xfer / buf_size) * (size_t)pio_mpi_nprocs_g) %
-                                        (size_t)snbytes);
+                                mpi_offset = mpi_file_offset +
+                                             (MPI_Offset)(((((size_t)nbytes_xfer / buf_size) *
+                                                            (size_t)pio_mpi_nprocs_g) /
+                                                           (size_t)snbytes) *
+                                                          (buf_size * (size_t)snbytes)) +
+                                             (MPI_Offset)((((size_t)nbytes_xfer / buf_size) *
+                                                           (size_t)pio_mpi_nprocs_g) %
+                                                          (size_t)snbytes);
 
                                 /* Number of bytes to be transferred per I/O operation */
                                 nbytes_xfer_advance = blk_size;
@@ -2678,7 +2673,7 @@ do_cleanupfile(iotype iot, char *fname)
         return;
 
     if (clean_file_g == -1)
-        clean_file_g = (getenv("HDF5_NOCLEANUP") == NULL) ? 1 : 0;
+        clean_file_g = (getenv(HDF5_NOCLEANUP) == NULL) ? 1 : 0;
 
     if (clean_file_g) {
         switch (iot) {

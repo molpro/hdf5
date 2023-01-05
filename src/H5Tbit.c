@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -372,7 +371,7 @@ H5T__bit_set(uint8_t *buf, size_t offset, size_t size, hbool_t value)
  * Purpose:     Finds the first bit with the specified VALUE within a region
  *              of a bit vector.  The region begins at OFFSET and continues
  *              for SIZE bits, but the region can be searched from the least
- *              significat end toward the most significant end(H5T_BIT_LSB
+ *              significant end toward the most significant end(H5T_BIT_LSB
  *              as DIRECTION), or from the most significant end to the least
  *              significant end(H5T_BIT_MSB as DIRECTION).
  *

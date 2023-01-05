@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -22,7 +21,10 @@
 #include "H5Ipublic.h"
 
 /* Define special dataspaces for dataset I/O operations */
-#define H5S_ALL       (hid_t)0
+#define H5S_ALL   0 /* (hid_t) */
+#define H5S_BLOCK 1 /* (hid_t) */
+#define H5S_PLIST 2 /* (hid_t) */
+
 #define H5S_UNLIMITED HSIZE_UNDEF /**< Value for 'unlimited' dimensions */
 
 /**

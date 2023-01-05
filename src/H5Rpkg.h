@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -52,19 +51,19 @@
 /* Object reference */
 typedef struct H5R_ref_priv_obj_t {
     H5O_token_t token;    /* Object token     */
-    char *      filename; /* File name        */
+    char       *filename; /* File name        */
 } H5R_ref_priv_obj_t;
 
 /* Region reference */
 typedef struct H5R_ref_priv_reg_t {
     H5R_ref_priv_obj_t obj;   /* Object reference */
-    H5S_t *            space; /* Selection        */
+    H5S_t             *space; /* Selection        */
 } H5R_ref_priv_reg_t;
 
 /* Attribute reference */
 typedef struct H5R_ref_priv_attr_t {
     H5R_ref_priv_obj_t obj;  /* Object reference */
-    char *             name; /* Attribute name   */
+    char              *name; /* Attribute name   */
 } H5R_ref_priv_attr_t;
 
 /* Generic reference type (keep it cache aligned) */

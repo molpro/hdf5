@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -75,7 +74,7 @@ typedef struct H5AC_slist_entry_t {
 /* User data for address list building callbacks */
 typedef struct H5AC_addr_list_ud_t {
     H5AC_aux_t *aux_ptr;      /* 'Auxiliary' parallel cache info */
-    haddr_t *   addr_buf_ptr; /* Array to store addresses */
+    haddr_t    *addr_buf_ptr; /* Array to store addresses */
     unsigned    u;            /* Counter for position in array */
 } H5AC_addr_list_ud_t;
 
@@ -137,8 +136,7 @@ H5FL_DEFINE_STATIC(H5AC_slist_entry_t);
  *-------------------------------------------------------------------------
  */
 herr_t
-H5AC__set_sync_point_done_callback(H5C_t *cache_ptr,
-                                   void (*sync_point_done)(unsigned num_writes, haddr_t *written_entries_tbl))
+H5AC__set_sync_point_done_callback(H5C_t *cache_ptr, H5AC_sync_point_done_cb_t sync_point_done)
 {
     H5AC_aux_t *aux_ptr;
 
@@ -170,7 +168,7 @@ H5AC__set_sync_point_done_callback(H5C_t *cache_ptr,
  *-------------------------------------------------------------------------
  */
 herr_t
-H5AC__set_write_done_callback(H5C_t *cache_ptr, void (*write_done)(void))
+H5AC__set_write_done_callback(H5C_t *cache_ptr, H5AC_write_done_cb_t write_done)
 {
     H5AC_aux_t *aux_ptr;
 
@@ -208,7 +206,7 @@ H5AC__set_write_done_callback(H5C_t *cache_ptr, void (*write_done)(void))
 herr_t
 H5AC_add_candidate(H5AC_t *cache_ptr, haddr_t addr)
 {
-    H5AC_aux_t *        aux_ptr;
+    H5AC_aux_t         *aux_ptr;
     H5AC_slist_entry_t *slist_entry_ptr = NULL;
     herr_t              ret_value       = SUCCEED; /* Return value */
 
@@ -269,12 +267,12 @@ static herr_t
 H5AC__broadcast_candidate_list(H5AC_t *cache_ptr, unsigned *num_entries_ptr, haddr_t **haddr_buf_ptr_ptr)
 {
     H5AC_aux_t *aux_ptr       = NULL;
-    haddr_t *   haddr_buf_ptr = NULL;
+    haddr_t    *haddr_buf_ptr = NULL;
     int         mpi_result;
     unsigned    num_entries;
     herr_t      ret_value = SUCCEED; /* Return value */
 
-    FUNC_ENTER_STATIC
+    FUNC_ENTER_PACKAGE
 
     /* Sanity checks */
     HDassert(cache_ptr != NULL);
@@ -350,11 +348,11 @@ done:
 static herr_t
 H5AC__broadcast_clean_list_cb(void *_item, void H5_ATTR_UNUSED *_key, void *_udata)
 {
-    H5AC_slist_entry_t * slist_entry_ptr = (H5AC_slist_entry_t *)_item;   /* Address of item */
+    H5AC_slist_entry_t  *slist_entry_ptr = (H5AC_slist_entry_t *)_item;   /* Address of item */
     H5AC_addr_list_ud_t *udata           = (H5AC_addr_list_ud_t *)_udata; /* Context for callback */
     haddr_t              addr;
 
-    FUNC_ENTER_STATIC_NOERR
+    FUNC_ENTER_PACKAGE_NOERR
 
     /* Sanity checks */
     HDassert(slist_entry_ptr);
@@ -401,13 +399,13 @@ H5AC__broadcast_clean_list_cb(void *_item, void H5_ATTR_UNUSED *_key, void *_uda
 static herr_t
 H5AC__broadcast_clean_list(H5AC_t *cache_ptr)
 {
-    haddr_t *   addr_buf_ptr = NULL;
+    haddr_t    *addr_buf_ptr = NULL;
     H5AC_aux_t *aux_ptr;
     int         mpi_result;
     unsigned    num_entries = 0;
     herr_t      ret_value   = SUCCEED; /* Return value */
 
-    FUNC_ENTER_STATIC
+    FUNC_ENTER_PACKAGE
 
     /* Sanity checks */
     HDassert(cache_ptr != NULL);
@@ -494,7 +492,7 @@ H5AC__construct_candidate_list(H5AC_t *cache_ptr, H5AC_aux_t H5_ATTR_NDEBUG_UNUS
 {
     herr_t ret_value = SUCCEED; /* Return value */
 
-    FUNC_ENTER_STATIC
+    FUNC_ENTER_PACKAGE
 
     /* Sanity checks */
     HDassert(cache_ptr != NULL);
@@ -547,10 +545,10 @@ done:
 static herr_t
 H5AC__copy_candidate_list_to_buffer_cb(void *_item, void H5_ATTR_UNUSED *_key, void *_udata)
 {
-    H5AC_slist_entry_t * slist_entry_ptr = (H5AC_slist_entry_t *)_item;   /* Address of item */
+    H5AC_slist_entry_t  *slist_entry_ptr = (H5AC_slist_entry_t *)_item;   /* Address of item */
     H5AC_addr_list_ud_t *udata           = (H5AC_addr_list_ud_t *)_udata; /* Context for callback */
 
-    FUNC_ENTER_STATIC_NOERR
+    FUNC_ENTER_PACKAGE_NOERR
 
     /* Sanity checks */
     HDassert(slist_entry_ptr);
@@ -601,14 +599,14 @@ static herr_t
 H5AC__copy_candidate_list_to_buffer(const H5AC_t *cache_ptr, unsigned *num_entries_ptr,
                                     haddr_t **haddr_buf_ptr_ptr)
 {
-    H5AC_aux_t *        aux_ptr = NULL;
+    H5AC_aux_t         *aux_ptr = NULL;
     H5AC_addr_list_ud_t udata;
-    haddr_t *           haddr_buf_ptr = NULL;
+    haddr_t            *haddr_buf_ptr = NULL;
     size_t              buf_size;
     unsigned            num_entries = 0;
     herr_t              ret_value   = SUCCEED; /* Return value */
 
-    FUNC_ENTER_STATIC
+    FUNC_ENTER_PACKAGE
 
     /* Sanity checks */
     HDassert(cache_ptr != NULL);
@@ -675,8 +673,8 @@ done:
 herr_t
 H5AC__log_deleted_entry(const H5AC_info_t *entry_ptr)
 {
-    H5AC_t *            cache_ptr;
-    H5AC_aux_t *        aux_ptr;
+    H5AC_t             *cache_ptr;
+    H5AC_aux_t         *aux_ptr;
     H5AC_slist_entry_t *slist_entry_ptr = NULL;
     haddr_t             addr;
 
@@ -729,7 +727,7 @@ H5AC__log_deleted_entry(const H5AC_info_t *entry_ptr)
 herr_t
 H5AC__log_dirtied_entry(const H5AC_info_t *entry_ptr)
 {
-    H5AC_t *    cache_ptr;
+    H5AC_t     *cache_ptr;
     H5AC_aux_t *aux_ptr;
     herr_t      ret_value = SUCCEED; /* Return value */
 
@@ -764,7 +762,7 @@ H5AC__log_dirtied_entry(const H5AC_info_t *entry_ptr)
                 HGOTO_ERROR(H5E_CACHE, H5E_CANTINSERT, FAIL, "can't insert entry into dirty entry slist.")
 
             aux_ptr->dirty_bytes += entry_ptr->size;
-#if H5AC_DEBUG_DIRTY_BYTES_CREATION
+#ifdef H5AC_DEBUG_DIRTY_BYTES_CREATION
             aux_ptr->unprotect_dirty_bytes += entry_ptr->size;
             aux_ptr->unprotect_dirty_bytes_updates += 1;
 #endif    /* H5AC_DEBUG_DIRTY_BYTES_CREATION */
@@ -779,7 +777,7 @@ H5AC__log_dirtied_entry(const H5AC_info_t *entry_ptr)
     } /* end if */
     else {
         aux_ptr->dirty_bytes += entry_ptr->size;
-#if H5AC_DEBUG_DIRTY_BYTES_CREATION
+#ifdef H5AC_DEBUG_DIRTY_BYTES_CREATION
         aux_ptr->unprotect_dirty_bytes += entry_ptr->size;
         aux_ptr->unprotect_dirty_bytes_updates += 1;
 #endif /* H5AC_DEBUG_DIRTY_BYTES_CREATION */
@@ -807,7 +805,7 @@ done:
 herr_t
 H5AC__log_cleaned_entry(const H5AC_info_t *entry_ptr)
 {
-    H5AC_t *    cache_ptr;
+    H5AC_t     *cache_ptr;
     H5AC_aux_t *aux_ptr;
 
     FUNC_ENTER_PACKAGE_NOERR
@@ -870,7 +868,7 @@ herr_t
 H5AC__log_flushed_entry(H5C_t *cache_ptr, haddr_t addr, hbool_t was_dirty, unsigned flags)
 {
     hbool_t             cleared;
-    H5AC_aux_t *        aux_ptr;
+    H5AC_aux_t         *aux_ptr;
     H5AC_slist_entry_t *slist_entry_ptr = NULL;
     herr_t              ret_value       = SUCCEED; /* Return value */
 
@@ -937,7 +935,7 @@ done:
 herr_t
 H5AC__log_inserted_entry(const H5AC_info_t *entry_ptr)
 {
-    H5AC_t *    cache_ptr;
+    H5AC_t     *cache_ptr;
     H5AC_aux_t *aux_ptr;
     herr_t      ret_value = SUCCEED; /* Return value */
 
@@ -977,7 +975,7 @@ H5AC__log_inserted_entry(const H5AC_info_t *entry_ptr)
 
     aux_ptr->dirty_bytes += entry_ptr->size;
 
-#if H5AC_DEBUG_DIRTY_BYTES_CREATION
+#ifdef H5AC_DEBUG_DIRTY_BYTES_CREATION
     aux_ptr->insert_dirty_bytes += entry_ptr->size;
     aux_ptr->insert_dirty_bytes_updates += 1;
 #endif /* H5AC_DEBUG_DIRTY_BYTES_CREATION */
@@ -1035,7 +1033,7 @@ done:
 herr_t
 H5AC__log_moved_entry(const H5F_t *f, haddr_t old_addr, haddr_t new_addr)
 {
-    H5AC_t *    cache_ptr;
+    H5AC_t     *cache_ptr;
     H5AC_aux_t *aux_ptr;
     hbool_t     entry_in_cache;
     hbool_t     entry_dirty;
@@ -1094,7 +1092,7 @@ H5AC__log_moved_entry(const H5F_t *f, haddr_t old_addr, haddr_t new_addr)
 
             aux_ptr->dirty_bytes += entry_size;
 
-#if H5AC_DEBUG_DIRTY_BYTES_CREATION
+#ifdef H5AC_DEBUG_DIRTY_BYTES_CREATION
             aux_ptr->move_dirty_bytes += entry_size;
             aux_ptr->move_dirty_bytes_updates += 1;
 #endif    /* H5AC_DEBUG_DIRTY_BYTES_CREATION */
@@ -1107,7 +1105,7 @@ H5AC__log_moved_entry(const H5F_t *f, haddr_t old_addr, haddr_t new_addr)
     else if (!entry_dirty) {
         aux_ptr->dirty_bytes += entry_size;
 
-#if H5AC_DEBUG_DIRTY_BYTES_CREATION
+#ifdef H5AC_DEBUG_DIRTY_BYTES_CREATION
         aux_ptr->move_dirty_bytes += entry_size;
         aux_ptr->move_dirty_bytes_updates += 1;
 #endif /* H5AC_DEBUG_DIRTY_BYTES_CREATION */
@@ -1215,14 +1213,14 @@ done:
 static herr_t
 H5AC__propagate_and_apply_candidate_list(H5F_t *f)
 {
-    H5AC_t *    cache_ptr;
+    H5AC_t     *cache_ptr;
     H5AC_aux_t *aux_ptr;
-    haddr_t *   candidates_list_ptr = NULL;
+    haddr_t    *candidates_list_ptr = NULL;
     int         mpi_result;
     unsigned    num_candidates = 0;
     herr_t      ret_value      = SUCCEED; /* Return value */
 
-    FUNC_ENTER_STATIC
+    FUNC_ENTER_PACKAGE
 
     /* Sanity checks */
     HDassert(f != NULL);
@@ -1381,11 +1379,11 @@ done:
 static herr_t
 H5AC__propagate_flushed_and_still_clean_entries_list(H5F_t *f)
 {
-    H5AC_t *    cache_ptr;
+    H5AC_t     *cache_ptr;
     H5AC_aux_t *aux_ptr;
     herr_t      ret_value = SUCCEED; /* Return value */
 
-    FUNC_ENTER_STATIC
+    FUNC_ENTER_PACKAGE
 
     /* Sanity checks */
     HDassert(f != NULL);
@@ -1436,7 +1434,7 @@ H5AC__receive_haddr_list(MPI_Comm mpi_comm, unsigned *num_entries_ptr, haddr_t *
     unsigned num_entries;
     herr_t   ret_value = SUCCEED; /* Return value */
 
-    FUNC_ENTER_STATIC
+    FUNC_ENTER_PACKAGE
 
     /* Sanity checks */
     HDassert(num_entries_ptr != NULL);
@@ -1502,13 +1500,13 @@ done:
 static herr_t
 H5AC__receive_and_apply_clean_list(H5F_t *f)
 {
-    H5AC_t *    cache_ptr;
+    H5AC_t     *cache_ptr;
     H5AC_aux_t *aux_ptr;
-    haddr_t *   haddr_buf_ptr = NULL;
+    haddr_t    *haddr_buf_ptr = NULL;
     unsigned    num_entries   = 0;
     herr_t      ret_value     = SUCCEED; /* Return value */
 
-    FUNC_ENTER_STATIC
+    FUNC_ENTER_PACKAGE
 
     /* Sanity check */
     HDassert(f != NULL);
@@ -1568,7 +1566,7 @@ H5AC__receive_candidate_list(const H5AC_t *cache_ptr, unsigned *num_entries_ptr,
     H5AC_aux_t *aux_ptr;
     herr_t      ret_value = SUCCEED; /* Return value */
 
-    FUNC_ENTER_STATIC
+    FUNC_ENTER_PACKAGE
 
     /* Sanity checks */
     HDassert(cache_ptr != NULL);
@@ -1642,14 +1640,14 @@ done:
 static herr_t
 H5AC__rsp__dist_md_write__flush(H5F_t *f)
 {
-    H5AC_t *    cache_ptr;
+    H5AC_t     *cache_ptr;
     H5AC_aux_t *aux_ptr;
-    haddr_t *   haddr_buf_ptr = NULL;
+    haddr_t    *haddr_buf_ptr = NULL;
     int         mpi_result;
     unsigned    num_entries = 0;
     herr_t      ret_value   = SUCCEED; /* Return value */
 
-    FUNC_ENTER_STATIC
+    FUNC_ENTER_PACKAGE
 
     /* Sanity checks */
     HDassert(f != NULL);
@@ -1788,12 +1786,12 @@ done:
 static herr_t
 H5AC__rsp__dist_md_write__flush_to_min_clean(H5F_t *f)
 {
-    H5AC_t *    cache_ptr;
+    H5AC_t     *cache_ptr;
     H5AC_aux_t *aux_ptr;
     hbool_t     evictions_enabled;
     herr_t      ret_value = SUCCEED; /* Return value */
 
-    FUNC_ENTER_STATIC
+    FUNC_ENTER_PACKAGE
 
     /* Sanity checks */
     HDassert(f != NULL);
@@ -1869,12 +1867,12 @@ done:
 static herr_t
 H5AC__rsp__p0_only__flush(H5F_t *f)
 {
-    H5AC_t *    cache_ptr;
+    H5AC_t     *cache_ptr;
     H5AC_aux_t *aux_ptr;
     int         mpi_result;
     herr_t      ret_value = SUCCEED; /* Return value */
 
-    FUNC_ENTER_STATIC
+    FUNC_ENTER_PACKAGE
 
     /* Sanity checks */
     HDassert(f != NULL);
@@ -1983,12 +1981,12 @@ done:
 static herr_t
 H5AC__rsp__p0_only__flush_to_min_clean(H5F_t *f)
 {
-    H5AC_t *    cache_ptr;
+    H5AC_t     *cache_ptr;
     H5AC_aux_t *aux_ptr;
     hbool_t     evictions_enabled;
     herr_t      ret_value = SUCCEED; /* Return value */
 
-    FUNC_ENTER_STATIC
+    FUNC_ENTER_PACKAGE
 
     /* Sanity checks */
     HDassert(f != NULL);
@@ -2098,7 +2096,7 @@ done:
 herr_t
 H5AC__run_sync_point(H5F_t *f, int sync_point_op)
 {
-    H5AC_t *    cache_ptr;
+    H5AC_t     *cache_ptr;
     H5AC_aux_t *aux_ptr;
     herr_t      ret_value = SUCCEED; /* Return value */
 
@@ -2118,7 +2116,7 @@ H5AC__run_sync_point(H5F_t *f, int sync_point_op)
     HDassert((sync_point_op == H5AC_SYNC_POINT_OP__FLUSH_TO_MIN_CLEAN) ||
              (sync_point_op == H5AC_METADATA_WRITE_STRATEGY__DISTRIBUTED));
 
-#if H5AC_DEBUG_DIRTY_BYTES_CREATION
+#ifdef H5AC_DEBUG_DIRTY_BYTES_CREATION
     HDfprintf(stdout, "%d:H5AC_propagate...:%u: (u/uu/i/iu/m/mu) = %zu/%u/%zu/%u/%zu/%u\n", aux_ptr->mpi_rank,
               aux_ptr->dirty_bytes_propagations, aux_ptr->unprotect_dirty_bytes,
               aux_ptr->unprotect_dirty_bytes_updates, aux_ptr->insert_dirty_bytes,
@@ -2181,7 +2179,7 @@ H5AC__run_sync_point(H5F_t *f, int sync_point_op)
     /* reset the dirty bytes count */
     aux_ptr->dirty_bytes = 0;
 
-#if H5AC_DEBUG_DIRTY_BYTES_CREATION
+#ifdef H5AC_DEBUG_DIRTY_BYTES_CREATION
     aux_ptr->dirty_bytes_propagations += 1;
     aux_ptr->unprotect_dirty_bytes         = 0;
     aux_ptr->unprotect_dirty_bytes_updates = 0;
@@ -2237,7 +2235,7 @@ H5AC__tidy_cache_0_lists(H5AC_t *cache_ptr, unsigned num_candidates, haddr_t *ca
     H5AC_aux_t *aux_ptr;
     unsigned    u;
 
-    FUNC_ENTER_STATIC_NOERR
+    FUNC_ENTER_PACKAGE_NOERR
 
     /* Sanity checks */
     HDassert(cache_ptr != NULL);

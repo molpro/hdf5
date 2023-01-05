@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -39,11 +38,11 @@ print_dimensions(int rank, hsize_t *dims)
         else {
             parallel_print("[");
             for (i = 0; i < rank - 1; i++) {
-                parallel_print(HSIZE_T_FORMAT, dims[i]);
+                parallel_print("%" PRIuHSIZE, dims[i]);
                 parallel_print("x");
             }
 
-            parallel_print(HSIZE_T_FORMAT, dims[rank - 1]);
+            parallel_print("%" PRIuHSIZE, dims[rank - 1]);
             parallel_print("]");
         }
     }

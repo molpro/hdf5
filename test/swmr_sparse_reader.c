@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -117,7 +116,7 @@ check_dataset(hid_t fid, unsigned verbose, const symbol_info_t *symbol, symbol_t
                   (uintmax_t)start[0], (uintmax_t)start[1]);
 
     /* Read record from dataset */
-    record->rec_id = (uint64_t)ULLONG_MAX;
+    record->rec_id = UINT64_MAX;
     if (H5Dread(dsid, symbol_tid, rec_sid, file_sid, H5P_DEFAULT, record) < 0)
         return -1;
 

@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -26,7 +25,7 @@
 
 const char *FILENAME[] = {"flush", "noflush", NULL};
 
-static int data_g[100][100];
+static int *data_g = NULL;
 
 #define N_GROUPS 100
 
@@ -77,9 +76,10 @@ check_test_file(char *name, size_t name_length, hid_t fapl_id)
     for (i = 0; i < dims[0]; i++) {
         for (j = 0; j < dims[1]; j++) {
             val = (int)(i + (i * j) + j);
-            if (data_g[i][j] != val) {
+            if (data_g[(i * 100) + j] != val) {
                 H5_FAILED();
-                HDprintf("    data_g[%lu][%lu] = %d\n", (unsigned long)i, (unsigned long)j, data_g[i][j]);
+                HDprintf("    data_g[%lu][%lu] = %d\n", (unsigned long)i, (unsigned long)j,
+                         data_g[(i * 100) + j]);
                 HDprintf("    should be %d\n", val);
             }
         }
@@ -157,7 +157,7 @@ main(int argc, char *argv[])
         TESTING("H5Fflush (part2 with flush)");
 
     /* Don't run using the split VFD */
-    envval = HDgetenv("HDF5_DRIVER");
+    envval = HDgetenv(HDF5_DRIVER);
     if (envval == NULL)
         envval = "nomatch";
 
@@ -169,6 +169,9 @@ main(int argc, char *argv[])
         MPI_Finalize();
         HDexit(EXIT_SUCCESS);
     }
+
+    if (NULL == (data_g = HDmalloc(100 * 100 * sizeof(*data_g))))
+        goto error;
 
     if ((fapl_id1 = H5Pcreate(H5P_FILE_ACCESS)) < 0)
         goto error;
@@ -183,7 +186,7 @@ main(int argc, char *argv[])
     /* Check the case where the file was flushed */
     h5_fixname(FILENAME[0], fapl_id1, name, sizeof(name));
     if (check_test_file(name, sizeof(name), fapl_id1)) {
-        H5_FAILED()
+        H5_FAILED();
         goto error;
     }
     else if (mpi_rank == 0) {
@@ -204,7 +207,7 @@ main(int argc, char *argv[])
             PASSED();
     }
     else {
-        H5_FAILED()
+        H5_FAILED();
         goto error;
     }
 
@@ -213,10 +216,18 @@ main(int argc, char *argv[])
     h5_clean_files(&FILENAME[0], fapl_id1);
     h5_clean_files(&FILENAME[1], fapl_id2);
 
+    if (data_g) {
+        HDfree(data_g);
+        data_g = NULL;
+    }
+
     MPI_Finalize();
 
     HDexit(EXIT_SUCCESS);
 
 error:
+    if (data_g)
+        HDfree(data_g);
+
     HDexit(EXIT_FAILURE);
 } /* end main() */

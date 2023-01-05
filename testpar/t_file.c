@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -124,8 +123,8 @@ test_page_buffer_access(void)
     size_t      page_count = 0;
     int         i, num_elements = 200;
     haddr_t     raw_addr, meta_addr;
-    int *       data;
-    H5F_t *     f = NULL;
+    int        *data;
+    H5F_t      *f = NULL;
     herr_t      ret; /* generic return value */
     const char *filename;
     hbool_t     api_ctx_pushed = FALSE; /* Whether API context pushed */
@@ -287,7 +286,7 @@ test_page_buffer_access(void)
 
         /* Pop API context */
         if (api_ctx_pushed) {
-            ret = H5CX_pop();
+            ret = H5CX_pop(FALSE);
             VRFY((ret == 0), "H5CX_pop()");
             api_ctx_pushed = FALSE;
         }
@@ -421,7 +420,7 @@ test_page_buffer_access(void)
 
     /* Pop API context */
     if (api_ctx_pushed) {
-        ret = H5CX_pop();
+        ret = H5CX_pop(FALSE);
         VRFY((ret == 0), "H5CX_pop()");
         api_ctx_pushed = FALSE;
     }
@@ -440,13 +439,13 @@ create_file(const char *filename, hid_t fcpl, hid_t fapl, int metadata_write_str
     hsize_t             count[RANK];
     hsize_t             stride[RANK];
     hsize_t             block[RANK];
-    DATATYPE *          data_array = NULL;
+    DATATYPE           *data_array = NULL;
     hsize_t             dims[RANK], i;
     hsize_t             num_elements;
     int                 k;
     char                dset_name[20];
-    H5F_t *             f         = NULL;
-    H5C_t *             cache_ptr = NULL;
+    H5F_t              *f         = NULL;
+    H5C_t              *cache_ptr = NULL;
     H5AC_cache_config_t config;
     hbool_t             api_ctx_pushed = FALSE; /* Whether API context pushed */
     herr_t              ret;
@@ -577,7 +576,7 @@ create_file(const char *filename, hid_t fcpl, hid_t fapl, int metadata_write_str
 
     /* Pop API context */
     if (api_ctx_pushed) {
-        ret = H5CX_pop();
+        ret = H5CX_pop(FALSE);
         VRFY((ret == 0), "H5CX_pop()");
         api_ctx_pushed = FALSE;
     }
@@ -593,7 +592,7 @@ open_file(const char *filename, hid_t fapl, int metadata_write_strategy, hsize_t
 {
     hid_t               file_id, dset_id, grp_id, grp_id2;
     hid_t               sid, mem_dataspace;
-    DATATYPE *          data_array = NULL;
+    DATATYPE           *data_array = NULL;
     hsize_t             dims[RANK];
     hsize_t             start[RANK];
     hsize_t             count[RANK];
@@ -602,8 +601,8 @@ open_file(const char *filename, hid_t fapl, int metadata_write_strategy, hsize_t
     int                 i, k, ndims;
     hsize_t             num_elements;
     char                dset_name[20];
-    H5F_t *             f         = NULL;
-    H5C_t *             cache_ptr = NULL;
+    H5F_t              *f         = NULL;
+    H5C_t              *cache_ptr = NULL;
     H5AC_cache_config_t config;
     hbool_t             api_ctx_pushed = FALSE; /* Whether API context pushed */
     herr_t              ret;
@@ -741,7 +740,7 @@ open_file(const char *filename, hid_t fapl, int metadata_write_strategy, hsize_t
 
     /* Pop API context */
     if (api_ctx_pushed) {
-        ret = H5CX_pop();
+        ret = H5CX_pop(FALSE);
         VRFY((ret == 0), "H5CX_pop()");
         api_ctx_pushed = FALSE;
     }
@@ -948,3 +947,57 @@ test_file_properties(void)
     VRFY((mpi_ret >= 0), "MPI_Info_free succeeded");
 
 } /* end test_file_properties() */
+
+void
+test_delete(void)
+{
+    hid_t       fid      = H5I_INVALID_HID; /* HDF5 file ID */
+    hid_t       fapl_id  = H5I_INVALID_HID; /* File access plist */
+    const char *filename = NULL;
+    MPI_Comm    comm     = MPI_COMM_WORLD;
+    MPI_Info    info     = MPI_INFO_NULL;
+    htri_t      is_hdf5  = FAIL; /* Whether a file is an HDF5 file */
+    herr_t      ret;             /* Generic return value */
+
+    filename = (const char *)GetTestParameters();
+
+    /* set up MPI parameters */
+    MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+
+    /* setup file access plist */
+    fapl_id = H5Pcreate(H5P_FILE_ACCESS);
+    VRFY((fapl_id != H5I_INVALID_HID), "H5Pcreate");
+    ret = H5Pset_fapl_mpio(fapl_id, comm, info);
+    VRFY((SUCCEED == ret), "H5Pset_fapl_mpio");
+
+    /* create the file */
+    fid = H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id);
+    VRFY((fid != H5I_INVALID_HID), "H5Fcreate");
+
+    /* close the file */
+    ret = H5Fclose(fid);
+    VRFY((SUCCEED == ret), "H5Fclose");
+
+    /* Verify that the file is an HDF5 file */
+    is_hdf5 = H5Fis_accessible(filename, fapl_id);
+    VRFY((TRUE == is_hdf5), "H5Fis_accessible");
+
+    /* Delete the file */
+    ret = H5Fdelete(filename, fapl_id);
+    VRFY((SUCCEED == ret), "H5Fdelete");
+
+    /* Verify that the file is NO LONGER an HDF5 file */
+    /* This should fail since there is no file */
+    H5E_BEGIN_TRY
+    {
+        is_hdf5 = H5Fis_accessible(filename, fapl_id);
+    }
+    H5E_END_TRY;
+    VRFY((is_hdf5 != SUCCEED), "H5Fis_accessible");
+
+    /* Release file-access plist */
+    ret = H5Pclose(fapl_id);
+    VRFY((SUCCEED == ret), "H5Pclose");
+
+} /* end test_delete() */

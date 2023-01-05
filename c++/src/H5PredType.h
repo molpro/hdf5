@@ -1,7 +1,6 @@
 // C++ informative line for the emacs editor: -*- C++ -*-
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -29,7 +28,7 @@ class H5_DLLCPP PredType : public AtomType {
   public:
     ///\brief Returns this class name.
     virtual H5std_string
-    fromClass() const H5_OVERRIDE
+    fromClass() const override
     {
         return ("PredType");
     }
@@ -42,7 +41,7 @@ class H5_DLLCPP PredType : public AtomType {
     PredType(const PredType &original);
 
     // Noop destructor
-    virtual ~PredType() H5_OVERRIDE;
+    virtual ~PredType() override;
 
     /*! \brief This dummy function do not inherit from DataType - it will
         throw a DataTypeIException if invoked.

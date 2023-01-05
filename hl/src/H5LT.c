@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -20,7 +19,7 @@
 #define TMP_LEN   256
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 size_t input_len;
-char * myinput;
+char  *myinput;
 size_t indent = 0;
 
 /* File Image operations
@@ -57,12 +56,12 @@ size_t indent = 0;
 
 /* Data structure to pass application data to callbacks. */
 typedef struct {
-    void *   app_image_ptr;   /* Pointer to application buffer */
+    void    *app_image_ptr;   /* Pointer to application buffer */
     size_t   app_image_size;  /* Size of application buffer */
-    void *   fapl_image_ptr;  /* Pointer to FAPL buffer */
+    void    *fapl_image_ptr;  /* Pointer to FAPL buffer */
     size_t   fapl_image_size; /* Size of FAPL buffer */
     int      fapl_ref_count;  /* Reference counter for FAPL buffer */
-    void *   vfd_image_ptr;   /* Pointer to VFD buffer */
+    void    *vfd_image_ptr;   /* Pointer to VFD buffer */
     size_t   vfd_image_size;  /* Size of VFD buffer */
     int      vfd_ref_count;   /* Reference counter for VFD buffer */
     unsigned flags;           /* Flags indicate how the file image will */
@@ -71,12 +70,12 @@ typedef struct {
 } H5LT_file_image_ud_t;
 
 /* callbacks prototypes for file image ops */
-static void * image_malloc(size_t size, H5FD_file_image_op_t file_image_op, void *udata);
-static void * image_memcpy(void *dest, const void *src, size_t size, H5FD_file_image_op_t file_image_op,
+static void  *image_malloc(size_t size, H5FD_file_image_op_t file_image_op, void *udata);
+static void  *image_memcpy(void *dest, const void *src, size_t size, H5FD_file_image_op_t file_image_op,
                            void *udata);
-static void * image_realloc(void *ptr, size_t size, H5FD_file_image_op_t file_image_op, void *udata);
+static void  *image_realloc(void *ptr, size_t size, H5FD_file_image_op_t file_image_op, void *udata);
 static herr_t image_free(void *ptr, H5FD_file_image_op_t file_image_op, void *udata);
-static void * udata_copy(void *udata);
+static void  *udata_copy(void *udata);
 static herr_t udata_free(void *udata);
 
 /* Definition of callbacks for file image operations. */
@@ -102,7 +101,7 @@ static void *
 image_malloc(size_t size, H5FD_file_image_op_t file_image_op, void *_udata)
 {
     H5LT_file_image_ud_t *udata        = (H5LT_file_image_ud_t *)_udata;
-    void *                return_value = NULL;
+    void                 *return_value = NULL;
 
     /* callback is only used if the application buffer is not actually copied */
     if (!(udata->flags & H5LT_FILE_IMAGE_DONT_COPY))
@@ -282,7 +281,7 @@ static void *
 image_realloc(void *ptr, size_t size, H5FD_file_image_op_t file_image_op, void *_udata)
 {
     H5LT_file_image_ud_t *udata        = (H5LT_file_image_ud_t *)_udata;
-    void *                return_value = NULL;
+    void                 *return_value = NULL;
 
     /* callback is only used if the application buffer is not actually copied */
     if (!(udata->flags & H5LT_FILE_IMAGE_DONT_COPY))
@@ -1352,13 +1351,13 @@ find_dataset(H5_ATTR_UNUSED hid_t loc_id, const char *name, H5_ATTR_UNUSED const
  * modify the op_data buffer (i.e.: dset_name) during the traversal, and the
  * library never modifies that buffer.
  */
-H5_GCC_DIAG_OFF("cast-qual")
+H5_GCC_CLANG_DIAG_OFF("cast-qual")
 herr_t
 H5LTfind_dataset(hid_t loc_id, const char *dset_name)
 {
     return H5Literate2(loc_id, H5_INDEX_NAME, H5_ITER_INC, 0, find_dataset, (void *)dset_name);
 }
-H5_GCC_DIAG_ON("cast-qual")
+H5_GCC_CLANG_DIAG_ON("cast-qual")
 
 /*-------------------------------------------------------------------------
  *
@@ -1385,7 +1384,6 @@ H5_GCC_DIAG_ON("cast-qual")
  *
  *-------------------------------------------------------------------------
  */
-
 herr_t
 H5LTset_attribute_string(hid_t loc_id, const char *obj_name, const char *attr_name, const char *attr_data)
 {
@@ -1393,7 +1391,7 @@ H5LTset_attribute_string(hid_t loc_id, const char *obj_name, const char *attr_na
     hid_t  attr_space_id;
     hid_t  attr_id;
     hid_t  obj_id;
-    int    has_attr;
+    htri_t has_attr;
     size_t attr_size;
 
     /* check the arguments */
@@ -1423,11 +1421,10 @@ H5LTset_attribute_string(hid_t loc_id, const char *obj_name, const char *attr_na
     if ((attr_space_id = H5Screate(H5S_SCALAR)) < 0)
         goto out;
 
-    /* Verify if the attribute already exists */
-    has_attr = H5LT_find_attribute(obj_id, attr_name);
-
-    /* The attribute already exists, delete it */
-    if (has_attr == 1)
+    /* Delete the attribute if it already exists */
+    if ((has_attr = H5Aexists(obj_id, attr_name)) < 0)
+        goto out;
+    if (has_attr > 0)
         if (H5Adelete(obj_id, attr_name) < 0)
             goto out;
 
@@ -1483,7 +1480,7 @@ H5LT_set_attribute_numerical(hid_t loc_id, const char *obj_name, const char *att
 
     hid_t   obj_id, sid, attr_id;
     hsize_t dim_size = size;
-    int     has_attr;
+    htri_t  has_attr;
 
     /* check the arguments */
     if (obj_name == NULL)
@@ -1499,11 +1496,10 @@ H5LT_set_attribute_numerical(hid_t loc_id, const char *obj_name, const char *att
     if ((sid = H5Screate_simple(1, &dim_size, NULL)) < 0)
         goto out;
 
-    /* Verify if the attribute already exists */
-    has_attr = H5LT_find_attribute(obj_id, attr_name);
-
-    /* The attribute already exists, delete it */
-    if (has_attr == 1)
+    /* Delete the attribute if it already exists */
+    if ((has_attr = H5Aexists(obj_id, attr_name)) < 0)
+        goto out;
+    if (has_attr > 0)
         if (H5Adelete(obj_id, attr_name) < 0)
             goto out;
 
@@ -1858,49 +1854,24 @@ H5LTset_attribute_double(hid_t loc_id, const char *obj_name, const char *attr_na
 /*-------------------------------------------------------------------------
  * Function: H5LTfind_attribute
  *
- * Purpose: Inquires if an attribute named attr_name exists attached to
- *          the object loc_id.
+ * Purpose:  Checks if an attribute named attr_name exists attached to
+ *           the object loc_id
  *
- * Programmer: Pedro Vicente
+ * TODO:     Overloading herr_t is not a great idea. This function either
+ *           needs to be rewritten to take a Boolean out parameter in
+ *           HDF5 2.0 or possibly even eliminated entirely as it simply
+ *           wraps H5Aexists.
  *
- * Date: May 17, 2006
- *
- * Comments:
- *  Calls the private version of the function
- *
+ * Return:   An htri_t value cast to herr_t
+ *              Exists:         Positive
+ *              Does not exist: 0
+ *              Error:          Negative
  *-------------------------------------------------------------------------
  */
-
 herr_t
 H5LTfind_attribute(hid_t loc_id, const char *attr_name)
 {
-    return H5LT_find_attribute(loc_id, attr_name);
-}
-
-/*-------------------------------------------------------------------------
- * Function: H5LT_find_attribute
- *
- * Purpose: Inquires if an attribute named attr_name exists attached to the object loc_id.
- *
- * Programmer: Pedro Vicente
- *
- * Date: June 21, 2001
- *
- * Return:
- *  Success: Positive if the attribute exists attached to the
- *              object loc_id. Zero if the attribute does not
- *              exist attached to the object loc_id.
- *
- *  Failure: Negative if something goes wrong within the
- *              library.
- *
- *-------------------------------------------------------------------------
- */
-herr_t
-H5LT_find_attribute(hid_t loc_id, const char *attr_name)
-{
-    htri_t attr_exists = H5Aexists(loc_id, attr_name);
-    return (attr_exists < 0) ? (herr_t)-1 : (attr_exists) ? (herr_t)1 : (herr_t)0;
+    return (herr_t)H5Aexists(loc_id, attr_name);
 }
 
 /*-------------------------------------------------------------------------
@@ -2224,7 +2195,7 @@ out:
 static char *
 print_enum(hid_t type, char *str, size_t *str_len, hbool_t no_ubuf, size_t indt)
 {
-    char **        name  = NULL; /*member names                   */
+    char         **name  = NULL; /*member names                   */
     unsigned char *value = NULL; /*value array                    */
     int            nmembs;       /*number of members              */
     char           tmp_str[TMP_LEN];
@@ -2360,7 +2331,7 @@ herr_t
 H5LTdtype_to_text(hid_t dtype, char *str, H5LT_lang_t lang_type, size_t *len)
 {
     size_t str_len  = INCREMENT;
-    char * text_str = NULL;
+    char  *text_str = NULL;
     herr_t ret      = SUCCEED;
 
     if (lang_type <= H5LT_LANG_ERR || lang_type >= H5LT_NO_LANG)
@@ -2751,7 +2722,7 @@ next:
         case H5T_ENUM: {
             hid_t  super;
             size_t super_len;
-            char * stmp = NULL;
+            char  *stmp = NULL;
 
             /* Print lead-in */
             HDsnprintf(dt_str, *slen, "H5T_ENUM {\n");
@@ -2798,7 +2769,7 @@ next:
         case H5T_VLEN: {
             hid_t  super;
             size_t super_len;
-            char * stmp = NULL;
+            char  *stmp = NULL;
 
             /* Print lead-in */
             HDsnprintf(dt_str, *slen, "H5T_VLEN {\n");
@@ -2841,7 +2812,7 @@ next:
         case H5T_ARRAY: {
             hid_t   super;
             size_t  super_len;
-            char *  stmp = NULL;
+            char   *stmp = NULL;
             hsize_t dims[H5S_MAX_RANK];
             int     ndims;
 
@@ -2899,12 +2870,12 @@ next:
             break;
         }
         case H5T_COMPOUND: {
-            char *      mname = NULL;
+            char       *mname = NULL;
             hid_t       mtype;
             size_t      moffset;
             H5T_class_t mclass;
             size_t      mlen;
-            char *      mtmp = NULL;
+            char       *mtmp = NULL;
             int         nmembs;
 
             if ((nmembs = H5Tget_nmembers(dtype)) < 0)
@@ -3539,14 +3510,13 @@ H5LT_set_attribute_string(hid_t dset_id, const char *name, const char *buf)
     hid_t  tid;
     hid_t  sid = -1;
     hid_t  aid = -1;
-    int    has_attr;
+    htri_t has_attr;
     size_t size;
 
-    /* verify if the attribute already exists */
-    has_attr = H5LT_find_attribute(dset_id, name);
-
-    /* the attribute already exists, delete it */
-    if (has_attr == 1)
+    /* Delete the attribute if it already exists */
+    if ((has_attr = H5Aexists(dset_id, name)) < 0)
+        return FAIL;
+    if (has_attr > 0)
         if (H5Adelete(dset_id, name) < 0)
             return FAIL;
 
@@ -3604,9 +3574,9 @@ out:
 htri_t
 H5LTpath_valid(hid_t loc_id, const char *path, hbool_t check_object_valid)
 {
-    char *     tmp_path = NULL; /* Temporary copy of the path */
-    char *     curr_name;       /* Pointer to current component of path name */
-    char *     delimit;         /* Pointer to path delimiter during traversal */
+    char      *tmp_path = NULL; /* Temporary copy of the path */
+    char      *curr_name;       /* Pointer to current component of path name */
+    char      *delimit;         /* Pointer to path delimiter during traversal */
     H5I_type_t obj_type;
     htri_t     link_exists, obj_exists;
     size_t     path_length;

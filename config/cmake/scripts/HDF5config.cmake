@@ -15,7 +15,7 @@
 ### ctest -S HDF5config.cmake,BUILD_GENERATOR=VS201764 -C Release -VV -O hdf5.log         ###
 #############################################################################################
 
-cmake_minimum_required (VERSION 3.12)
+cmake_minimum_required (VERSION 3.18)
 ############################################################################
 # Usage:
 #     ctest -S HDF5config.cmake,OPTION=VALUE -C Release -VV -O test.log
@@ -37,15 +37,15 @@ cmake_minimum_required (VERSION 3.12)
 #     CTEST_SOURCE_NAME  -  source folder
 ##############################################################################
 
-set (CTEST_SOURCE_VERSION "1.12.2")
+set (CTEST_SOURCE_VERSION "1.14.0")
 set (CTEST_SOURCE_VERSEXT "")
 
 ##############################################################################
 # handle input parameters to script.
 #BUILD_GENERATOR - which CMake generator to use, required
-#INSTALLDIR - HDF5-1.12.x root folder
+#INSTALLDIR - HDF5-1.13.x root folder
 #CTEST_CONFIGURATION_TYPE - Release, Debug, RelWithDebInfo
-#CTEST_SOURCE_NAME - name of source folder; HDF5-1.12.x
+#CTEST_SOURCE_NAME - name of source folder; HDF5-1.13.x
 #MODEL - CDash group name
 #HPC - run alternate configurations for HPC machines; sbatch, bsub, raybsub, qsub
 #MPI - enable MPI
@@ -79,7 +79,7 @@ set (CTEST_CONFIGURATION_TYPE "$ENV{CMAKE_CONFIG_TYPE}")
 
 if (NOT DEFINED INSTALLDIR)
   if (WIN32)
-    set (INSTALLDIR "C:/Program Files/HDF_Group/HDF5/${CTEST_SOURCE_VERSION}")
+    set (INSTALLDIR "%ProgramFiles%/HDF_Group/HDF5/${CTEST_SOURCE_VERSION}")
   else ()
     set (INSTALLDIR "${CTEST_SCRIPT_DIRECTORY}/HDF_Group/HDF5/${CTEST_SOURCE_VERSION}")
   endif ()
@@ -205,7 +205,7 @@ endif ()
 #####       Following controls source update                  #####
 #set (LOCAL_UPDATE "TRUE")
 set (REPOSITORY_URL "https://github.com/HDFGroup/hdf5.git")
-set (REPOSITORY_BRANCH "hdf5_1_12")
+set (REPOSITORY_BRANCH "develop")
 
 #uncomment to use a compressed source file: *.tar on linux or mac *.zip on windows
 #set(CTEST_USE_TAR_SOURCE "${CTEST_SOURCE_VERSION}")

@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -153,7 +152,7 @@ main(int argc, char *argv[])
          * anything. */
 
         /* Determine driver being used */
-        envval = HDgetenv("HDF5_DRIVER");
+        envval = HDgetenv(HDF5_DRIVER);
 
         if (envval == NULL || H5FD__supports_swmr_test(envval)) {
             if (test_flush() != SUCCEED)

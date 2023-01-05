@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- *                                                                           *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -11,7 +10,8 @@
  * help@hdfgroup.org.                                                        *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-/** All structure definitions define java equivalents of the C structures needed
+/**
+ * All structure definitions define java equivalents of the C structures needed
  * by the C API calls. See the C API for information about the structures.
  */
 package hdf.hdf5lib.structs;

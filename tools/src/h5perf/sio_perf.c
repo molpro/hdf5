@@ -97,35 +97,35 @@ static const char *progname = "h5perf_serial";
  * It seems that only the options that accept additional information
  * such as dataset size (-e) require the colon next to it.
  */
-static const char *        s_opts   = "a:A:B:c:Cd:D:e:F:ghi:Imno:p:P:r:stT:v:wx:X:";
-static struct long_options l_opts[] = {{"align", require_arg, 'a'},
-                                       {"api", require_arg, 'A'},
+static const char            *s_opts   = "a:A:B:c:Cd:D:e:F:ghi:Imno:p:P:r:stT:v:wx:X:";
+static struct h5_long_options l_opts[] = {{"align", require_arg, 'a'},
+                                          {"api", require_arg, 'A'},
 #if 0
     /* a sighting of the elusive binary option */
     { "binary", no_arg, 'b' },
 #endif /* 0 */
-                                       {"block-size", require_arg, 'B'},
-                                       {"chunk", no_arg, 'c'},
-                                       {"collective", no_arg, 'C'},
-                                       {"debug", require_arg, 'D'},
-                                       {"file-driver", require_arg, 'v'},
-                                       {"geometry", no_arg, 'g'},
-                                       {"help", no_arg, 'h'},
-                                       {"interleaved", require_arg, 'I'},
-                                       {"max-num-processes", require_arg, 'P'},
-                                       {"min-num-processes", require_arg, 'p'},
-                                       {"max-xfer-size", require_arg, 'X'},
-                                       {"min-xfer-size", require_arg, 'x'},
-                                       {"num-bytes", require_arg, 'e'},
-                                       {"num-dsets", require_arg, 'd'},
-                                       {"num-files", require_arg, 'F'},
-                                       {"num-iterations", require_arg, 'i'},
-                                       {"order", require_arg, 'r'},
-                                       {"output", require_arg, 'o'},
-                                       {"extendable", no_arg, 't'},
-                                       {"threshold", require_arg, 'T'},
-                                       {"write-only", require_arg, 'w'},
-                                       {NULL, 0, '\0'}};
+                                          {"block-size", require_arg, 'B'},
+                                          {"chunk", no_arg, 'c'},
+                                          {"collective", no_arg, 'C'},
+                                          {"debug", require_arg, 'D'},
+                                          {"file-driver", require_arg, 'v'},
+                                          {"geometry", no_arg, 'g'},
+                                          {"help", no_arg, 'h'},
+                                          {"interleaved", require_arg, 'I'},
+                                          {"max-num-processes", require_arg, 'P'},
+                                          {"min-num-processes", require_arg, 'p'},
+                                          {"max-xfer-size", require_arg, 'X'},
+                                          {"min-xfer-size", require_arg, 'x'},
+                                          {"num-bytes", require_arg, 'e'},
+                                          {"num-dsets", require_arg, 'd'},
+                                          {"num-files", require_arg, 'F'},
+                                          {"num-iterations", require_arg, 'i'},
+                                          {"order", require_arg, 'r'},
+                                          {"output", require_arg, 'o'},
+                                          {"extendable", no_arg, 't'},
+                                          {"threshold", require_arg, 'T'},
+                                          {"write-only", require_arg, 'w'},
+                                          {NULL, 0, '\0'}};
 
 struct options {
     long        io_types;            /* bitmask of which I/O types to test   */
@@ -172,8 +172,8 @@ static void            get_minmax(minmax *mm, double val);
 static void            accumulate_minmax_stuff(const minmax *mm, int count, minmax *total_mm);
 static void output_results(const struct options *options, const char *name, minmax *table, int table_size,
                            off_t data_size);
-static void output_report(const char *fmt, ...);
-static void print_indent(register int indent);
+static void output_report(const char *fmt, ...) H5_ATTR_FORMAT(printf, 1, 2);
+static void print_indent(int indent);
 static void usage(const char *prog);
 static void report_parameters(struct options *opts);
 
@@ -190,10 +190,8 @@ main(int argc, char *argv[])
     int             exit_value = EXIT_SUCCESS;
     struct options *opts       = NULL;
 
-#ifndef STANDALONE
     /* Initialize h5tools lib */
     h5tools_init();
-#endif
 
     output = stdout;
 
@@ -299,25 +297,25 @@ run_test_loop(struct options *opts)
 static int
 run_test(iotype iot, parameters parms, struct options *opts)
 {
-    results      res;
-    register int i, ret_value = SUCCESS;
-    off_t        raw_size;
-    minmax *     write_sys_mm_table   = NULL;
-    minmax *     write_mm_table       = NULL;
-    minmax *     write_gross_mm_table = NULL;
-    minmax *     write_raw_mm_table   = NULL;
-    minmax *     read_sys_mm_table    = NULL;
-    minmax *     read_mm_table        = NULL;
-    minmax *     read_gross_mm_table  = NULL;
-    minmax *     read_raw_mm_table    = NULL;
-    minmax       write_sys_mm         = {0.0, 0.0, 0.0, 0};
-    minmax       write_mm             = {0.0, 0.0, 0.0, 0};
-    minmax       write_gross_mm       = {0.0, 0.0, 0.0, 0};
-    minmax       write_raw_mm         = {0.0, 0.0, 0.0, 0};
-    minmax       read_sys_mm          = {0.0, 0.0, 0.0, 0};
-    minmax       read_mm              = {0.0, 0.0, 0.0, 0};
-    minmax       read_gross_mm        = {0.0, 0.0, 0.0, 0};
-    minmax       read_raw_mm          = {0.0, 0.0, 0.0, 0};
+    results res;
+    int     i, ret_value = SUCCESS;
+    off_t   raw_size;
+    minmax *write_sys_mm_table   = NULL;
+    minmax *write_mm_table       = NULL;
+    minmax *write_gross_mm_table = NULL;
+    minmax *write_raw_mm_table   = NULL;
+    minmax *read_sys_mm_table    = NULL;
+    minmax *read_mm_table        = NULL;
+    minmax *read_gross_mm_table  = NULL;
+    minmax *read_raw_mm_table    = NULL;
+    minmax  write_sys_mm         = {0.0, 0.0, 0.0, 0};
+    minmax  write_mm             = {0.0, 0.0, 0.0, 0};
+    minmax  write_gross_mm       = {0.0, 0.0, 0.0, 0};
+    minmax  write_raw_mm         = {0.0, 0.0, 0.0, 0};
+    minmax  read_sys_mm          = {0.0, 0.0, 0.0, 0};
+    minmax  read_mm              = {0.0, 0.0, 0.0, 0};
+    minmax  read_gross_mm        = {0.0, 0.0, 0.0, 0};
+    minmax  read_raw_mm          = {0.0, 0.0, 0.0, 0};
 
     raw_size      = (off_t)parms.num_bytes;
     parms.io_type = iot;
@@ -647,7 +645,9 @@ output_report(const char *fmt, ...)
     va_list ap;
 
     HDva_start(ap, fmt);
+    H5_GCC_CLANG_DIAG_OFF("format-nonliteral")
     HDvfprintf(output, fmt, ap);
+    H5_GCC_CLANG_DIAG_ON("format-nonliteral")
     HDva_end(ap);
 }
 
@@ -657,10 +657,9 @@ output_report(const char *fmt, ...)
  *              things.
  * Return:      Nothing
  * Programmer:  Bill Wendling, 29. October 2001
- * Modifications:
  */
 static void
-print_indent(register int indent)
+print_indent(int indent)
 {
     indent *= TAB_SPACE;
 
@@ -675,25 +674,25 @@ recover_size_and_print(long long val, const char *end)
         if (val >= ONE_MB && (val % ONE_MB) == 0) {
             if (val >= ONE_GB && (val % ONE_GB) == 0)
                 HDfprintf(output,
-                          "%" H5_PRINTF_LL_WIDTH "d"
+                          "%lld"
                           "GB%s",
                           val / ONE_GB, end);
             else
                 HDfprintf(output,
-                          "%" H5_PRINTF_LL_WIDTH "d"
+                          "%lld"
                           "MB%s",
                           val / ONE_MB, end);
         }
         else {
             HDfprintf(output,
-                      "%" H5_PRINTF_LL_WIDTH "d"
+                      "%lld"
                       "KB%s",
                       val / ONE_KB, end);
         }
     }
     else {
         HDfprintf(output,
-                  "%" H5_PRINTF_LL_WIDTH "d"
+                  "%lld"
                   "%s",
                   val, end);
     }
@@ -857,19 +856,19 @@ parse_command_line(int argc, const char *const *argv)
     cl_opts->h5_extendable = FALSE; /* Use extendable dataset */
     cl_opts->verify        = FALSE; /* No Verify data correctness by default */
 
-    while ((opt = get_option(argc, argv, s_opts, l_opts)) != EOF) {
+    while ((opt = H5_get_option(argc, argv, s_opts, l_opts)) != EOF) {
         switch ((char)opt) {
             case 'a':
-                cl_opts->h5_alignment = parse_size_directive(opt_arg);
+                cl_opts->h5_alignment = parse_size_directive(H5_optarg);
                 break;
             case 'G':
-                cl_opts->page_size = parse_size_directive(opt_arg);
+                cl_opts->page_size = parse_size_directive(H5_optarg);
                 break;
             case 'b':
-                cl_opts->page_buffer_size = parse_size_directive(opt_arg);
+                cl_opts->page_buffer_size = parse_size_directive(H5_optarg);
                 break;
             case 'A': {
-                const char *end = opt_arg;
+                const char *end = H5_optarg;
                 while (end && *end != '\0') {
                     char buf[10];
 
@@ -907,7 +906,7 @@ parse_command_line(int argc, const char *const *argv)
                 /* Turn on chunked HDF5 dataset creation */
                 cl_opts->h5_use_chunks = 1;
                 {
-                    const char *end = opt_arg;
+                    const char *end = H5_optarg;
                     int         j   = 0;
 
                     while (end && *end != '\0') {
@@ -934,7 +933,7 @@ parse_command_line(int argc, const char *const *argv)
                 break;
 
             case 'D': {
-                const char *end = opt_arg;
+                const char *end = H5_optarg;
 
                 while (end && *end != '\0') {
                     char buf[10];
@@ -990,7 +989,7 @@ parse_command_line(int argc, const char *const *argv)
 
             break;
             case 'e': {
-                const char *end = opt_arg;
+                const char *end = H5_optarg;
                 int         j   = 0;
 
                 while (end && *end != '\0') {
@@ -1017,38 +1016,38 @@ parse_command_line(int argc, const char *const *argv)
             break;
 
             case 'i':
-                cl_opts->num_iters = HDatoi(opt_arg);
+                cl_opts->num_iters = HDatoi(H5_optarg);
                 break;
             case 'o':
-                cl_opts->output_file = opt_arg;
+                cl_opts->output_file = H5_optarg;
                 break;
             case 'T':
-                cl_opts->h5_threshold = parse_size_directive(opt_arg);
+                cl_opts->h5_threshold = parse_size_directive(H5_optarg);
                 break;
             case 'v':
-                if (!HDstrcasecmp(opt_arg, "sec2")) {
+                if (!HDstrcasecmp(H5_optarg, "sec2")) {
                     cl_opts->vfd = sec2;
                 }
-                else if (!HDstrcasecmp(opt_arg, "stdio")) {
+                else if (!HDstrcasecmp(H5_optarg, "stdio")) {
                     cl_opts->vfd = stdio;
                 }
-                else if (!HDstrcasecmp(opt_arg, "core")) {
+                else if (!HDstrcasecmp(H5_optarg, "core")) {
                     cl_opts->vfd = core;
                 }
-                else if (!HDstrcasecmp(opt_arg, "split")) {
+                else if (!HDstrcasecmp(H5_optarg, "split")) {
                     cl_opts->vfd = split;
                 }
-                else if (!HDstrcasecmp(opt_arg, "multi")) {
+                else if (!HDstrcasecmp(H5_optarg, "multi")) {
                     cl_opts->vfd = multi;
                 }
-                else if (!HDstrcasecmp(opt_arg, "family")) {
+                else if (!HDstrcasecmp(H5_optarg, "family")) {
                     cl_opts->vfd = family;
                 }
-                else if (!HDstrcasecmp(opt_arg, "direct")) {
+                else if (!HDstrcasecmp(H5_optarg, "direct")) {
                     cl_opts->vfd = direct;
                 }
                 else {
-                    HDfprintf(stderr, "sio_perf: invalid --api option %s\n", opt_arg);
+                    HDfprintf(stderr, "sio_perf: invalid --api option %s\n", H5_optarg);
                     HDexit(EXIT_FAILURE);
                 }
                 break;
@@ -1059,7 +1058,7 @@ parse_command_line(int argc, const char *const *argv)
                 cl_opts->h5_extendable = TRUE;
                 break;
             case 'x': {
-                const char *end = opt_arg;
+                const char *end = H5_optarg;
                 int         j   = 0;
 
                 while (end && *end != '\0') {
@@ -1086,7 +1085,7 @@ parse_command_line(int argc, const char *const *argv)
             break;
 
             case 'r': {
-                const char *end = opt_arg;
+                const char *end = H5_optarg;
                 int         j   = 0;
 
                 while (end && *end != '\0') {
@@ -1188,7 +1187,7 @@ static hsize_t
 parse_size_directive(const char *size)
 {
     hsize_t s;
-    char *  endptr;
+    char   *endptr;
 
     s = HDstrtoull(size, &endptr, 10);
 

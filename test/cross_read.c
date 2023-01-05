@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -111,7 +110,7 @@ check_data_i(const char *dsetname, hid_t fid)
 
     /* Close/release resources. */
     if (H5Dclose(did) < 0)
-        FAIL_STACK_ERROR
+        FAIL_STACK_ERROR;
 
     /* Failure */
     if (nerrors) {
@@ -185,7 +184,7 @@ check_data_f(const char *dsetname, hid_t fid)
 
     /* Close/release resources. */
     if (H5Dclose(did) < 0)
-        FAIL_STACK_ERROR
+        FAIL_STACK_ERROR;
 
     /* Failure */
     if (nerrors) {
@@ -229,8 +228,10 @@ check_file(char *filename)
 #endif
 
     /* Open the file. */
-    if ((fid = H5Fopen(pathname, H5F_ACC_RDONLY, H5P_DEFAULT)) < 0)
+    if ((fid = H5Fopen(pathname, H5F_ACC_RDONLY, H5P_DEFAULT)) < 0) {
+        nerrors++;
         FAIL_STACK_ERROR;
+    }
 
     TESTING("regular dataset of LE DOUBLE");
     nerrors += check_data_f(DATASETNAME, fid);
@@ -325,7 +326,7 @@ check_file(char *filename)
     nerrors += check_data_f(DATASETNAME23, fid);
 
     if (H5Fclose(fid))
-        FAIL_STACK_ERROR
+        FAIL_STACK_ERROR;
     return nerrors;
 
 error:
@@ -352,10 +353,23 @@ error:
 int
 main(void)
 {
-    char filename[1024];
-    int  nerrors = 0;
+    hbool_t driver_is_default_compatible;
+    char    filename[1024];
+    int     nerrors = 0;
 
     h5_reset();
+
+    /*
+     * Skip tests for VFDs that aren't compatible with default VFD.
+     */
+    if (h5_driver_is_default_vfd_compatible(H5P_DEFAULT, &driver_is_default_compatible) < 0) {
+        HDputs(" -- couldn't check if VFD is compatible with default VFD --");
+        HDexit(EXIT_SUCCESS);
+    }
+    if (!driver_is_default_compatible) {
+        HDputs(" -- SKIPPED for incompatible VFD --");
+        HDexit(EXIT_SUCCESS);
+    }
 
     HDputs("\n");
     HDputs("Testing reading data created on Linux");

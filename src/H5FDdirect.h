@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -21,9 +20,11 @@
 #define H5FDdirect_H
 
 #ifdef H5_HAVE_DIRECT
-#define H5FD_DIRECT (H5FD_direct_init())
+#define H5FD_DIRECT       (H5FDperform_init(H5FD_direct_init))
+#define H5FD_DIRECT_VALUE H5_VFD_DIRECT
 #else
-#define H5FD_DIRECT (H5I_INVALID_HID)
+#define H5FD_DIRECT       (H5I_INVALID_HID)
+#define H5FD_DIRECT_VALUE H5_VFD_INVALID
 #endif /* H5_HAVE_DIRECT */
 
 #ifdef H5_HAVE_DIRECT

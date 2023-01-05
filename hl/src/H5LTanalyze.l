@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -16,6 +15,14 @@
  * If you make any changes to H5LTanalyze.l, please run bin/genparser to
  * recreate the output files.
  */
+
+%top{
+/* Quiet warnings about integer type macro redefinitions on Visual Studio
+ * (MSVC doesn't define STDC_VERSION, but has inttypes.h). This is an
+ * issue that is apparently fixed in flex 2.6.5.
+ */
+#include <stdint.h>
+}
 
 %{
 #include <assert.h>

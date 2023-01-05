@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -252,7 +251,7 @@ H5F_cwfs_advance_heap(H5F_t *f, H5HG_heap_t *heap, hbool_t add_heap)
     unsigned u;                   /* Local index variable */
     herr_t   ret_value = SUCCEED; /* Return value */
 
-    FUNC_ENTER_NOAPI(FAIL)
+    FUNC_ENTER_NOAPI_NOERR
 
     /* Check args */
     HDassert(f);
@@ -272,7 +271,6 @@ H5F_cwfs_advance_heap(H5F_t *f, H5HG_heap_t *heap, hbool_t add_heap)
         f->shared->cwfs[f->shared->ncwfs - 1] = heap;
     } /* end if */
 
-done:
     FUNC_LEAVE_NOAPI(ret_value)
 } /* H5F_cwfs_advance_heap() */
 
@@ -295,7 +293,7 @@ H5F_cwfs_remove_heap(H5F_shared_t *shared, H5HG_heap_t *heap)
     unsigned u;                   /* Local index variable */
     herr_t   ret_value = SUCCEED; /* Return value */
 
-    FUNC_ENTER_NOAPI(FAIL)
+    FUNC_ENTER_NOAPI_NOERR
 
     /* Check args */
     HDassert(shared);
@@ -310,6 +308,5 @@ H5F_cwfs_remove_heap(H5F_shared_t *shared, H5HG_heap_t *heap)
         } /* end if */
     }     /* end for */
 
-done:
     FUNC_LEAVE_NOAPI(ret_value)
 } /* H5F_cwfs_remove_heap() */

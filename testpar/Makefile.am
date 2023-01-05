@@ -1,6 +1,5 @@
 #
 # Copyright by The HDF Group.
-# Copyright by the Board of Trustees of the University of Illinois.
 # All rights reserved.
 #
 # This file is part of HDF5.  The full HDF5 copyright notice, including
@@ -21,6 +20,10 @@ include $(top_srcdir)/config/commence.am
 
 AM_CPPFLAGS+=-I$(top_srcdir)/src -I$(top_srcdir)/test
 
+if SUBFILING_VFD_CONDITIONAL
+    AM_CPPFLAGS += -I$(top_srcdir)/src/H5FDsubfiling
+endif
+
 # Test scripts--
 #       testpflush.sh:
 TEST_SCRIPT_PARA = testpflush.sh
@@ -30,22 +33,21 @@ check_SCRIPTS = $(TEST_SCRIPT_PARA)
 
 # Test programs.  These are our main targets.
 #
-TEST_PROG_PARA=t_mpi t_bigio testphdf5 t_cache t_cache_image t_pread t_pshutdown t_prestart t_init_term t_shapesame t_filters_parallel t_2Gio
+TEST_PROG_PARA=t_mpi t_bigio testphdf5 t_cache t_cache_image t_pread t_pshutdown t_prestart t_init_term t_pmulti_dset t_shapesame t_filters_parallel t_2Gio t_vfd
+
+if SUBFILING_VFD_CONDITIONAL
+    TEST_PROG_PARA += t_subfiling_vfd
+endif
 
 # t_pflush1 and t_pflush2 are used by testpflush.sh
 check_PROGRAMS = $(TEST_PROG_PARA) t_pflush1 t_pflush2
 
 testphdf5_SOURCES=testphdf5.c t_dset.c t_file.c t_file_image.c t_mdset.c \
 	t_ph5basic.c t_coll_chunk.c t_span_tree.c t_chunk_alloc.c t_filter_read.c \
-	t_prop.c t_coll_md_read.c
+	t_prop.c t_coll_md_read.c t_oflush.c
 
 # The tests all depend on the hdf5 library and the test library
 LDADD = $(LIBH5TEST) $(LIBHDF5)
-
-# Test with just the native connector, with a single pass-through connector
-# and with a doubly-stacked pass-through.
-VOL_LIST = native "pass_through under_vol=0;under_info={}" \
-           "pass_through under_vol=505;under_info={under_vol=0;under_info={}}"
 
 # Temporary files
 # MPItest.h5 is from t_mpi
@@ -56,6 +58,6 @@ VOL_LIST = native "pass_through under_vol=0;under_info={}" \
 # after_mpi_fin.h5 is from t_init_term
 # go is used for debugging. See testphdf5.c.
 CHECK_CLEANFILES+=MPItest.h5 Para*.h5 bigio_test.h5 CacheTestDummy.h5 \
-		  ShapeSameTest.h5 shutdown.h5  after_mpi_fin.h5 go
+		  ShapeSameTest.h5 shutdown.h5 pmulti_dset.h5 after_mpi_fin.h5 go
 
 include $(top_srcdir)/config/conclude.am

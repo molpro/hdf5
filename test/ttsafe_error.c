@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -38,7 +37,7 @@
 
 /* Having a common dataset name is an error */
 #define DATASETNAME          "commonname"
-#define EXPECTED_ERROR_DEPTH 10
+#define EXPECTED_ERROR_DEPTH 11
 #define WRITE_NUMBER         37
 
 /* Typedefs */
@@ -57,7 +56,7 @@ H5TS_mutex_simple_t error_mutex_g;
 /* Prototypes */
 static herr_t error_callback(hid_t, void *);
 static herr_t walk_error_callback(unsigned, const H5E_error2_t *, void *);
-static void * tts_error_thread(void *);
+static void  *tts_error_thread(void *);
 
 void
 tts_error(void)
@@ -74,32 +73,35 @@ tts_error(void)
     expected_g[0].maj_num = H5E_DATASET;
     expected_g[0].min_num = H5E_CANTCREATE;
 
-    expected_g[1].maj_num = H5E_VOL;
+    expected_g[1].maj_num = H5E_DATASET;
     expected_g[1].min_num = H5E_CANTCREATE;
 
     expected_g[2].maj_num = H5E_VOL;
     expected_g[2].min_num = H5E_CANTCREATE;
 
-    expected_g[3].maj_num = H5E_DATASET;
-    expected_g[3].min_num = H5E_CANTINIT;
+    expected_g[3].maj_num = H5E_VOL;
+    expected_g[3].min_num = H5E_CANTCREATE;
 
     expected_g[4].maj_num = H5E_DATASET;
     expected_g[4].min_num = H5E_CANTINIT;
 
-    expected_g[5].maj_num = H5E_LINK;
+    expected_g[5].maj_num = H5E_DATASET;
     expected_g[5].min_num = H5E_CANTINIT;
 
     expected_g[6].maj_num = H5E_LINK;
-    expected_g[6].min_num = H5E_CANTINSERT;
+    expected_g[6].min_num = H5E_CANTINIT;
 
-    expected_g[7].maj_num = H5E_SYM;
-    expected_g[7].min_num = H5E_NOTFOUND;
+    expected_g[7].maj_num = H5E_LINK;
+    expected_g[7].min_num = H5E_CANTINSERT;
 
     expected_g[8].maj_num = H5E_SYM;
-    expected_g[8].min_num = H5E_CALLBACK;
+    expected_g[8].min_num = H5E_NOTFOUND;
 
-    expected_g[9].maj_num = H5E_LINK;
-    expected_g[9].min_num = H5E_EXISTS;
+    expected_g[9].maj_num = H5E_SYM;
+    expected_g[9].min_num = H5E_CALLBACK;
+
+    expected_g[10].maj_num = H5E_LINK;
+    expected_g[10].min_num = H5E_EXISTS;
 
     /* set up mutex for global count of errors */
     H5TS_mutex_init(&error_mutex_g);
@@ -172,7 +174,7 @@ tts_error_thread(void H5_ATTR_UNUSED *arg)
     hid_t       dataset   = H5I_INVALID_HID;
     hsize_t     dimsf[1]; /* dataset dimensions */
     H5E_auto2_t old_error_cb;
-    void *      old_error_client_data;
+    void       *old_error_client_data;
     int         value;
     herr_t      status;
 

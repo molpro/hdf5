@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -60,8 +59,15 @@ typedef struct H5E_error2_t {
 #endif /* H5private_H */
 
 /* HDF5 error class */
+/* Extern "C" block needed to compile C++ filter plugins with some compilers */
+#ifdef __cplusplus
+extern "C" {
+#endif
 #define H5E_ERR_CLS (H5OPEN H5E_ERR_CLS_g)
 H5_DLLVAR hid_t H5E_ERR_CLS_g;
+#ifdef __cplusplus
+}
+#endif
 
 /* Include the automatically generated public header information */
 /* (This includes the list of major and minor error codes for the library) */
@@ -112,7 +118,7 @@ H5_DLLVAR hid_t H5E_ERR_CLS_g;
 #define H5E_BEGIN_TRY                                                                                        \
     {                                                                                                        \
         H5E_auto2_t saved_efunc;                                                                             \
-        void *      H5E_saved_edata;                                                                         \
+        void       *H5E_saved_edata;                                                                         \
                                                                                                              \
         (void)H5Eget_auto2(H5E_DEFAULT, &saved_efunc, &H5E_saved_edata);                                     \
         (void)H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
@@ -308,7 +314,7 @@ H5_DLL hid_t H5Eget_current_stack(void);
  *          If \p close_source_stack is \c TRUE, the source error stack
  *          will be closed.
  *
- * \since 1.13.0
+ * \since 1.14.0
  */
 H5_DLL herr_t H5Eappend_stack(hid_t dst_stack_id, hid_t src_stack_id, hbool_t close_source_stack);
 /**
@@ -899,8 +905,8 @@ H5_DLL herr_t H5Ewalk1(H5E_direction_t direction, H5E_walk1_t func, void *client
  *
  * \deprecated 1.8.0 Function deprecated in this release.
  *
- * \details Given a major error number, H5Eget_major() returns a constant
- *          character string that describes the error.
+ * \details H5Eget_major() returns a constant
+ *          character string that describes the error, given a major error number.
  *
  * \attention This function returns a dynamically allocated string (\c char
  *            array). An application calling this function must free the memory
@@ -920,8 +926,8 @@ H5_DLL char *H5Eget_major(H5E_major_t maj);
  *
  * \deprecated 1.8.0 Function deprecated and return type changed in this release.
  *
- * \details Given a minor error number, H5Eget_minor() returns a constant
- *          character string that describes the error.
+ * \details H5Eget_minor() returns a constant
+ *          character string that describes the error, given a minor error number.
  *
  * \attention In the Release 1.8.x series, H5Eget_minor() returns a string of
  *            dynamic allocated \c char array. An application calling this

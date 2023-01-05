@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -73,12 +72,12 @@ int facc_type       = FACC_MPIO; /*Test file access type */
 int dxfer_coll_type = DXFER_COLLECTIVE_IO;
 
 H5E_auto2_t old_func;        /* previous error handler */
-void *      old_client_data; /* previous error handler arg.*/
+void       *old_client_data; /* previous error handler arg.*/
 
 #define NFILENAME    3
 #define PARATESTFILE filenames[0]
 const char *FILENAME[NFILENAME] = {"ParaTest", "Hugefile", NULL};
-char        filenames[NFILENAME][PATH_MAX];
+char       *filenames[NFILENAME];
 hid_t       fapl; /* file access property list */
 MPI_Comm    test_comm = MPI_COMM_WORLD;
 
@@ -224,7 +223,7 @@ parse_options(int argc, char **argv)
         n = sizeof(FILENAME) / sizeof(FILENAME[0]) - 1; /* exclude the NULL */
 
         for (i = 0; i < n; i++)
-            if (h5_fixname(FILENAME[i], fapl, filenames[i], sizeof(filenames[i])) == NULL) {
+            if (h5_fixname(FILENAME[i], fapl, filenames[i], PATH_MAX) == NULL) {
                 HDprintf("h5_fixname failed\n");
                 nerrors++;
                 return (1);
@@ -522,8 +521,8 @@ dataset_vrfy(hsize_t start[], hsize_t count[], hsize_t stride[], hsize_t block[]
 }
 
 /* NOTE:  This is a memory intensive test and is only run
- *        with 2 MPI ranks and with $HDF5TestExpress == 0
- *        i.e. Exhaustive test run is allowed.  Otherwise
+ *        with 2 MPI ranks and with a testing express level
+ *        of 0, i.e. Exhaustive test run is allowed.  Otherwise
  *        the test is skipped.
  *
  * Thanks to l.ferraro@cineca.it for the following test::
@@ -554,7 +553,7 @@ MpioTest2G(MPI_Comm comm)
     hid_t  file_id, dset_id; /* file and dataset identifiers */
     hid_t  plist_id;         /* property list identifier */
     hid_t  filespace;        /* file and memory dataspace identifiers */
-    int *  data;             /* pointer to data buffer to write */
+    int   *data;             /* pointer to data buffer to write */
     size_t tot_size_bytes;
     hid_t  dcpl_id;
     hid_t  memorydataspace;
@@ -714,7 +713,7 @@ dataset_writeInd(void)
         1,
     }; /* dataset dim sizes */
     hsize_t     data_size;
-    DATATYPE *  data_array1 = NULL; /* data buffer */
+    DATATYPE   *data_array1 = NULL; /* data buffer */
     const char *filename;
 
     hsize_t start[MAX_RANK]; /* for hyperslab setting */
@@ -854,8 +853,8 @@ dataset_readInd(void)
     hid_t       file_dataspace;      /* File dataspace ID */
     hid_t       mem_dataspace;       /* memory dataspace ID */
     hid_t       dataset1, dataset2;  /* Dataset ID */
-    DATATYPE *  data_array1  = NULL; /* data buffer */
-    DATATYPE *  data_origin1 = NULL; /* expected data buffer */
+    DATATYPE   *data_array1  = NULL; /* data buffer */
+    DATATYPE   *data_origin1 = NULL; /* expected data buffer */
     const char *filename;
 
     hsize_t start[MAX_RANK];                   /* for hyperslab setting */
@@ -983,7 +982,7 @@ dataset_writeAll(void)
     hsize_t dims[MAX_RANK] = {
         1,
     };                              /* dataset dim sizes */
-    DATATYPE *  data_array1 = NULL; /* data buffer */
+    DATATYPE   *data_array1 = NULL; /* data buffer */
     const char *filename;
 
     hsize_t start[MAX_RANK]; /* for hyperslab setting */
@@ -1499,8 +1498,8 @@ dataset_readAll(void)
     hid_t       file_dataspace;                                   /* File dataspace ID */
     hid_t       mem_dataspace;                                    /* memory dataspace ID */
     hid_t       dataset1, dataset2, dataset5, dataset6, dataset7; /* Dataset ID */
-    DATATYPE *  data_array1  = NULL;                              /* data buffer */
-    DATATYPE *  data_origin1 = NULL;                              /* expected data buffer */
+    DATATYPE   *data_array1  = NULL;                              /* data buffer */
+    DATATYPE   *data_origin1 = NULL;                              /* expected data buffer */
     const char *filename;
 
     hsize_t start[MAX_RANK];                   /* for hyperslab setting */
@@ -1857,7 +1856,7 @@ dataset_readAll(void)
     start[0] = (hsize_t)dim0 / (hsize_t)mpi_size * (hsize_t)mpi_rank;
     start[1] = 0;
     ret      = dataset_vrfy(start, count, stride, block, data_array1 + (dim0 / mpi_size * dim1 * mpi_rank),
-                       data_origin1);
+                            data_origin1);
     if (ret)
         nerrors++;
 
@@ -1916,7 +1915,7 @@ extend_writeInd(void)
     const char *filename;
     hsize_t     dims[MAX_RANK];                                      /* dataset dim sizes */
     hsize_t     max_dims[MAX_RANK] = {H5S_UNLIMITED, H5S_UNLIMITED}; /* dataset maximum dim sizes */
-    DATATYPE *  data_array1        = NULL;                           /* data buffer */
+    DATATYPE   *data_array1        = NULL;                           /* data buffer */
     hsize_t     chunk_dims[MAX_RANK];                                /* chunk sizes */
     hid_t       dataset_pl;                                          /* dataset create prop. list */
 
@@ -2294,9 +2293,9 @@ extend_readInd(void)
     hid_t       mem_dataspace;       /* memory dataspace ID */
     hid_t       dataset1, dataset2;  /* Dataset ID */
     hsize_t     dims[MAX_RANK];      /* dataset dim sizes */
-    DATATYPE *  data_array1  = NULL; /* data buffer */
-    DATATYPE *  data_array2  = NULL; /* data buffer */
-    DATATYPE *  data_origin1 = NULL; /* expected data buffer */
+    DATATYPE   *data_array1  = NULL; /* data buffer */
+    DATATYPE   *data_array2  = NULL; /* data buffer */
+    DATATYPE   *data_origin1 = NULL; /* expected data buffer */
     const char *filename;
 
     hsize_t start[MAX_RANK];                   /* for hyperslab setting */
@@ -2476,7 +2475,7 @@ extend_writeAll(void)
     const char *filename;
     hsize_t     dims[MAX_RANK];                                      /* dataset dim sizes */
     hsize_t     max_dims[MAX_RANK] = {H5S_UNLIMITED, H5S_UNLIMITED}; /* dataset maximum dim sizes */
-    DATATYPE *  data_array1        = NULL;                           /* data buffer */
+    DATATYPE   *data_array1        = NULL;                           /* data buffer */
     hsize_t     chunk_dims[MAX_RANK];                                /* chunk sizes */
     hid_t       dataset_pl;                                          /* dataset create prop. list */
 
@@ -2715,9 +2714,9 @@ extend_readAll(void)
     hid_t       dataset1, dataset2; /* Dataset ID */
     const char *filename;
     hsize_t     dims[MAX_RANK];      /* dataset dim sizes */
-    DATATYPE *  data_array1  = NULL; /* data buffer */
-    DATATYPE *  data_array2  = NULL; /* data buffer */
-    DATATYPE *  data_origin1 = NULL; /* expected data buffer */
+    DATATYPE   *data_array1  = NULL; /* data buffer */
+    DATATYPE   *data_array2  = NULL; /* data buffer */
+    DATATYPE   *data_origin1 = NULL; /* expected data buffer */
 
     hsize_t start[MAX_RANK];                   /* for hyperslab setting */
     hsize_t count[MAX_RANK], stride[MAX_RANK]; /* for hyperslab setting */
@@ -2912,8 +2911,8 @@ compress_readAll(void)
     unsigned    u;                             /* Local index variable */
     unsigned    chunk_opts;                    /* Chunk options */
     unsigned    disable_partial_chunk_filters; /* Whether filters are disabled on partial chunks */
-    DATATYPE *  data_read = NULL;              /* data buffer */
-    DATATYPE *  data_orig = NULL;              /* expected data buffer */
+    DATATYPE   *data_read = NULL;              /* data buffer */
+    DATATYPE   *data_orig = NULL;              /* expected data buffer */
     const char *filename;
     MPI_Comm    comm = test_comm;
     MPI_Info    info = MPI_INFO_NULL;
@@ -3095,8 +3094,8 @@ none_selection_chunk(void)
     hid_t       dataset1, dataset2; /* Dataset ID */
     const char *filename;
     hsize_t     dims[MAX_RANK];       /* dataset dim sizes */
-    DATATYPE *  data_origin = NULL;   /* data buffer */
-    DATATYPE *  data_array  = NULL;   /* data buffer */
+    DATATYPE   *data_origin = NULL;   /* data buffer */
+    DATATYPE   *data_array  = NULL;   /* data buffer */
     hsize_t     chunk_dims[MAX_RANK]; /* chunk sizes */
     hid_t       dataset_pl;           /* dataset create prop. list */
 
@@ -3353,8 +3352,8 @@ test_actual_io_mode(int selection_mode)
     H5D_mpio_actual_io_mode_t        actual_io_mode_write           = H5D_MPIO_NO_COLLECTIVE;
     H5D_mpio_actual_io_mode_t        actual_io_mode_read            = H5D_MPIO_NO_COLLECTIVE;
     H5D_mpio_actual_io_mode_t        actual_io_mode_expected        = H5D_MPIO_NO_COLLECTIVE;
-    const char *                     filename;
-    const char *                     test_name;
+    const char                      *filename;
+    const char                      *test_name;
     hbool_t                          direct_multi_chunk_io;
     hbool_t                          multi_chunk_io;
     hbool_t                          is_chunked;
@@ -3362,7 +3361,7 @@ test_actual_io_mode(int selection_mode)
     int                              mpi_size = -1;
     int                              mpi_rank = -1;
     int                              length;
-    int *                            buffer;
+    int                             *buffer;
     int                              i;
     MPI_Comm                         mpi_comm   = MPI_COMM_NULL;
     MPI_Info                         mpi_info   = MPI_INFO_NULL;
@@ -3493,7 +3492,7 @@ test_actual_io_mode(int selection_mode)
              * process. To get mixed I/O, have the root select all chunks and each
              * subsequent process select the first and nth chunk. The first chunk,
              * accessed by all, will be assigned collective I/O while each other chunk
-             * will be accessed only by the root and the nth procecess and will be
+             * will be accessed only by the root and the nth process and will be
              * assigned independent I/O. Each process will access one chunk collectively
              * and at least one chunk independently, reporting mixed I/O.
              */
@@ -3704,9 +3703,10 @@ test_actual_io_mode(int selection_mode)
     /* Test values */
     if (actual_chunk_opt_mode_expected != (H5D_mpio_actual_chunk_opt_mode_t)-1 &&
         actual_io_mode_expected != (H5D_mpio_actual_io_mode_t)-1) {
-        HDsprintf(message, "Actual Chunk Opt Mode has the correct value for %s.\n", test_name);
+        HDsnprintf(message, sizeof(message), "Actual Chunk Opt Mode has the correct value for %s.\n",
+                   test_name);
         VRFY((actual_chunk_opt_mode_write == actual_chunk_opt_mode_expected), message);
-        HDsprintf(message, "Actual IO Mode has the correct value for %s.\n", test_name);
+        HDsnprintf(message, sizeof(message), "Actual IO Mode has the correct value for %s.\n", test_name);
         VRFY((actual_io_mode_write == actual_io_mode_expected), message);
     }
     else {
@@ -3875,7 +3875,7 @@ test_no_collective_cause_mode(int selection_mode)
     int         mpi_size       = -1;
     int         mpi_rank       = -1;
     int         length;
-    int *       buffer;
+    int        *buffer;
     int         i;
     MPI_Comm    mpi_comm;
     MPI_Info    mpi_info;
@@ -4100,10 +4100,12 @@ test_no_collective_cause_mode(int selection_mode)
 
     /* Test values */
     HDmemset(message, 0, sizeof(message));
-    HDsprintf(message, "Local cause of Broken Collective I/O has the correct value for %s.\n", test_name);
+    HDsnprintf(message, sizeof(message),
+               "Local cause of Broken Collective I/O has the correct value for %s.\n", test_name);
     VRFY((no_collective_cause_local_write == no_collective_cause_local_expected), message);
     HDmemset(message, 0, sizeof(message));
-    HDsprintf(message, "Global cause of Broken Collective I/O has the correct value for %s.\n", test_name);
+    HDsnprintf(message, sizeof(message),
+               "Global cause of Broken Collective I/O has the correct value for %s.\n", test_name);
     VRFY((no_collective_cause_global_write == no_collective_cause_global_expected), message);
 
     /* Release some resources */
@@ -4185,8 +4187,8 @@ dataset_atomicity(void)
     hid_t       sid;              /* Dataspace ID */
     hid_t       dataset1;         /* Dataset IDs */
     hsize_t     dims[MAX_RANK];   /* dataset dim sizes */
-    int *       write_buf = NULL; /* data buffer */
-    int *       read_buf  = NULL; /* data buffer */
+    int        *write_buf = NULL; /* data buffer */
+    int        *read_buf  = NULL; /* data buffer */
     int         buf_size;
     hid_t       dataset2;
     hid_t       file_dataspace; /* File dataspace ID */
@@ -4585,6 +4587,8 @@ main(int argc, char **argv)
     MPI_Comm_size(test_comm, &mpi_size);
     MPI_Comm_rank(test_comm, &mpi_rank);
 
+    HDmemset(filenames, 0, sizeof(filenames));
+
     dim0 = BIG_X_FACTOR;
     dim1 = BIG_Y_FACTOR;
     dim2 = BIG_Z_FACTOR;
@@ -4601,6 +4605,15 @@ main(int argc, char **argv)
         HDprintf("Failed to turn off atexit processing. Continue.\n");
     };
     H5open();
+
+    HDmemset(filenames, 0, sizeof(filenames));
+    for (int i = 0; i < NFILENAME; i++) {
+        if (NULL == (filenames[i] = HDmalloc(PATH_MAX))) {
+            HDprintf("couldn't allocate filename array\n");
+            MPI_Abort(MPI_COMM_WORLD, -1);
+        }
+    }
+
     /* Set the internal transition size to allow use of derived datatypes
      * without having to actually read or write large datasets (>2GB).
      */
@@ -4664,6 +4677,11 @@ main(int argc, char **argv)
 
     if (mpi_rank == 0)
         HDremove(FILENAME[0]);
+
+    for (int i = 0; i < NFILENAME; i++) {
+        HDfree(filenames[i]);
+        filenames[i] = NULL;
+    }
 
     H5close();
     if (test_comm != MPI_COMM_WORLD) {

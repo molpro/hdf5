@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -11,7 +10,6 @@
  * help@hdfgroup.org.                                                        *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <cstring>
 #include <string>
 
 #include "H5Include.h"
@@ -219,8 +217,7 @@ EnumType::insert(const H5std_string &name, void *value) const
 H5std_string
 EnumType::nameOf(void *value, size_t size) const
 {
-    char *name_C = new char[size + 1]; // temporary C-string for C API
-    memset(name_C, 0, size + 1);
+    char *name_C = new char[size + 1](); // temporary C-string for C API
 
     // Calls C routine H5Tenum_nameof to get the name of the specified enum type
     herr_t ret_value = H5Tenum_nameof(id, value, name_C, size);

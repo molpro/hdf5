@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.12)
+cmake_minimum_required (VERSION 3.18)
 project (HDF5_CPP_SRC CXX)
 
 #-----------------------------------------------------------------------------
@@ -80,7 +80,7 @@ set (CPP_HDRS
 if (NOT ONLY_SHARED_LIBS)
   add_library (${HDF5_CPP_LIB_TARGET} STATIC ${CPP_SOURCES} ${CPP_HDRS})
   target_include_directories (${HDF5_CPP_LIB_TARGET}
-      PRIVATE "${HDF5_SRC_DIR};${HDF5_SRC_BINARY_DIR};$<$<BOOL:${HDF5_ENABLE_PARALLEL}>:${MPI_C_INCLUDE_DIRS}>"
+      PRIVATE "${HDF5_SRC_INCLUDE_DIRS};${HDF5_SRC_BINARY_DIR};$<$<BOOL:${HDF5_ENABLE_PARALLEL}>:${MPI_C_INCLUDE_DIRS}>"
       INTERFACE "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>"
   )
   target_compile_options(${HDF5_CPP_LIB_TARGET} PRIVATE "${HDF5_CMAKE_CXX_FLAGS}")
@@ -98,7 +98,7 @@ endif ()
 if (BUILD_SHARED_LIBS)
   add_library (${HDF5_CPP_LIBSH_TARGET} SHARED ${CPP_SOURCES} ${CPP_HDRS})
   target_include_directories (${HDF5_CPP_LIBSH_TARGET}
-      PRIVATE "${HDF5_SRC_DIR};${HDF5_SRC_BINARY_DIR};$<$<BOOL:${HDF5_ENABLE_PARALLEL}>:${MPI_C_INCLUDE_DIRS}>"
+      PRIVATE "${HDF5_SRC_INCLUDE_DIRS};${HDF5_SRC_BINARY_DIR};$<$<BOOL:${HDF5_ENABLE_PARALLEL}>:${MPI_C_INCLUDE_DIRS}>"
       INTERFACE "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>"
   )
   target_compile_options(${HDF5_CPP_LIBSH_TARGET} PRIVATE "${HDF5_CMAKE_CXX_FLAGS}")
@@ -173,8 +173,8 @@ endif ()
 #-----------------------------------------------------------------------------
 set (_PKG_CONFIG_PREFIX ${CMAKE_INSTALL_PREFIX})
 set (_PKG_CONFIG_EXEC_PREFIX \${prefix})
-set (_PKG_CONFIG_LIBDIR \${exec_prefix}/lib)
-set (_PKG_CONFIG_INCLUDEDIR \${prefix}/include)
+set (_PKG_CONFIG_LIBDIR \${exec_prefix}/${HDF5_INSTALL_LIB_DIR})
+set (_PKG_CONFIG_INCLUDEDIR \${prefix}/${HDF5_INSTALL_INCLUDE_DIR})
 set (_PKG_CONFIG_LIBNAME "${HDF5_CPP_LIB_CORENAME}")
 set (_PKG_CONFIG_VERSION "${HDF5_PACKAGE_VERSION}")
 
@@ -187,8 +187,8 @@ if (BUILD_SHARED_LIBS)
   set (_PKG_CONFIG_SH_LIBS "${_PKG_CONFIG_SH_LIBS} -l${HDF5_CPP_LIB_CORENAME}")
 endif ()
 
-set (_PKG_CONFIG_REQUIRES "${HDF5_LIB_CORENAME}-${HDF5_PACKAGE_VERSION}")
-set (_PKG_CONFIG_REQUIRES_PRIVATE "${HDF5_LIB_CORENAME}-${HDF5_PACKAGE_VERSION}")
+set (_PKG_CONFIG_REQUIRES "${HDF5_LIB_CORENAME} = ${HDF5_PACKAGE_VERSION}")
+set (_PKG_CONFIG_REQUIRES_PRIVATE "${HDF5_LIB_CORENAME} = ${HDF5_PACKAGE_VERSION}")
 
 configure_file (
     ${HDF_CONFIG_DIR}/libhdf5.pc.in

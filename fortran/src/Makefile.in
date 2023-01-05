@@ -16,7 +16,6 @@
 
 #
 # Copyright by The HDF Group.
-# Copyright by the Board of Trustees of the University of Illinois.
 # All rights reserved.
 #
 # This file is part of HDF5.  The full HDF5 copyright notice, including
@@ -115,6 +114,12 @@ host_triplet = @host@
 @FORTRAN_SHARED_CONDITIONAL_FALSE@am__append_1 = -static
 noinst_PROGRAMS = H5match_types$(EXEEXT) H5_buildiface$(EXEEXT)
 TESTS =
+
+# log VFD currently has file space allocation bugs
+# VFD_LIST += log
+@DIRECT_VFD_CONDITIONAL_TRUE@am__append_2 = direct
+@ROS3_VFD_CONDITIONAL_TRUE@am__append_3 = ros3
+@HDFS_VFD_CONDITIONAL_TRUE@am__append_4 = hdfs
 subdir = fortran/src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/aclocal_fc.m4 \
@@ -172,7 +177,7 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(libdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libhdf5_fortran_la_DEPENDENCIES = $(LIBHDF5)
-am_libhdf5_fortran_la_OBJECTS = H5f90global.lo H5fortran_types.lo \
+am_libhdf5_fortran_la_OBJECTS = H5fortran_types.lo H5f90global.lo \
 	H5_ff.lo H5Aff.lo H5Dff.lo H5Eff.lo H5Fff.lo H5Gff.lo H5Iff.lo \
 	H5Lff.lo H5Off.lo H5Pff.lo H5Rff.lo H5Sff.lo H5Tff.lo \
 	H5VLff.lo H5Zff.lo H5_gen.lo H5fortkit.lo H5f90kit.lo H5_f.lo \
@@ -507,6 +512,7 @@ DIAGS = @DIAGS@
 DIMENSION_SCALES_WITH_NEW_REF = @DIMENSION_SCALES_WITH_NEW_REF@
 DIRECT_VFD = @DIRECT_VFD@
 DLLTOOL = @DLLTOOL@
+DOXYGEN_DIR = @DOXYGEN_DIR@
 DOXYGEN_EXAMPLES_DIRECTORY = @DOXYGEN_EXAMPLES_DIRECTORY@
 DOXYGEN_EXTERNAL_SEARCH = @DOXYGEN_EXTERNAL_SEARCH@
 DOXYGEN_HTML_EXTRA_FILES = @DOXYGEN_HTML_EXTRA_FILES@
@@ -582,6 +588,9 @@ H5CONFIG_F_NUM_IKIND = @H5CONFIG_F_NUM_IKIND@
 H5CONFIG_F_NUM_RKIND = @H5CONFIG_F_NUM_RKIND@
 H5CONFIG_F_RKIND = @H5CONFIG_F_RKIND@
 H5CONFIG_F_RKIND_SIZEOF = @H5CONFIG_F_RKIND_SIZEOF@
+H5DWALK_CPPFLAGS = @H5DWALK_CPPFLAGS@
+H5DWALK_LDFLAGS = @H5DWALK_LDFLAGS@
+H5DWALK_LIBS = @H5DWALK_LIBS@
 H5_CFLAGS = @H5_CFLAGS@
 H5_CLASSPATH = @H5_CLASSPATH@
 H5_CPPFLAGS = @H5_CPPFLAGS@
@@ -597,12 +606,13 @@ H5_TEST_BUILDDIR = @H5_TEST_BUILDDIR@
 H5_UTILS_TEST_BUILDDIR = @H5_UTILS_TEST_BUILDDIR@
 H5_VERSION = @H5_VERSION@
 HADDR_T = @HADDR_T@
-HAVE_DMALLOC = @HAVE_DMALLOC@
 HAVE_Fortran_INTEGER_SIZEOF_16 = @HAVE_Fortran_INTEGER_SIZEOF_16@
 HAVE_LIBHDFS = @HAVE_LIBHDFS@
+HAVE_MERCURY = @HAVE_MERCURY@
 HAVE_PTHREAD = @HAVE_PTHREAD@
 HDF5_DOXYGEN = @HDF5_DOXYGEN@
 HDF5_HL = @HDF5_HL@
+HDF5_HL_GIF_TOOLS = @HDF5_HL_GIF_TOOLS@
 HDF5_HL_TOOLS = @HDF5_HL_TOOLS@
 HDF5_INTERFACES = @HDF5_INTERFACES@
 HDF5_TESTS = @HDF5_TESTS@
@@ -653,10 +663,8 @@ MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MAP_API = @MAP_API@
-MEMORYALLOCSANITYCHECK = @MEMORYALLOCSANITYCHECK@
 MIRROR_VFD = @MIRROR_VFD@
 MKDIR_P = @MKDIR_P@
-MPE = @MPE@
 NM = @NM@
 NMEDIT = @NMEDIT@
 OBJDUMP = @OBJDUMP@
@@ -687,11 +695,11 @@ PAC_FORTRAN_NATIVE_REAL_SIZEOF = @PAC_FORTRAN_NATIVE_REAL_SIZEOF@
 PAC_FORTRAN_NUM_INTEGER_KINDS = @PAC_FORTRAN_NUM_INTEGER_KINDS@
 PARALLEL = @PARALLEL@
 PARALLEL_FILTERED_WRITES = @PARALLEL_FILTERED_WRITES@
+PARALLEL_TOOLS = @PARALLEL_TOOLS@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PREADWRITE = @PREADWRITE@
 PROFILING = @PROFILING@
 RANLIB = @RANLIB@
-RECURSIVE_RW_LOCKS = @RECURSIVE_RW_LOCKS@
 ROOT = @ROOT@
 ROS3_VFD = @ROS3_VFD@
 RUNPARALLEL = @RUNPARALLEL@
@@ -707,6 +715,7 @@ STATIC_EXEC = @STATIC_EXEC@
 STATIC_SHARED = @STATIC_SHARED@
 STRICT_FORMAT_CHECKS = @STRICT_FORMAT_CHECKS@
 STRIP = @STRIP@
+SUBFILING_VFD = @SUBFILING_VFD@
 SYMBOLS = @SYMBOLS@
 TESTPARALLEL = @TESTPARALLEL@
 TESTS_JUNIT = @TESTS_JUNIT@
@@ -753,6 +762,7 @@ enable_shared = @enable_shared@
 enable_static = @enable_static@
 examplesdir = @examplesdir@
 exec_prefix = @exec_prefix@
+fmoddir = @fmoddir@
 fortran_linux_linker_option = @fortran_linux_linker_option@
 host = @host@
 host_alias = @host_alias@
@@ -834,37 +844,36 @@ TRACE = perl $(top_srcdir)/bin/trace
 
 # .chkexe files are used to mark tests that have run successfully.
 # .chklog files are output from those tests.
-# *.clog and *.clog2 are from the MPE option.
-CHECK_CLEANFILES = *.chkexe *.chklog *.clog *.clog2
+CHECK_CLEANFILES = *.chkexe *.chklog
 
 # Add libtool shared library version numbers to the HDF5 library
 # See libtool versioning documentation online.
 # After making changes, run bin/reconfigure to update other configure related
 # files like Makefile.in.
-LT_VERS_INTERFACE = 202
-LT_VERS_AGE = 2
+LT_VERS_INTERFACE = 310
+LT_VERS_AGE = 0
 LT_VERS_REVISION = 0
-LT_CXX_VERS_INTERFACE = 202
+LT_CXX_VERS_INTERFACE = 310
 LT_CXX_VERS_REVISION = 0
-LT_CXX_VERS_AGE = 2
-LT_F_VERS_INTERFACE = 201
-LT_F_VERS_REVISION = 1
-LT_F_VERS_AGE = 1
-LT_HL_VERS_INTERFACE = 201
+LT_CXX_VERS_AGE = 0
+LT_F_VERS_INTERFACE = 310
+LT_F_VERS_REVISION = 0
+LT_F_VERS_AGE = 0
+LT_HL_VERS_INTERFACE = 310
 LT_HL_VERS_REVISION = 0
-LT_HL_VERS_AGE = 1
-LT_HL_CXX_VERS_INTERFACE = 201
+LT_HL_VERS_AGE = 0
+LT_HL_CXX_VERS_INTERFACE = 310
 LT_HL_CXX_VERS_REVISION = 0
-LT_HL_CXX_VERS_AGE = 1
-LT_HL_F_VERS_INTERFACE = 200
-LT_HL_F_VERS_REVISION = 2
+LT_HL_CXX_VERS_AGE = 0
+LT_HL_F_VERS_INTERFACE = 310
+LT_HL_F_VERS_REVISION = 0
 LT_HL_F_VERS_AGE = 0
-LT_JAVA_VERS_INTERFACE = 201
-LT_JAVA_VERS_REVISION = 1
-LT_JAVA_VERS_AGE = 1
-LT_TOOLS_VERS_INTERFACE = 201
-LT_TOOLS_VERS_REVISION = 1
-LT_TOOLS_VERS_AGE = 1
+LT_JAVA_VERS_INTERFACE = 310
+LT_JAVA_VERS_REVISION = 0
+LT_JAVA_VERS_AGE = 0
+LT_TOOLS_VERS_INTERFACE = 310
+LT_TOOLS_VERS_REVISION = 0
+LT_TOOLS_VERS_AGE = 0
 AM_FCLIBS = $(LIBHDF5)
 
 # This is our main target, the fortran library
@@ -874,8 +883,8 @@ lib_LTLIBRARIES = libhdf5_fortran.la
 libhdf5_fortran_la_LDFLAGS = -version-info $(LT_F_VERS_INTERFACE):$(LT_F_VERS_REVISION):$(LT_F_VERS_AGE) $(AM_LDFLAGS)
 
 # Source files for the library.
-libhdf5_fortran_la_SOURCES = H5f90global.F90 \
-          H5fortran_types.F90 H5_ff.F90 H5Aff.F90 H5Dff.F90 H5Eff.F90    \
+libhdf5_fortran_la_SOURCES = H5fortran_types.F90 H5f90global.F90 \
+	  H5_ff.F90 H5Aff.F90 H5Dff.F90 H5Eff.F90    \
           H5Fff.F90 H5Gff.F90 H5Iff.F90 H5Lff.F90 H5Off.F90 H5Pff.F90 H5Rff.F90 H5Sff.F90    \
           H5Tff.F90 H5VLff.F90 H5Zff.F90 H5_gen.F90 H5fortkit.F90 \
           H5f90kit.c H5_f.c H5Af.c H5Df.c H5Ef.c H5Ff.c H5Gf.c           \
@@ -910,7 +919,7 @@ H5_buildiface_SOURCES = H5_buildiface.F90
 # Mark this directory as part of the Fortran API
 FORTRAN_API = yes
 PPFCCOMPILE = $(FC) $(FCDEFS) $(DEFAULT_INCLUDES)  $(FCINCLUDES) $(AM_FCCPPFLAGS) $(FCCPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS)
-LTPPFCCOMPILE = $(LIBTOOL) --tag=FC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(PPFCCOMPILE)
+LTPPFCCOMPILE = $(LIBTOOL) --silent --tag=FC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(PPFCCOMPILE)
 
 # Automake needs to be taught how to build lib, progs and tests targets.
 # These will be filled in automatically for the most part (e.g.,
@@ -932,6 +941,17 @@ TEST_PROG_CHKEXE = $(TEST_PROG:=.chkexe_)
 TEST_PROG_PARA_CHKEXE = $(TEST_PROG_PARA:=.chkexe_)
 TEST_SCRIPT_CHKSH = $(TEST_SCRIPT:=.chkexe_)
 TEST_SCRIPT_PARA_CHKSH = $(TEST_SCRIPT_PARA:=.chkexe_)
+VFD_LIST = sec2 stdio core core_paged split multi family splitter \
+	$(am__append_2) $(am__append_3) $(am__append_4)
+
+# Test with just the native connector, with a single pass-through connector
+# and with a doubly-stacked pass-through.
+#
+# native = 0
+# pass-through = 1
+VOL_LIST = native "pass_through under_vol=0;under_info={}" \
+           "pass_through under_vol=1;under_info={under_vol=0;under_info={}}"
+
 all: $(BUILT_SOURCES) H5config_f.inc
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -1490,15 +1510,15 @@ clean-local:
 
 install-data-local:
 	@if test -n "$(F9XMODEXT)" && test "X$(F9XMODEXT)" != "Xo"; then \
-	  $(CP) $(top_builddir)/$(subdir)/*.$(F9XMODEXT) $(DESTDIR)$(includedir)/. ; \
+	  $(CP) $(top_builddir)/$(subdir)/*.$(F9XMODEXT) $(DESTDIR)$(fmoddir)/. ; \
 	fi
 	$(CP) $(top_builddir)/$(subdir)/H5f90i_gen.h $(DESTDIR)$(includedir)/.
 	$(CP) $(top_srcdir)/fortran/src/H5f90i.h $(DESTDIR)$(includedir)/.
 
 uninstall-local:
 	@if test -n "$(F9XMODEXT)" -a "X$(F9XMODEXT)" != "Xo"; then      \
-	  if test -f "$(includedir)/hdf5.$(F9XMODEXT)" -o -f "$(includedir)/HDF5.$(F9XMODEXT)"; then \
-	    set -x; $(RM) $(DESTDIR)$(includedir)/*.$(F9XMODEXT);                 \
+	  if test -f "$(fmoddir)/hdf5.$(F9XMODEXT)" -o -f "$(fmoddir)/HDF5.$(F9XMODEXT)"; then \
+	    set -x; $(RM) $(DESTDIR)$(fmoddir)/*.$(F9XMODEXT);                 \
 	  fi;                                                           \
 	fi;								\
 	$(RM) $(DESTDIR)$(bindir)/$(H5FC_NAME)
@@ -1528,7 +1548,7 @@ H5f90global.lo:      $(srcdir)/H5f90global.F90 H5fortran_types.lo
 H5_buildiface.lo:    $(srcdir)/H5_buildiface.F90
 H5_ff.lo:            $(srcdir)/H5_ff.F90 H5Fff.lo H5f90global.lo
 H5Aff.lo:            $(srcdir)/H5Aff.F90 H5f90global.lo
-H5Dff.lo:            $(srcdir)/H5Dff.F90 H5f90global.lo
+H5Dff.lo:            $(srcdir)/H5Dff.F90 H5f90global.lo H5_ff.lo
 H5Eff.lo:            $(srcdir)/H5Eff.F90 H5f90global.lo
 H5Fff.lo:            $(srcdir)/H5Fff.F90 H5f90global.lo
 H5Gff.lo:            $(srcdir)/H5Gff.F90 H5f90global.lo
@@ -1551,8 +1571,10 @@ HDF5.lo:             $(srcdir)/HDF5.F90 H5f90global.lo H5_ff.lo H5Aff.lo  \
 
 # Treat all .f90 and .F90 files as preprocessed Fortran.
 .f90.o:
+	@if $(AM_V_P); then set -x; else echo "  PPFC     $@"; fi;    \
 	$(PPFCCOMPILE) -c -o $@ $<
 .F90.o:
+	@if $(AM_V_P); then set -x; else echo "  PPFC     $@"; fi;    \
 	$(PPFCCOMPILE) -c -o $@ $<
 
 # lib/progs/tests targets recurse into subdirectories. build-* targets
@@ -1639,7 +1661,7 @@ $(TEST_PROG_CHKEXE) $(TEST_PROG_PARA_CHKEXE) dummy.chkexe_:
 	   tname=$(@:.chkexe_=)$(EXEEXT);\
 	   log=$(@:.chkexe_=.chklog); \
 	   echo "============================"; \
-	   if $(top_srcdir)/bin/newer $(@:.chkexe_=.chkexe) $${tname}; then \
+	   if [ $(@:.chkexe_=.chkexe) -nt $${tname} ]; then \
 	      echo "No need to test $${tname} again."; \
 	   else \
               if test -n "$(REALTIMEOUTPUT)"; then \
@@ -1727,7 +1749,14 @@ $(TEST_SCRIPT_CHKSH) $(TEST_SCRIPT_PARA_CHKSH) dummysh.chkexe_:
 	   chkname=`basename $(@:.chkexe_=.chkexe)`;\
 	   log=`basename $(@:.chkexe_=.chklog)`; \
 	   echo "============================"; \
-	   if $(top_srcdir)/bin/newer $${chkname} $$cmd $(SCRIPT_DEPEND); then \
+	   newer=true; \
+	   for i in $${cmd} $(SCRIPT_DEPEND); do \
+              if [ $${chkname} -ot $$i ]; then \
+		 newer=false; \
+		 break; \
+	      fi; \
+           done; \
+	   if $${newer}; then \
 	      echo "No need to test $${tname} again."; \
 	   else \
 	      echo "============================" > $${log}; \
@@ -1786,6 +1815,14 @@ build-check-p: $(LIB) $(PROGS) $(chk_TESTS)
 	@if test -n "$(TEST_PROG_PARA)$(TEST_SCRIPT_PARA)"; then      \
 	    echo "===Parallel tests in `echo ${PWD} | sed -e s:.*/::` ended `date`===";\
 	fi
+@BUILD_PARALLEL_CONDITIONAL_TRUE@  # MPI I/O VFD is currently incompatible with too many tests in the VFD test set
+@BUILD_PARALLEL_CONDITIONAL_TRUE@  # VFD_LIST += mpio
+@MIRROR_VFD_CONDITIONAL_TRUE@  # Mirror VFD needs network configuration, etc. and isn't easy to set
+@MIRROR_VFD_CONDITIONAL_TRUE@  # reasonable defaults for that info.
+@MIRROR_VFD_CONDITIONAL_TRUE@  # VFD_LIST += mirror
+@SUBFILING_VFD_CONDITIONAL_TRUE@  # Several VFD tests fail with Subfiling since it
+@SUBFILING_VFD_CONDITIONAL_TRUE@  # doesn't currently support collective I/O
+@SUBFILING_VFD_CONDITIONAL_TRUE@  # VFD_LIST += subfiling
 
 # Run test with different Virtual File Driver
 check-vfd: $(LIB) $(PROGS) $(chk_TESTS)

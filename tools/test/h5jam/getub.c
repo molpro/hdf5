@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -21,9 +20,9 @@ void parse_command_line(int argc, const char *const *argv);
 #define PROGRAM_NAME "getub"
 char *nbytes = NULL;
 
-static const char *        s_opts   = "c:";                     /* add more later ? */
-static struct long_options l_opts[] = {{"c", require_arg, 'c'}, /* input file */
-                                       {NULL, 0, '\0'}};
+static const char            *s_opts   = "c:";                     /* add more later ? */
+static struct h5_long_options l_opts[] = {{"c", require_arg, 'c'}, /* input file */
+                                          {NULL, 0, '\0'}};
 
 /*-------------------------------------------------------------------------
  * Function:    usage
@@ -57,10 +56,10 @@ parse_command_line(int argc, const char *const *argv)
     int opt;
 
     /* parse command line options */
-    while ((opt = get_option(argc, argv, s_opts, l_opts)) != EOF) {
+    while ((opt = H5_get_option(argc, argv, s_opts, l_opts)) != EOF) {
         switch ((char)opt) {
             case 'c':
-                nbytes = HDstrdup(opt_arg);
+                nbytes = HDstrdup(H5_optarg);
                 break;
             case '?':
             default:
@@ -69,7 +68,7 @@ parse_command_line(int argc, const char *const *argv)
         } /* end switch */
     }     /* end while */
 
-    if (argc <= opt_ind) {
+    if (argc <= H5_optind) {
         error_msg("missing file name\n");
         usage(h5tools_getprogname());
         HDexit(EXIT_FAILURE);
@@ -81,9 +80,9 @@ main(int argc, char *argv[])
 {
     int      fd = H5I_INVALID_HID;
     unsigned size;
-    char *   filename = NULL;
+    char    *filename = NULL;
     long     res;
-    char *   buf = NULL;
+    char    *buf = NULL;
 
     h5tools_setprogname(PROGRAM_NAME);
     h5tools_setstatus(EXIT_SUCCESS);
@@ -100,13 +99,13 @@ main(int argc, char *argv[])
         goto error;
     } /* end if */
 
-    if (argc <= (opt_ind)) {
+    if (argc <= (H5_optind)) {
         error_msg("missing file name\n");
         usage(h5tools_getprogname());
         goto error;
     } /* end if */
 
-    filename = HDstrdup(argv[opt_ind]);
+    filename = HDstrdup(argv[H5_optind]);
 
     size = 0;
     if (EOF == (res = HDsscanf(nbytes, "%u", &size))) {

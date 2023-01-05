@@ -102,6 +102,12 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 TESTS = $(TEST_SCRIPT)
+
+# log VFD currently has file space allocation bugs
+# VFD_LIST += log
+@DIRECT_VFD_CONDITIONAL_TRUE@am__append_1 = direct
+@ROS3_VFD_CONDITIONAL_TRUE@am__append_2 = ros3
+@HDFS_VFD_CONDITIONAL_TRUE@am__append_3 = hdfs
 subdir = java/examples/intro
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/aclocal_fc.m4 \
@@ -410,6 +416,7 @@ DIAGS = @DIAGS@
 DIMENSION_SCALES_WITH_NEW_REF = @DIMENSION_SCALES_WITH_NEW_REF@
 DIRECT_VFD = @DIRECT_VFD@
 DLLTOOL = @DLLTOOL@
+DOXYGEN_DIR = @DOXYGEN_DIR@
 DOXYGEN_EXAMPLES_DIRECTORY = @DOXYGEN_EXAMPLES_DIRECTORY@
 DOXYGEN_EXTERNAL_SEARCH = @DOXYGEN_EXTERNAL_SEARCH@
 DOXYGEN_HTML_EXTRA_FILES = @DOXYGEN_HTML_EXTRA_FILES@
@@ -485,6 +492,9 @@ H5CONFIG_F_NUM_IKIND = @H5CONFIG_F_NUM_IKIND@
 H5CONFIG_F_NUM_RKIND = @H5CONFIG_F_NUM_RKIND@
 H5CONFIG_F_RKIND = @H5CONFIG_F_RKIND@
 H5CONFIG_F_RKIND_SIZEOF = @H5CONFIG_F_RKIND_SIZEOF@
+H5DWALK_CPPFLAGS = @H5DWALK_CPPFLAGS@
+H5DWALK_LDFLAGS = @H5DWALK_LDFLAGS@
+H5DWALK_LIBS = @H5DWALK_LIBS@
 H5_CFLAGS = @H5_CFLAGS@
 H5_CLASSPATH = @H5_CLASSPATH@
 H5_CPPFLAGS = @H5_CPPFLAGS@
@@ -500,12 +510,13 @@ H5_TEST_BUILDDIR = @H5_TEST_BUILDDIR@
 H5_UTILS_TEST_BUILDDIR = @H5_UTILS_TEST_BUILDDIR@
 H5_VERSION = @H5_VERSION@
 HADDR_T = @HADDR_T@
-HAVE_DMALLOC = @HAVE_DMALLOC@
 HAVE_Fortran_INTEGER_SIZEOF_16 = @HAVE_Fortran_INTEGER_SIZEOF_16@
 HAVE_LIBHDFS = @HAVE_LIBHDFS@
+HAVE_MERCURY = @HAVE_MERCURY@
 HAVE_PTHREAD = @HAVE_PTHREAD@
 HDF5_DOXYGEN = @HDF5_DOXYGEN@
 HDF5_HL = @HDF5_HL@
+HDF5_HL_GIF_TOOLS = @HDF5_HL_GIF_TOOLS@
 HDF5_HL_TOOLS = @HDF5_HL_TOOLS@
 HDF5_INTERFACES = @HDF5_INTERFACES@
 HDF5_TESTS = @HDF5_TESTS@
@@ -556,10 +567,8 @@ MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MAP_API = @MAP_API@
-MEMORYALLOCSANITYCHECK = @MEMORYALLOCSANITYCHECK@
 MIRROR_VFD = @MIRROR_VFD@
 MKDIR_P = @MKDIR_P@
-MPE = @MPE@
 NM = @NM@
 NMEDIT = @NMEDIT@
 OBJDUMP = @OBJDUMP@
@@ -590,11 +599,11 @@ PAC_FORTRAN_NATIVE_REAL_SIZEOF = @PAC_FORTRAN_NATIVE_REAL_SIZEOF@
 PAC_FORTRAN_NUM_INTEGER_KINDS = @PAC_FORTRAN_NUM_INTEGER_KINDS@
 PARALLEL = @PARALLEL@
 PARALLEL_FILTERED_WRITES = @PARALLEL_FILTERED_WRITES@
+PARALLEL_TOOLS = @PARALLEL_TOOLS@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PREADWRITE = @PREADWRITE@
 PROFILING = @PROFILING@
 RANLIB = @RANLIB@
-RECURSIVE_RW_LOCKS = @RECURSIVE_RW_LOCKS@
 ROOT = @ROOT@
 ROS3_VFD = @ROS3_VFD@
 RUNPARALLEL = @RUNPARALLEL@
@@ -610,6 +619,7 @@ STATIC_EXEC = @STATIC_EXEC@
 STATIC_SHARED = @STATIC_SHARED@
 STRICT_FORMAT_CHECKS = @STRICT_FORMAT_CHECKS@
 STRIP = @STRIP@
+SUBFILING_VFD = @SUBFILING_VFD@
 SYMBOLS = @SYMBOLS@
 TESTPARALLEL = @TESTPARALLEL@
 TESTS_JUNIT = @TESTS_JUNIT@
@@ -656,6 +666,7 @@ enable_shared = @enable_shared@
 enable_static = @enable_static@
 examplesdir = @examplesdir@
 exec_prefix = @exec_prefix@
+fmoddir = @fmoddir@
 fortran_linux_linker_option = @fortran_linux_linker_option@
 host = @host@
 host_alias = @host_alias@
@@ -737,8 +748,7 @@ TRACE = perl $(top_srcdir)/bin/trace
 
 # .chkexe files are used to mark tests that have run successfully.
 # .chklog files are output from those tests.
-# *.clog and *.clog2 are from the MPE option.
-CHECK_CLEANFILES = *.chkexe *.chklog *.clog *.clog2
+CHECK_CLEANFILES = *.chkexe *.chklog
 
 # Mark this directory as part of the JNI API
 JAVA_API = yes
@@ -782,6 +792,17 @@ TEST_PROG_CHKEXE = $(TEST_PROG:=.chkexe_)
 TEST_PROG_PARA_CHKEXE = $(TEST_PROG_PARA:=.chkexe_)
 TEST_SCRIPT_CHKSH = $(TEST_SCRIPT:=.chkexe_)
 TEST_SCRIPT_PARA_CHKSH = $(TEST_SCRIPT_PARA:=.chkexe_)
+VFD_LIST = sec2 stdio core core_paged split multi family splitter \
+	$(am__append_1) $(am__append_2) $(am__append_3)
+
+# Test with just the native connector, with a single pass-through connector
+# and with a doubly-stacked pass-through.
+#
+# native = 0
+# pass-through = 1
+VOL_LIST = native "pass_through under_vol=0;under_info={}" \
+           "pass_through under_vol=1;under_info={under_vol=0;under_info={}}"
+
 all: all-am
 
 .SUFFIXES:
@@ -1252,7 +1273,7 @@ $(TEST_PROG_CHKEXE) $(TEST_PROG_PARA_CHKEXE) dummy.chkexe_:
 	   tname=$(@:.chkexe_=)$(EXEEXT);\
 	   log=$(@:.chkexe_=.chklog); \
 	   echo "============================"; \
-	   if $(top_srcdir)/bin/newer $(@:.chkexe_=.chkexe) $${tname}; then \
+	   if [ $(@:.chkexe_=.chkexe) -nt $${tname} ]; then \
 	      echo "No need to test $${tname} again."; \
 	   else \
               if test -n "$(REALTIMEOUTPUT)"; then \
@@ -1340,7 +1361,14 @@ $(TEST_SCRIPT_CHKSH) $(TEST_SCRIPT_PARA_CHKSH) dummysh.chkexe_:
 	   chkname=`basename $(@:.chkexe_=.chkexe)`;\
 	   log=`basename $(@:.chkexe_=.chklog)`; \
 	   echo "============================"; \
-	   if $(top_srcdir)/bin/newer $${chkname} $$cmd $(SCRIPT_DEPEND); then \
+	   newer=true; \
+	   for i in $${cmd} $(SCRIPT_DEPEND); do \
+              if [ $${chkname} -ot $$i ]; then \
+		 newer=false; \
+		 break; \
+	      fi; \
+           done; \
+	   if $${newer}; then \
 	      echo "No need to test $${tname} again."; \
 	   else \
 	      echo "============================" > $${log}; \
@@ -1399,6 +1427,14 @@ build-check-p: $(LIB) $(PROGS) $(chk_TESTS)
 	@if test -n "$(TEST_PROG_PARA)$(TEST_SCRIPT_PARA)"; then      \
 	    echo "===Parallel tests in `echo ${PWD} | sed -e s:.*/::` ended `date`===";\
 	fi
+@BUILD_PARALLEL_CONDITIONAL_TRUE@  # MPI I/O VFD is currently incompatible with too many tests in the VFD test set
+@BUILD_PARALLEL_CONDITIONAL_TRUE@  # VFD_LIST += mpio
+@MIRROR_VFD_CONDITIONAL_TRUE@  # Mirror VFD needs network configuration, etc. and isn't easy to set
+@MIRROR_VFD_CONDITIONAL_TRUE@  # reasonable defaults for that info.
+@MIRROR_VFD_CONDITIONAL_TRUE@  # VFD_LIST += mirror
+@SUBFILING_VFD_CONDITIONAL_TRUE@  # Several VFD tests fail with Subfiling since it
+@SUBFILING_VFD_CONDITIONAL_TRUE@  # doesn't currently support collective I/O
+@SUBFILING_VFD_CONDITIONAL_TRUE@  # VFD_LIST += subfiling
 
 # Run test with different Virtual File Driver
 check-vfd: $(LIB) $(PROGS) $(chk_TESTS)

@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -114,8 +113,8 @@ done:
  *-------------------------------------------------------------------------
  */
 herr_t
-H5C_get_cache_size(H5C_t *cache_ptr, size_t *max_size_ptr, size_t *min_clean_size_ptr, size_t *cur_size_ptr,
-                   uint32_t *cur_num_entries_ptr)
+H5C_get_cache_size(const H5C_t *cache_ptr, size_t *max_size_ptr, size_t *min_clean_size_ptr,
+                   size_t *cur_size_ptr, uint32_t *cur_num_entries_ptr)
 {
     herr_t ret_value = SUCCEED; /* Return value */
 
@@ -151,7 +150,7 @@ done:
  *-------------------------------------------------------------------------
  */
 herr_t
-H5C_get_cache_flush_in_progress(H5C_t *cache_ptr, hbool_t *flush_in_progress_ptr)
+H5C_get_cache_flush_in_progress(const H5C_t *cache_ptr, hbool_t *flush_in_progress_ptr)
 {
     herr_t ret_value = SUCCEED; /* Return value */
 
@@ -184,7 +183,7 @@ done:
  *-------------------------------------------------------------------------
  */
 herr_t
-H5C_get_cache_hit_rate(H5C_t *cache_ptr, double *hit_rate_ptr)
+H5C_get_cache_hit_rate(const H5C_t *cache_ptr, double *hit_rate_ptr)
 {
     herr_t ret_value = SUCCEED; /* Return value */
 
@@ -201,7 +200,7 @@ H5C_get_cache_hit_rate(H5C_t *cache_ptr, double *hit_rate_ptr)
     if (cache_ptr->cache_accesses > 0)
         *hit_rate_ptr = ((double)(cache_ptr->cache_hits)) / ((double)(cache_ptr->cache_accesses));
     else
-        *hit_rate_ptr = 0.0f;
+        *hit_rate_ptr = 0.0;
 
 done:
     FUNC_LEAVE_NOAPI(ret_value)
@@ -235,7 +234,7 @@ H5C_get_entry_status(const H5F_t *f, haddr_t addr, size_t *size_ptr, hbool_t *in
                      hbool_t *is_corked_ptr, hbool_t *is_flush_dep_parent_ptr,
                      hbool_t *is_flush_dep_child_ptr, hbool_t *image_up_to_date_ptr)
 {
-    H5C_t *            cache_ptr;
+    H5C_t             *cache_ptr;
     H5C_cache_entry_t *entry_ptr = NULL;
     herr_t             ret_value = SUCCEED; /* Return value */
 
@@ -367,7 +366,7 @@ H5C_get_aux_ptr(const H5C_t *cache_ptr)
 herr_t
 H5C_get_entry_ring(const H5F_t *f, haddr_t addr, H5C_ring_t *ring)
 {
-    H5C_t *            cache_ptr;           /* Pointer to cache */
+    H5C_t             *cache_ptr;           /* Pointer to cache */
     H5C_cache_entry_t *entry_ptr;           /* Pointer to cache entry at address */
     herr_t             ret_value = SUCCEED; /* Return value */
 
@@ -405,7 +404,7 @@ done:
  *-------------------------------------------------------------------------
  */
 herr_t
-H5C_get_mdc_image_info(H5C_t *cache_ptr, haddr_t *image_addr, hsize_t *image_len)
+H5C_get_mdc_image_info(const H5C_t *cache_ptr, haddr_t *image_addr, hsize_t *image_len)
 {
     herr_t ret_value = SUCCEED; /* Return value */
 

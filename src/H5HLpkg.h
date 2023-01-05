@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -51,9 +50,8 @@ H5FL_BLK_EXTERN(lheap_chunk);
  *      error reporting macros.
  */
 #ifdef H5HL_PACKAGE
-#define H5_MY_PKG      H5HL
-#define H5_MY_PKG_ERR  H5E_HEAP
-#define H5_MY_PKG_INIT NO
+#define H5_MY_PKG     H5HL
+#define H5_MY_PKG_ERR H5E_HEAP
 #endif
 
 #define H5HL_SIZEOF_HDR(F)                                                                                   \
@@ -101,7 +99,7 @@ struct H5HL_t {
     H5HL_dblk_t *dblk;       /* The data block object for the heap                   */
     haddr_t      dblk_addr;  /* address of data block                                */
     size_t       dblk_size;  /* size of heap data block on disk and in mem           */
-    uint8_t *    dblk_image; /* The data block image                                 */
+    uint8_t     *dblk_image; /* The data block image                                 */
 };
 
 /* Struct for heap data block */

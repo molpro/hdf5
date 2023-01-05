@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -35,7 +34,7 @@
 
 typedef struct {
     H5O_token_t obj_token; /* Object token */
-    char *      path;      /* Object path */
+    char       *path;      /* Object path */
 } ref_path_node_t;
 
 static H5SL_t *ref_path_table = NULL; /* the "table" (implemented with a skip list) */

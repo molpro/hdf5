@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -42,11 +41,11 @@ Gif2Mem(GIFBYTE *MemGif, GIFTOMEM *GifMemoryStruct)
      * The gif structure outline for passing data to memory is given in gif.h.
      * These pointers are redundant, should take them out in ver. 2
      */
-    GIFHEAD *           gifHead;           /* GIF Header structure            */
-    GIFIMAGEDESC **     gifImageDesc;      /* Logical Image Descriptor struct */
-    GIFPLAINTEXT **     gifPlainText;      /* Plain Text Extension structure  */
-    GIFAPPLICATION **   gifApplication;    /* Application Extension structure */
-    GIFCOMMENT **       gifComment;        /* Comment Extension structure     */
+    GIFHEAD            *gifHead;           /* GIF Header structure            */
+    GIFIMAGEDESC      **gifImageDesc;      /* Logical Image Descriptor struct */
+    GIFPLAINTEXT      **gifPlainText;      /* Plain Text Extension structure  */
+    GIFAPPLICATION    **gifApplication;    /* Application Extension structure */
+    GIFCOMMENT        **gifComment;        /* Comment Extension structure     */
     GIFGRAPHICCONTROL **gifGraphicControl; /* Graphic Control Extension strct */
 
     GIFWORD  i;          /* Loop counter                                 */

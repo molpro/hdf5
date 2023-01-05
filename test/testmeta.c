@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -83,7 +82,7 @@ main(void)
 
     for (i = 0; i < NEXTARRAYS; i++) {
         /* Create dataset */
-        HDsprintf(name, "/ExtArray%06d", i);
+        HDsnprintf(name, sizeof(name), "/ExtArray%06d", i);
         dataset_id =
             H5Dcreate2(file_id, name, H5T_NATIVE_FLOAT, dataspace_id, H5P_DEFAULT, prop_id, H5P_DEFAULT);
 
@@ -108,7 +107,7 @@ main(void)
         floatval = (float)j;
 
         /* Create group to hold data arrays for this object */
-        HDsprintf(name, "/DataArray/%06d", j);
+        HDsnprintf(name, sizeof(name), "/DataArray/%06d", j);
         group_id = H5Gcreate2(file_id, name, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
         if (group_id < 0) {
             HDfprintf(stderr, "Failed to create DataArray group.\n");
@@ -124,7 +123,7 @@ main(void)
             dataspace_id = H5Screate_simple(1, dims, maxdims);
 
             /* Create dataset */
-            HDsprintf(name, "DataArray%06d", i);
+            HDsnprintf(name, sizeof(name), "DataArray%06d", i);
             dataset_id = H5Dcreate2(group_id, name, H5T_NATIVE_FLOAT, dataspace_id, H5P_DEFAULT, H5P_DEFAULT,
                                     H5P_DEFAULT);
             if (dataset_id < 0) {
@@ -170,7 +169,7 @@ main(void)
         /* Extend attribute arrays */
         for (i = 0; i < NEXTARRAYS; i++) {
             /* Open extendable dataset */
-            HDsprintf(name, "/ExtArray%06d", i);
+            HDsnprintf(name, sizeof(name), "/ExtArray%06d", i);
             dataset_id = H5Dopen2(file_id, name, H5P_DEFAULT);
             if (dataset_id < 0) {
                 HDfprintf(stderr, "Failed to open ExtArray dataset.\n");

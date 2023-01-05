@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -232,6 +231,7 @@ void test_plist_ed(void);
 void external_links(void);
 void zero_dim_dset(void);
 void test_file_properties(void);
+void test_delete(void);
 void multiple_dset_write(void);
 void multiple_group_write(void);
 void multiple_group_read(void);
@@ -293,6 +293,7 @@ void test_dense_attr(void);
 void test_partial_no_selection_coll_md_read(void);
 void test_multi_chunk_io_addrmap_issue(void);
 void test_link_chunk_io_sort_chunk_issue(void);
+void test_oflush(void);
 
 /* commonly used prototypes */
 hid_t      create_faccess_plist(MPI_Comm comm, MPI_Info info, int l_facc_type);

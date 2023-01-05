@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -26,8 +25,8 @@ extern "C" {
 #include <stdlib.h>
 #include "h5jni.h"
 
-H5_GCC_DIAG_OFF("missing-prototypes")
-H5_GCC_DIAG_OFF("unused-parameter")
+H5_GCC_CLANG_DIAG_OFF("missing-prototypes")
+H5_GCC_CLANG_DIAG_OFF("unused-parameter")
 
 JNIEXPORT jlong JNICALL
 Java_hdf_hdf5lib_HDF5Constants_H5_1QUARTER_1HADDR_1MAX(JNIEnv *env, jclass cls)
@@ -330,9 +329,9 @@ Java_hdf_hdf5lib_HDF5Constants_H5E_1ARGS(JNIEnv *env, jclass cls)
     return H5E_ARGS;
 }
 JNIEXPORT jlong JNICALL
-Java_hdf_hdf5lib_HDF5Constants_H5E_1ATOM(JNIEnv *env, jclass cls)
+Java_hdf_hdf5lib_HDF5Constants_H5E_1ID(JNIEnv *env, jclass cls)
 {
-    return H5E_ATOM;
+    return H5E_ID;
 }
 JNIEXPORT jlong JNICALL
 Java_hdf_hdf5lib_HDF5Constants_H5E_1ATTR(JNIEnv *env, jclass cls)
@@ -340,9 +339,9 @@ Java_hdf_hdf5lib_HDF5Constants_H5E_1ATTR(JNIEnv *env, jclass cls)
     return H5E_ATTR;
 }
 JNIEXPORT jlong JNICALL
-Java_hdf_hdf5lib_HDF5Constants_H5E_1BADATOM(JNIEnv *env, jclass cls)
+Java_hdf_hdf5lib_HDF5Constants_H5E_1BADID(JNIEnv *env, jclass cls)
 {
-    return H5E_BADATOM;
+    return H5E_BADID;
 }
 JNIEXPORT jlong JNICALL
 Java_hdf_hdf5lib_HDF5Constants_H5E_1BADFILE(JNIEnv *env, jclass cls)
@@ -1217,7 +1216,7 @@ Java_hdf_hdf5lib_HDF5Constants_H5ES_1STATUS_1CANCELED(JNIEnv *env, jclass cls)
 }
 
 /* Java does not have unsigned native types */
-H5_GCC_DIAG_OFF("sign-conversion")
+H5_GCC_CLANG_DIAG_OFF("sign-conversion")
 JNIEXPORT jint JNICALL
 Java_hdf_hdf5lib_HDF5Constants_H5F_1ACC_1CREAT(JNIEnv *env, jclass cls)
 {
@@ -1258,7 +1257,7 @@ Java_hdf_hdf5lib_HDF5Constants_H5F_1ACC_1SWMR_1WRITE(JNIEnv *env, jclass cls)
 {
     return H5F_ACC_SWMR_WRITE;
 }
-H5_GCC_DIAG_ON("sign-conversion")
+H5_GCC_CLANG_DIAG_ON("sign-conversion")
 
 JNIEXPORT jint JNICALL
 Java_hdf_hdf5lib_HDF5Constants_H5F_1CLOSE_1DEFAULT(JNIEnv *env, jclass cls)
@@ -1304,6 +1303,11 @@ JNIEXPORT jint JNICALL
 Java_hdf_hdf5lib_HDF5Constants_H5F_1LIBVER_1V112(JNIEnv *env, jclass cls)
 {
     return H5F_LIBVER_V112;
+}
+JNIEXPORT jint JNICALL
+Java_hdf_hdf5lib_HDF5Constants_H5F_1LIBVER_1V114(JNIEnv *env, jclass cls)
+{
+    return H5F_LIBVER_V114;
 }
 JNIEXPORT jint JNICALL
 Java_hdf_hdf5lib_HDF5Constants_H5F_1LIBVER_1NBOUNDS(JNIEnv *env, jclass cls)
@@ -3724,8 +3728,8 @@ Java_hdf_hdf5lib_HDF5Constants_H5Z_1FILTER_1ALL(JNIEnv *env, jclass cls)
     return H5Z_FILTER_ALL;
 }
 
-H5_GCC_DIAG_ON("missing-prototypes")
-H5_GCC_DIAG_ON("unused-parameter")
+H5_GCC_CLANG_DIAG_ON("missing-prototypes")
+H5_GCC_CLANG_DIAG_ON("unused-parameter")
 
 #ifdef __cplusplus
 } /* end extern "C" */

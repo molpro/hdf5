@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -40,7 +39,7 @@
 
 /* Information about a symbol/dataset */
 typedef struct {
-    char *  name;     /* Dataset name for symbol */
+    char   *name;     /* Dataset name for symbol */
     hid_t   dsid;     /* Dataset ID for symbol */
     hsize_t nrecords; /* Number of records for the symbol */
 } symbol_info_t;
@@ -66,10 +65,10 @@ extern "C" {
 
 H5TEST_DLL symbol_info_t *choose_dataset(void);
 H5TEST_DLL hid_t          create_symbol_datatype(void);
-H5TEST_DLL int            generate_name(char *name_buf, unsigned level, unsigned count);
-H5TEST_DLL int            generate_symbols(void);
-H5TEST_DLL int            shutdown_symbols(void);
-H5TEST_DLL int            print_metadata_retries_info(hid_t fid);
+H5TEST_DLL int generate_name(char *name_buf, size_t name_buf_length, unsigned level, unsigned count);
+H5TEST_DLL int generate_symbols(void);
+H5TEST_DLL int shutdown_symbols(void);
+H5TEST_DLL int print_metadata_retries_info(hid_t fid);
 
 #ifdef __cplusplus
 }

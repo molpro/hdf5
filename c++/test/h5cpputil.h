@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -50,14 +49,14 @@ class InvalidActionException : public Exception {
   public:
     InvalidActionException(const H5std_string &func_name, const H5std_string &message = DEFAULT_MSG);
     InvalidActionException();
-    virtual ~InvalidActionException() throw();
+    ~InvalidActionException() throw() override;
 };
 
 class TestFailedException : public Exception {
   public:
     TestFailedException(const H5std_string &func_name, const H5std_string &message = DEFAULT_MSG);
     TestFailedException();
-    virtual ~TestFailedException() throw();
+    ~TestFailedException() throw() override;
 };
 
 // Overloaded/Template functions to verify values and display proper info

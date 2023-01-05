@@ -1,6 +1,5 @@
 #
 # Copyright by The HDF Group.
-# Copyright by the Board of Trustees of the University of Illinois.
 # All rights reserved.
 #
 # This file is part of HDF5.  The full HDF5 copyright notice, including
@@ -55,13 +54,15 @@ libhdf5_la_SOURCES= H5.c H5checksum.c H5dbg.c H5lib_settings.c H5system.c \
         H5E.c H5Edeprec.c H5Eint.c \
         H5EA.c H5EAcache.c H5EAdbg.c H5EAdblkpage.c H5EAdblock.c H5EAhdr.c \
         H5EAiblock.c H5EAint.c H5EAsblock.c H5EAstat.c H5EAtest.c \
+        H5ES.c H5ESevent.c H5ESint.c H5ESlist.c \
         H5F.c H5Faccum.c H5Fcwfs.c H5Fdbg.c H5Fdeprec.c H5Fefc.c H5Ffake.c \
         H5Fint.c H5Fio.c H5Fmount.c H5Fquery.c H5Fsfile.c H5Fspace.c \
         H5Fsuper.c H5Fsuper_cache.c H5Ftest.c \
         H5FA.c H5FAcache.c H5FAdbg.c H5FAdblock.c H5FAdblkpage.c H5FAhdr.c \
         H5FAint.c H5FAstat.c H5FAtest.c \
-        H5FD.c H5FDcore.c H5FDfamily.c H5FDhdfs.c H5FDint.c H5FDlog.c \
-        H5FDmulti.c H5FDsec2.c H5FDspace.c \
+        H5FD.c H5FDcore.c H5FDfamily.c H5FDint.c H5FDlog.c H5FDmulti.c \
+        H5FDonion.c H5FDonion_header.c H5FDonion_history.c H5FDonion_index.c \
+        H5FDperform.c H5FDsec2.c H5FDspace.c \
         H5FDsplitter.c H5FDstdio.c H5FDtest.c \
         H5FL.c H5FO.c H5FS.c H5FScache.c H5FSdbg.c H5FSint.c H5FSsection.c \
         H5FSstat.c H5FStest.c \
@@ -74,7 +75,7 @@ libhdf5_la_SOURCES= H5.c H5checksum.c H5dbg.c H5lib_settings.c H5system.c \
         H5HG.c H5HGcache.c H5HGdbg.c H5HGquery.c \
         H5HL.c H5HLcache.c H5HLdbg.c H5HLint.c H5HLprfx.c H5HLdblk.c \
         H5I.c H5Idbg.c H5Iint.c H5Itest.c \
-        H5L.c H5Ldeprec.c H5Lexternal.c \
+        H5L.c H5Ldeprec.c H5Lexternal.c H5Lint.c \
         H5M.c \
         H5MF.c H5MFaggr.c H5MFdbg.c H5MFsection.c \
         H5MM.c \
@@ -103,12 +104,11 @@ libhdf5_la_SOURCES= H5.c H5checksum.c H5dbg.c H5lib_settings.c H5system.c \
         H5Torder.c H5Tref.c H5Tpad.c H5Tprecis.c H5Tstrpad.c H5Tvisit.c \
         H5Tvlen.c \
         H5TS.c \
-        H5VL.c H5VLcallback.c H5VLint.c H5VLnative.c \
+        H5VL.c H5VLcallback.c H5VLdyn_ops.c H5VLint.c H5VLnative.c \
         H5VLnative_attr.c H5VLnative_blob.c H5VLnative_dataset.c \
         H5VLnative_datatype.c H5VLnative_file.c H5VLnative_group.c \
         H5VLnative_link.c H5VLnative_introspect.c H5VLnative_object.c \
-        H5VLnative_token.c \
-        H5VLpassthru.c \
+        H5VLnative_token.c H5VLpassthru.c H5VLtest.c \
         H5VM.c H5WB.c H5Z.c  \
         H5Zdeflate.c H5Zfletcher32.c H5Znbit.c H5Zshuffle.c H5Zscaleoffset.c \
         H5Zszip.c H5Ztrans.c
@@ -118,9 +118,24 @@ if BUILD_PARALLEL_CONDITIONAL
     libhdf5_la_SOURCES += H5mpi.c H5ACmpio.c H5Cmpio.c H5Dmpio.c H5Fmpi.c H5FDmpi.c H5FDmpio.c H5Smpio.c
 endif
 
+# Only compile the subfiling VFD if necessary
+if SUBFILING_VFD_CONDITIONAL
+    libhdf5_la_SOURCES += H5FDsubfiling/H5FDsubfiling.c \
+                          H5FDsubfiling/H5FDsubfile_int.c \
+                          H5FDsubfiling/H5FDioc.c \
+                          H5FDsubfiling/H5FDioc_int.c \
+                          H5FDsubfiling/H5FDioc_threads.c \
+                          H5FDsubfiling/H5subfiling_common.c
+endif
+
 # Only compile the direct VFD if necessary
 if DIRECT_VFD_CONDITIONAL
     libhdf5_la_SOURCES += H5FDdirect.c
+endif
+
+# Only compile the read-only HDFS VFD if necessary
+if HDFS_VFD_CONDITIONAL
+    libhdf5_la_SOURCES += H5FDhdfs.c
 endif
 
 # Only compile the mirror VFD if necessary
@@ -139,8 +154,10 @@ include_HEADERS = hdf5.h H5api_adpt.h H5overflow.h H5pubconf.h H5public.h H5vers
         H5Cpublic.h H5Dpublic.h \
         H5Epubgen.h H5Epublic.h H5ESpublic.h H5Fpublic.h \
         H5FDpublic.h H5FDcore.h H5FDdirect.h H5FDfamily.h H5FDhdfs.h \
-        H5FDlog.h H5FDmirror.h H5FDmpi.h H5FDmpio.h H5FDmulti.h H5FDros3.h \
-        H5FDsec2.h H5FDsplitter.h H5FDstdio.h H5FDwindows.h \
+        H5FDlog.h H5FDmirror.h H5FDmpi.h H5FDmpio.h H5FDmulti.h \
+        H5FDonion.h H5FDros3.h H5FDsec2.h H5FDsplitter.h \
+        H5FDstdio.h H5FDsubfiling/H5FDsubfiling.h H5FDsubfiling/H5FDioc.h \
+        H5FDwindows.h \
         H5Gpublic.h  H5Ipublic.h H5Lpublic.h \
         H5Mpublic.h H5MMpublic.h H5Opublic.h H5Ppublic.h \
         H5PLextern.h H5PLpublic.h \
@@ -148,6 +165,25 @@ include_HEADERS = hdf5.h H5api_adpt.h H5overflow.h H5pubconf.h H5public.h H5vers
         H5VLconnector.h H5VLconnector_passthru.h \
         H5VLnative.h H5VLpassthru.h H5VLpublic.h \
         H5Zpublic.h
+
+# Public component author headers
+include_HEADERS += H5ESdevelop.h H5FDdevelop.h H5Idevelop.h H5Ldevelop.h \
+        H5Tdevelop.h H5TSdevelop.h H5Zdevelop.h
+
+if SUBFILING_VFD_CONDITIONAL
+
+# Temporarily use internal Mercury until usage of Mercury is refactored
+if HAVE_MERCURY_CONDITIONAL
+    include_HEADERS += H5FDsubfiling/mercury/src/util/mercury_thread.h \
+    H5FDsubfiling/mercury/src/util/mercury_thread_mutex.h H5FDsubfiling/mercury/src/util/mercury_thread_pool.h
+
+    libhdf5_la_SOURCES += H5FDsubfiling/mercury/src/util/mercury_dlog.c \
+    H5FDsubfiling/mercury/src/util/mercury_log.c H5FDsubfiling/mercury/src/util/mercury_thread.c \
+    H5FDsubfiling/mercury/src/util/mercury_thread_condition.c H5FDsubfiling/mercury/src/util/mercury_thread_pool.c \
+    H5FDsubfiling/mercury/src/util/mercury_thread_mutex.c H5FDsubfiling/mercury/src/util/mercury_util.c
+endif
+
+endif
 
 # install libhdf5.settings in lib directory
 settingsdir=$(libdir)
@@ -159,10 +195,11 @@ settings_DATA=libhdf5.settings
 # Remove the generated .c file if errors occur unless HDF5_Make_Ignore
 # is set to ignore the error.
 H5Tinit.c: H5detect$(EXEEXT)
-	LD_LIBRARY_PATH="$$LD_LIBRARY_PATH`echo $(LDFLAGS) |                  \
-		sed -e 's/-L/:/g' -e 's/ //g'`"                               \
-	$(RUNSERIAL) ./H5detect$(EXEEXT)  $@  ||                               \
-	    (test $$HDF5_Make_Ignore && echo "*** Error ignored") ||          \
+	@if $(AM_V_P); then set -x; else echo "  GEN      H5Tinit.c"; fi;       \
+	LD_LIBRARY_PATH="$$LD_LIBRARY_PATH`echo $(LDFLAGS) |                    \
+	    sed -e 's/-L/:/g' -e 's/ //g'`"                                     \
+	$(RUNSERIAL) ./H5detect$(EXEEXT)  $@  ||                               	\
+	    (test $$HDF5_Make_Ignore && echo "*** Error ignored") ||            \
 	    ($(RM) $@ ; exit 1)
 
 # Build configuration header file generation
@@ -171,10 +208,11 @@ H5Tinit.c: H5detect$(EXEEXT)
 # Remove the generated .c file if errors occur unless HDF5_Make_Ignore
 # is set to ignore the error.
 H5lib_settings.c: H5make_libsettings$(EXEEXT) libhdf5.settings
-	LD_LIBRARY_PATH="$$LD_LIBRARY_PATH`echo $(LDFLAGS) |                  \
-		sed -e 's/-L/:/g' -e 's/ //g'`"                               \
-	$(RUNSERIAL) ./H5make_libsettings$(EXEEXT)  $@  ||                               \
-	    (test $$HDF5_Make_Ignore && echo "*** Error ignored") ||          \
+	@if $(AM_V_P); then set -x; else echo "  GEN      H5lib_settings.c"; fi;    \
+	LD_LIBRARY_PATH="$$LD_LIBRARY_PATH`echo $(LDFLAGS) |                        \
+	    sed -e 's/-L/:/g' -e 's/ //g'`"                                         \
+	$(RUNSERIAL) ./H5make_libsettings$(EXEEXT)  $@  ||                          \
+	    (test $$HDF5_Make_Ignore && echo "*** Error ignored") ||                \
 	    ($(RM) $@ ; exit 1)
 
 # Error header generation
@@ -201,7 +239,7 @@ $(top_srcdir)/src/H5overflow.h: $(top_srcdir)/src/H5overflow.txt
 
 trace: $(libhdf5_la_SOURCES)
 	@for dep in $? dummy; do                                          \
-	 if test $$dep != "dummy" -a -n "$(PERL)"; then                      \
+	 if test $$dep != "dummy" -a -n "$(PERL)"; then                   \
 	  case "$$dep" in                                                 \
 	   *.c)                                                           \
 	    $(TRACE) $$dep;                                               \

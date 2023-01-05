@@ -1,6 +1,5 @@
 #
 # Copyright by The HDF Group.
-# Copyright by the Board of Trustees of the University of Illinois.
 # All rights reserved.
 #
 # This file is part of HDF5.  The full HDF5 copyright notice, including
@@ -22,13 +21,14 @@ include $(top_srcdir)/config/commence.am
 AM_CPPFLAGS+=-I$(top_srcdir)/src -I$(top_srcdir)/tools/lib
 
 # These are our main targets, the tools
-bin_PROGRAMS=h5debug h5repart h5mkgrp h5clear
+bin_PROGRAMS=h5debug h5repart h5mkgrp h5clear h5delete
 
 # Add h5debug, h5repart, and h5mkgrp specific linker flags here
 h5debug_LDFLAGS = $(LT_STATIC_EXEC) $(AM_LDFLAGS)
 h5repart_LDFLAGS = $(LT_STATIC_EXEC) $(AM_LDFLAGS)
 h5mkgrp_LDFLAGS = $(LT_STATIC_EXEC) $(AM_LDFLAGS)
 h5clear_LDFLAGS = $(LT_STATIC_EXEC) $(AM_LDFLAGS)
+h5delete_LDFLAGS = $(LT_STATIC_EXEC) $(AM_LDFLAGS)
 
 # All programs rely on hdf5 library and h5tools library
 LDADD=$(LIBH5TOOLS) $(LIBHDF5)

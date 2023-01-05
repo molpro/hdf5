@@ -15,9 +15,6 @@
  *              (registration, etc.).
  */
 
-/* Public HDF5 header */
-#include "hdf5.h"
-
 /* For HDF5 plugin functionality */
 #include "H5PLextern.h"
 
@@ -29,7 +26,8 @@ static const H5VL_class_t null_vol_g = {
     H5VL_VERSION,             /* VOL class struct version */
     NULL_VOL_CONNECTOR_VALUE, /* value            */
     NULL_VOL_CONNECTOR_NAME,  /* name             */
-    0,                        /* capability flags */
+    0,                        /* connector version */
+    H5VL_CAP_FLAG_NONE,       /* capability flags */
     NULL,                     /* initialize       */
     NULL,                     /* terminate        */
     {
@@ -118,6 +116,7 @@ static const H5VL_class_t null_vol_g = {
     {
         /* introspect_cls */
         NULL, /* get_conn_cls     */
+        NULL, /* get_cap_flags    */
         NULL, /* opt_query        */
     },
     {

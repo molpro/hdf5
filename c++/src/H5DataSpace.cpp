@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -88,9 +87,8 @@ const DataSpace &DataSpace::ALL = *getConstant();
 ///\exception   H5::DataSpaceIException
 // Programmer   Binh-Minh Ribler - 2000
 //--------------------------------------------------------------------------
-DataSpace::DataSpace(H5S_class_t type) : IdComponent()
+DataSpace::DataSpace(H5S_class_t type) : IdComponent(), id{H5Screate(type)}
 {
-    id = H5Screate(type);
     if (id < 0) {
         throw DataSpaceIException("DataSpace constructor", "H5Screate failed");
     }
@@ -105,9 +103,9 @@ DataSpace::DataSpace(H5S_class_t type) : IdComponent()
 ///\exception   H5::DataSpaceIException
 // Programmer   Binh-Minh Ribler - 2000
 //--------------------------------------------------------------------------
-DataSpace::DataSpace(int rank, const hsize_t *dims, const hsize_t *maxdims) : IdComponent()
+DataSpace::DataSpace(int rank, const hsize_t *dims, const hsize_t *maxdims)
+    : IdComponent(), id{H5Screate_simple(rank, dims, maxdims)}
 {
-    id = H5Screate_simple(rank, dims, maxdims);
     if (id < 0) {
         throw DataSpaceIException("DataSpace constructor", "H5Screate_simple failed");
     }

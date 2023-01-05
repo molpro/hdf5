@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -84,7 +83,7 @@ typedef struct iter_t {
     unsigned long  dset_layouts[H5D_NLAYOUTS];      /* Type of storage for each dataset */
     unsigned long  dset_comptype[H5_NFILTERS_IMPL]; /* Number of currently implemented filters */
     unsigned long  dset_ntypes;                     /* Number of diff. dataset datatypes found */
-    dtype_info_t * dset_type_info;                  /* Pointer to dataset datatype information found */
+    dtype_info_t  *dset_type_info;                  /* Pointer to dataset datatype information found */
     unsigned       dset_dim_nbins;                  /* Number of bins for dataset dimensions */
     unsigned long *dset_dim_bins;                   /* Pointer to array of bins for dataset dimensions */
     ohdr_info_t    dset_ohdr_info;                  /* Object header information for datasets */
@@ -109,7 +108,7 @@ typedef struct iter_t {
     hsize_t               free_hdr;                 /* Size of free space manager metadata in the file */
     unsigned long         num_small_sects[SIZE_SMALL_SECTS]; /* Size of small free-space sections */
     unsigned              sect_nbins;                        /* Number of bins for free-space section sizes */
-    unsigned long *       sect_bins; /* Pointer to array of bins for free-space section sizes */
+    unsigned long        *sect_bins; /* Pointer to array of bins for free-space section sizes */
     hsize_t               datasets_index_storage_size; /* meta size for chunked dataset's indexing type */
     hsize_t               datasets_heap_storage_size;  /* heap size for dataset with external storage */
     unsigned long         nexternal;                   /* Number of external files for a dataset */
@@ -122,7 +121,7 @@ static const char *drivername = NULL;
 /* Default "anonymous" S3 configuration */
 static H5FD_ros3_fapl_t ros3_fa = {
     1,     /* Structure Version */
-    false, /* Authenticate?     */
+    FALSE, /* Authenticate?     */
     "",    /* AWS Region        */
     "",    /* Access Key ID     */
     "",    /* Secret Access Key */
@@ -171,23 +170,23 @@ struct handler_t {
 
 static const char *s_opts = "Aa:Ddm:E*FfhGgl:sSTO:Vw:H:";
 /* e.g. "filemetadata" has to precede "file"; "groupmetadata" has to precede "group" etc. */
-static struct long_options l_opts[] = {{"help", no_arg, 'h'},
-                                       {"filemetadata", no_arg, 'F'},
-                                       {"groupmetadata", no_arg, 'G'},
-                                       {"links", require_arg, 'l'},
-                                       {"dsetmetadata", no_arg, 'D'},
-                                       {"dims", require_arg, 'm'},
-                                       {"dtypemetadata", no_arg, 'T'},
-                                       {"object", require_arg, 'O'},
-                                       {"version", no_arg, 'V'},
-                                       {"attribute", no_arg, 'A'},
-                                       {"enable-error-stack", optional_arg, 'E'},
-                                       {"numattrs", require_arg, 'a'},
-                                       {"freespace", no_arg, 's'},
-                                       {"summary", no_arg, 'S'},
-                                       {"s3-cred", require_arg, 'w'},
-                                       {"hdfs-attrs", require_arg, 'H'},
-                                       {NULL, 0, '\0'}};
+static struct h5_long_options l_opts[] = {{"help", no_arg, 'h'},
+                                          {"filemetadata", no_arg, 'F'},
+                                          {"groupmetadata", no_arg, 'G'},
+                                          {"links", require_arg, 'l'},
+                                          {"dsetmetadata", no_arg, 'D'},
+                                          {"dims", require_arg, 'm'},
+                                          {"dtypemetadata", no_arg, 'T'},
+                                          {"object", require_arg, 'O'},
+                                          {"version", no_arg, 'V'},
+                                          {"attribute", no_arg, 'A'},
+                                          {"enable-error-stack", optional_arg, 'E'},
+                                          {"numattrs", require_arg, 'a'},
+                                          {"freespace", no_arg, 's'},
+                                          {"summary", no_arg, 'S'},
+                                          {"s3-cred", require_arg, 'w'},
+                                          {"hdfs-attrs", require_arg, 'H'},
+                                          {NULL, 0, '\0'}};
 
 static void
 leave(int ret)
@@ -649,7 +648,7 @@ static herr_t
 obj_stats(const char *path, const H5O_info2_t *oi, const char *already_visited, void *_iter)
 {
     H5O_native_info_t native_info;
-    iter_t *          iter      = (iter_t *)_iter;
+    iter_t           *iter      = (iter_t *)_iter;
     herr_t            ret_value = SUCCEED;
 
     /* If the object has already been seen then just return */
@@ -839,7 +838,7 @@ parse_command_line(int argc, const char *const *argv, struct handler_t **hand_re
     struct handler_t *hand = NULL;
 
     /* parse command line options */
-    while ((opt = get_option(argc, argv, s_opts, l_opts)) != EOF) {
+    while ((opt = H5_get_option(argc, argv, s_opts, l_opts)) != EOF) {
         switch ((char)opt) {
             case 'h':
                 usage(h5tools_getprogname());
@@ -854,8 +853,8 @@ parse_command_line(int argc, const char *const *argv, struct handler_t **hand_re
                 break;
 
             case 'E':
-                if (opt_arg != NULL)
-                    enable_error_stack = HDatoi(opt_arg);
+                if (H5_optarg != NULL)
+                    enable_error_stack = HDatoi(H5_optarg);
                 else
                     enable_error_stack = 1;
                 break;
@@ -881,8 +880,8 @@ parse_command_line(int argc, const char *const *argv, struct handler_t **hand_re
                 break;
 
             case 'l':
-                if (opt_arg) {
-                    sgroups_threshold = HDatoi(opt_arg);
+                if (H5_optarg) {
+                    sgroups_threshold = HDatoi(H5_optarg);
                     if (sgroups_threshold < 1) {
                         error_msg("Invalid threshold for small groups\n");
                         goto error;
@@ -904,8 +903,8 @@ parse_command_line(int argc, const char *const *argv, struct handler_t **hand_re
                 break;
 
             case 'm':
-                if (opt_arg) {
-                    sdsets_threshold = HDatoi(opt_arg);
+                if (H5_optarg) {
+                    sdsets_threshold = HDatoi(H5_optarg);
                     if (sdsets_threshold < 1) {
                         error_msg("Invalid threshold for small datasets\n");
                         goto error;
@@ -927,8 +926,8 @@ parse_command_line(int argc, const char *const *argv, struct handler_t **hand_re
                 break;
 
             case 'a':
-                if (opt_arg) {
-                    sattrs_threshold = HDatoi(opt_arg);
+                if (H5_optarg) {
+                    sattrs_threshold = HDatoi(H5_optarg);
                     if (sattrs_threshold < 1) {
                         error_msg("Invalid threshold for small # of attributes\n");
                         goto error;
@@ -968,7 +967,7 @@ parse_command_line(int argc, const char *const *argv, struct handler_t **hand_re
 
                 /* Store object names */
                 for (u = 0; u < hand->obj_count; u++)
-                    if (NULL == (hand->obj[u] = HDstrdup(opt_arg))) {
+                    if (NULL == (hand->obj[u] = HDstrdup(H5_optarg))) {
                         error_msg("unable to allocate memory for object name\n");
                         goto error;
                     } /* end if */
@@ -976,7 +975,7 @@ parse_command_line(int argc, const char *const *argv, struct handler_t **hand_re
 
             case 'w':
 #ifdef H5_HAVE_ROS3_VFD
-                if (h5tools_parse_ros3_fapl_tuple(opt_arg, ',', &ros3_fa) < 0) {
+                if (h5tools_parse_ros3_fapl_tuple(H5_optarg, ',', &ros3_fa) < 0) {
                     error_msg("failed to parse S3 VFD credential info\n");
                     goto error;
                 }
@@ -990,7 +989,7 @@ parse_command_line(int argc, const char *const *argv, struct handler_t **hand_re
 
             case 'H':
 #ifdef H5_HAVE_LIBHDFS
-                if (h5tools_parse_hdfs_fapl_tuple(opt_arg, ',', &hdfs_fa) < 0) {
+                if (h5tools_parse_hdfs_fapl_tuple(H5_optarg, ',', &hdfs_fa) < 0) {
                     error_msg("failed to parse HDFS VFD configuration info\n");
                     goto error;
                 }
@@ -1009,7 +1008,7 @@ parse_command_line(int argc, const char *const *argv, struct handler_t **hand_re
     }     /* end while */
 
     /* check for file name to be processed */
-    if (argc <= opt_ind) {
+    if (argc <= H5_optind) {
         error_msg("missing file name\n");
         usage(h5tools_getprogname());
         goto error;
@@ -1685,7 +1684,7 @@ int
 main(int argc, char *argv[])
 {
     iter_t            iter;
-    const char *      fname   = NULL;
+    const char       *fname   = NULL;
     hid_t             fid     = H5I_INVALID_HID;
     struct handler_t *hand    = NULL;
     hid_t             fapl_id = H5P_DEFAULT;
@@ -1707,25 +1706,18 @@ main(int argc, char *argv[])
     if (drivername) {
         h5tools_vfd_info_t vfd_info;
 
-        vfd_info.info = NULL;
-        vfd_info.name = drivername;
+        vfd_info.type   = VFD_BY_NAME;
+        vfd_info.info   = NULL;
+        vfd_info.u.name = drivername;
 
-        if (!HDstrcmp(drivername, drivernames[ROS3_VFD_IDX])) {
 #ifdef H5_HAVE_ROS3_VFD
-            vfd_info.info = (void *)&ros3_fa;
-#else
-            error_msg("Read-Only S3 VFD not enabled.\n");
-            goto done;
+        if (!HDstrcmp(drivername, drivernames[ROS3_VFD_IDX]))
+            vfd_info.info = &ros3_fa;
 #endif
-        }
-        else if (!HDstrcmp(drivername, drivernames[HDFS_VFD_IDX])) {
 #ifdef H5_HAVE_LIBHDFS
-            vfd_info.info = (void *)&hdfs_fa;
-#else
-            error_msg("HDFS VFD not enabled.\n");
-            goto done;
+        if (!HDstrcmp(drivername, drivernames[HDFS_VFD_IDX]))
+            vfd_info.info = &hdfs_fa;
 #endif
-        }
 
         if ((fapl_id = h5tools_get_fapl(H5P_DEFAULT, NULL, &vfd_info)) < 0) {
             error_msg("Unable to create FAPL for file access\n");
@@ -1733,7 +1725,7 @@ main(int argc, char *argv[])
         }
     }
 
-    fname = argv[opt_ind];
+    fname = argv[H5_optind];
 
     /* Check for filename given */
     if (fname) {
@@ -1742,7 +1734,7 @@ main(int argc, char *argv[])
 
         HDprintf("Filename: %s\n", fname);
 
-        fid = h5tools_fopen(fname, H5F_ACC_RDONLY, fapl_id, (fapl_id == H5P_DEFAULT) ? FALSE : TRUE, NULL, 0);
+        fid = h5tools_fopen(fname, H5F_ACC_RDONLY, fapl_id, (fapl_id != H5P_DEFAULT), NULL, 0);
 
         if (fid < 0) {
             error_msg("unable to open file \"%s\"\n", fname);

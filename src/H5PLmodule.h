@@ -23,11 +23,15 @@
  *      reporting macros.
  */
 #define H5PL_MODULE
-#define H5_MY_PKG      H5PL
-#define H5_MY_PKG_ERR  H5E_PLUGIN
-#define H5_MY_PKG_INIT YES
+#define H5_MY_PKG     H5PL
+#define H5_MY_PKG_ERR H5E_PLUGIN
 
-/**\defgroup H5PL H5PL
+/** \page H5PL_UG The HDF5 Plugins
+ * @todo Under Construction
+ */
+
+/**
+ * \defgroup H5PL Dynamically-loaded Plugins (H5PL)
  *
  * Use the functions in this module to manage the loading behavior of HDF5
  * plugins.

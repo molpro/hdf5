@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -76,7 +75,7 @@ tts_is_threadsafe(void)
 char *
 gen_name(int value)
 {
-    char *   temp;
+    char    *temp;
     unsigned length;
     int      i;
 
@@ -103,21 +102,6 @@ main(int argc, char *argv[])
     /* Tests are generally arranged from least to most complexity... */
     AddTest("is_threadsafe", tts_is_threadsafe, NULL, "library threadsafe status", NULL);
 #ifdef H5_HAVE_THREADSAFE
-
-#ifdef H5_USE_RECURSIVE_WRITER_LOCKS
-    AddTest("rec_rwlock_1", tts_rec_rw_lock_smoke_check_1, cleanup_rec_rw_lock_smoke_check_1,
-            "recursive R/W lock smoke check 1 -- basic", NULL);
-
-    AddTest("rec_rwlock_2", tts_rec_rw_lock_smoke_check_2, cleanup_rec_rw_lock_smoke_check_2,
-            "recursive R/W lock smoke check 2 -- mob of readers", NULL);
-
-    AddTest("rec_rwlock_3", tts_rec_rw_lock_smoke_check_3, cleanup_rec_rw_lock_smoke_check_3,
-            "recursive R/W lock smoke check 3 -- mob of writers", NULL);
-
-    AddTest("rec_rwlock_4", tts_rec_rw_lock_smoke_check_4, cleanup_rec_rw_lock_smoke_check_4,
-            "recursive R/W lock smoke check 4 -- mixed mob", NULL);
-#endif /* H5_USE_RECURSIVE_WRITER_LOCKS */
-
     AddTest("dcreate", tts_dcreate, cleanup_dcreate, "multi-dataset creation", NULL);
     AddTest("error", tts_error, cleanup_error, "per-thread error stacks", NULL);
 #ifdef H5_HAVE_PTHREAD_H
@@ -147,7 +131,7 @@ main(int argc, char *argv[])
         TestSummary();
 
     /* Clean up test files, if allowed */
-    if (GetTestCleanup() && !HDgetenv("HDF5_NOCLEANUP"))
+    if (GetTestCleanup() && !HDgetenv(HDF5_NOCLEANUP))
         TestCleanup();
 
     /* Release test infrastructure */

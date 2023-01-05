@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -51,7 +50,7 @@ H5FL_EXTERN(H5AC_aux_t);
 /* Package Private Macros */
 /**************************/
 
-#define H5AC_DEBUG_DIRTY_BYTES_CREATION 0
+/* #define H5AC_DEBUG_DIRTY_BYTES_CREATION */
 
 #ifdef H5_HAVE_PARALLEL
 
@@ -124,7 +123,7 @@ H5FL_EXTERN(H5AC_aux_t);
  * Maintaining this count is easy for all processes not on process 0 --
  * all that is necessary is to add the size of the entry to the total
  * whenever there is an insertion, a move of a previously clean entry,
- * or whever a previously clean entry is marked dirty in an unprotect.
+ * or wherever a previously clean entry is marked dirty in an unprotect.
  *
  * On process 0, we have to be careful not to count dirty bytes twice.
  * If an entry is marked dirty, flushed, and marked dirty again, all
@@ -293,12 +292,12 @@ H5FL_EXTERN(H5AC_aux_t);
  *		   dirtied flag set and the entry does not already appear
  *		   in the dirty entry list.
  *
- *		Entries are added to the dirty entry list whever they cause
+ *		Entries are added to the dirty entry list wherever they cause
  *		the dirty bytes count to be increased.  They are removed
  *		when they appear in a clean entries broadcast.  Note that
  *		moves must be reflected in the dirty entry list.
  *
- *		To reitterate, this field is only used on process 0 -- it
+ *		To reiterate, this field is only used on process 0 -- it
  *		should be NULL on all other processes.
  *
  * c_slist_ptr: Pointer to an instance of H5SL_t used to maintain a list
@@ -373,7 +372,7 @@ typedef struct H5AC_aux_t {
 
     int32_t metadata_write_strategy;
 
-#if H5AC_DEBUG_DIRTY_BYTES_CREATION
+#ifdef H5AC_DEBUG_DIRTY_BYTES_CREATION
 
     unsigned dirty_bytes_propagations;
 
@@ -401,7 +400,12 @@ typedef struct H5AC_aux_t {
     unsigned p0_image_len;
 
 } H5AC_aux_t; /* struct H5AC_aux_t */
-#endif        /* H5_HAVE_PARALLEL */
+
+/* Typedefs for debugging function pointers */
+typedef void (*H5AC_sync_point_done_cb_t)(unsigned num_writes, haddr_t *written_entries_tbl);
+typedef void (*H5AC_write_done_cb_t)(void);
+
+#endif /* H5_HAVE_PARALLEL */
 
 /******************************/
 /* Package Private Prototypes */
@@ -417,10 +421,8 @@ H5_DLL herr_t H5AC__log_inserted_entry(const H5AC_info_t *entry_ptr);
 H5_DLL herr_t H5AC__log_moved_entry(const H5F_t *f, haddr_t old_addr, haddr_t new_addr);
 H5_DLL herr_t H5AC__flush_entries(H5F_t *f);
 H5_DLL herr_t H5AC__run_sync_point(H5F_t *f, int sync_point_op);
-H5_DLL herr_t H5AC__set_sync_point_done_callback(H5C_t *cache_ptr,
-                                                 void (*sync_point_done)(unsigned num_writes,
-                                                                         haddr_t *written_entries_tbl));
-H5_DLL herr_t H5AC__set_write_done_callback(H5C_t *cache_ptr, void (*write_done)(void));
+H5_DLL herr_t H5AC__set_sync_point_done_callback(H5C_t *cache_ptr, H5AC_sync_point_done_cb_t sync_point_done);
+H5_DLL herr_t H5AC__set_write_done_callback(H5C_t *cache_ptr, H5AC_write_done_cb_t write_done);
 #endif /* H5_HAVE_PARALLEL */
 
 #endif /* H5ACpkg_H */

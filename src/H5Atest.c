@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -113,7 +112,7 @@ done:
 herr_t
 H5A__get_shared_rc_test(hid_t attr_id, hsize_t *ref_count)
 {
-    H5A_t * attr;                     /* Attribute object for ID */
+    H5A_t  *attr;                     /* Attribute object for ID */
     hbool_t api_ctx_pushed = FALSE;   /* Whether API context pushed */
     herr_t  ret_value      = SUCCEED; /* Return value */
 
@@ -136,7 +135,7 @@ H5A__get_shared_rc_test(hid_t attr_id, hsize_t *ref_count)
         HGOTO_ERROR(H5E_ATTR, H5E_CANTGET, FAIL, "can't retrieve shared message ref count")
 
 done:
-    if (api_ctx_pushed && H5CX_pop() < 0)
+    if (api_ctx_pushed && H5CX_pop(FALSE) < 0)
         HDONE_ERROR(H5E_ATTR, H5E_CANTRESET, FAIL, "can't reset API context")
 
     FUNC_LEAVE_NOAPI(ret_value)

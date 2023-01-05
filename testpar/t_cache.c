@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -41,7 +40,7 @@ const char *FILENAME[NFILENAME] = {"CacheTestDummy", NULL};
 #ifndef PATH_MAX
 #define PATH_MAX 512
 #endif /* !PATH_MAX */
-char    filenames[NFILENAME][PATH_MAX];
+char   *filenames[NFILENAME];
 hid_t   fapl;                      /* file access property list */
 haddr_t max_addr = 0;              /* used to store the end of
                                     * the address space used by
@@ -192,7 +191,7 @@ struct datum {
 
 #define NUM_DATA_ENTRIES 100000
 
-struct datum data[NUM_DATA_ENTRIES];
+struct datum *data = NULL;
 
 /* Many tests use the size of data array as the size of test loops.
  * On some machines, this results in unacceptably long test runs.
@@ -210,10 +209,6 @@ struct datum data[NUM_DATA_ENTRIES];
 
 #define STD_VIRT_NUM_DATA_ENTRIES     NUM_DATA_ENTRIES
 #define EXPRESS_VIRT_NUM_DATA_ENTRIES (NUM_DATA_ENTRIES / 10)
-/* Use a smaller test size to avoid creating huge MPE logfiles. */
-#ifdef H5_HAVE_MPE
-#define MPE_VIRT_NUM_DATA_ENTIES (NUM_DATA_ENTRIES / 100)
-#endif
 
 int virt_num_data_entries = NUM_DATA_ENTRIES;
 
@@ -231,7 +226,7 @@ int virt_num_data_entries = NUM_DATA_ENTRIES;
  *
  *****************************************************************************/
 
-int data_index[NUM_DATA_ENTRIES];
+int *data_index = NULL;
 
 /*****************************************************************************
  * The following two #defines are used to control code that is in turn used
@@ -248,7 +243,7 @@ int data_index[NUM_DATA_ENTRIES];
  * in which no acks are sent after writes.  Instead, the metadata cache is
  * provided with a callback function to call after each sequence of writes.
  * This callback simply causes the client to send the server process a
- * "sync" message and and await an ack in reply.
+ * "sync" message and await an ack in reply.
  *
  * Strangely, at least on Phoenix, the first solution runs faster by a
  * rather large margin.  However, I can imagine this changing with
@@ -325,7 +320,7 @@ struct mssg_t {
     unsigned magic;
 };
 
-MPI_Datatype mpi_mssg_t; /* for MPI derived type created from mssg */
+MPI_Datatype mpi_mssg_t = MPI_DATATYPE_NULL; /* for MPI derived type created from mssg */
 
 /*****************************************************************************/
 /************************** function declarations ****************************/
@@ -565,8 +560,8 @@ set_up_file_communicator(void)
     int       mpi_result;
     int       num_excluded_ranks;
     int       excluded_ranks[1];
-    MPI_Group file_group;
-    MPI_Group world_group;
+    MPI_Group file_group  = MPI_GROUP_NULL;
+    MPI_Group world_group = MPI_GROUP_NULL;
 
     if (success) {
 
@@ -577,7 +572,7 @@ set_up_file_communicator(void)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: MPI_Comm_group() failed with error %d.\n", world_mpi_rank, FUNC,
+                HDfprintf(stdout, "%d:%s: MPI_Comm_group() failed with error %d.\n", world_mpi_rank, __func__,
                           mpi_result);
             }
         }
@@ -594,7 +589,7 @@ set_up_file_communicator(void)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: MPI_Group_excl() failed with error %d.\n", world_mpi_rank, FUNC,
+                HDfprintf(stdout, "%d:%s: MPI_Group_excl() failed with error %d.\n", world_mpi_rank, __func__,
                           mpi_result);
             }
         }
@@ -609,8 +604,8 @@ set_up_file_communicator(void)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: MPI_Comm_create() failed with error %d.\n", world_mpi_rank, FUNC,
-                          mpi_result);
+                HDfprintf(stdout, "%d:%s: MPI_Comm_create() failed with error %d.\n", world_mpi_rank,
+                          __func__, mpi_result);
             }
         }
         else {
@@ -622,7 +617,8 @@ set_up_file_communicator(void)
                     nerrors++;
                     success = FALSE;
                     if (verbose) {
-                        HDfprintf(stdout, "%d:%s: file_mpi_comm == MPI_COMM_NULL.\n", world_mpi_rank, FUNC);
+                        HDfprintf(stdout, "%d:%s: file_mpi_comm == MPI_COMM_NULL.\n", world_mpi_rank,
+                                  __func__);
                     }
                 }
             }
@@ -635,7 +631,8 @@ set_up_file_communicator(void)
                     nerrors++;
                     success = FALSE;
                     if (verbose) {
-                        HDfprintf(stdout, "%d:%s: file_mpi_comm != MPI_COMM_NULL.\n", world_mpi_rank, FUNC);
+                        HDfprintf(stdout, "%d:%s: file_mpi_comm != MPI_COMM_NULL.\n", world_mpi_rank,
+                                  __func__);
                     }
                 }
             }
@@ -651,7 +648,7 @@ set_up_file_communicator(void)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: MPI_Comm_size() failed with error %d.\n", world_mpi_rank, FUNC,
+                HDfprintf(stdout, "%d:%s: MPI_Comm_size() failed with error %d.\n", world_mpi_rank, __func__,
                           mpi_result);
             }
         }
@@ -666,11 +663,17 @@ set_up_file_communicator(void)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: MPI_Comm_rank() failed with error %d.\n", world_mpi_rank, FUNC,
+                HDfprintf(stdout, "%d:%s: MPI_Comm_rank() failed with error %d.\n", world_mpi_rank, __func__,
                           mpi_result);
             }
         }
     }
+
+    if (file_group != MPI_GROUP_NULL)
+        MPI_Group_free(&file_group);
+
+    if (world_group != MPI_GROUP_NULL)
+        MPI_Group_free(&world_group);
 
     return (success);
 
@@ -832,7 +835,7 @@ do_express_test(void)
         nerrors++;
         max_express_test = -1;
         if (verbose) {
-            HDfprintf(stdout, "%d:%s: MPI_Allreduce() failed.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: MPI_Allreduce() failed.\n", world_mpi_rank, __func__);
         }
     }
 
@@ -880,7 +883,7 @@ do_sync(void)
 
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: send_mssg() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: send_mssg() failed.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -891,7 +894,7 @@ do_sync(void)
 
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: recv_mssg() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: recv_mssg() failed.\n", world_mpi_rank, __func__);
             }
         }
         else if ((mssg.req != SYNC_ACK_CODE) || (mssg.src != world_server_mpi_rank) ||
@@ -899,7 +902,7 @@ do_sync(void)
 
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: Bad data in sync ack.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: Bad data in sync ack.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -936,7 +939,7 @@ get_max_nerrors(void)
         nerrors++;
         max_nerrors = -1;
         if (verbose) {
-            HDfprintf(stdout, "%d:%s: MPI_Allreduce() failed.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: MPI_Allreduce() failed.\n", world_mpi_rank, __func__);
         }
     }
 
@@ -983,7 +986,7 @@ recv_mssg(struct mssg_t *mssg_ptr, int mssg_tag_offset)
         nerrors++;
         success = FALSE;
         if (verbose) {
-            HDfprintf(stdout, "%d:%s: bad param(s) on entry.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: bad param(s) on entry.\n", world_mpi_rank, __func__);
         }
     }
     else {
@@ -1000,7 +1003,7 @@ recv_mssg(struct mssg_t *mssg_ptr, int mssg_tag_offset)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: MPI_Recv() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: MPI_Recv() failed.\n", world_mpi_rank, __func__);
             }
         }
         else if (mssg_ptr->magic != MSSG_MAGIC) {
@@ -1008,7 +1011,7 @@ recv_mssg(struct mssg_t *mssg_ptr, int mssg_tag_offset)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: invalid magic.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: invalid magic.\n", world_mpi_rank, __func__);
             }
         }
         else if (mssg_ptr->src != status.MPI_SOURCE) {
@@ -1016,7 +1019,7 @@ recv_mssg(struct mssg_t *mssg_ptr, int mssg_tag_offset)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: mssg_ptr->src != status.MPI_SOURCE.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: mssg_ptr->src != status.MPI_SOURCE.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -1061,7 +1064,7 @@ send_mssg(struct mssg_t *mssg_ptr, hbool_t add_req_to_tag)
         nerrors++;
         success = FALSE;
         if (verbose) {
-            HDfprintf(stdout, "%d:%s: Invalid mssg on entry.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: Invalid mssg on entry.\n", world_mpi_rank, __func__);
         }
     }
 
@@ -1081,7 +1084,7 @@ send_mssg(struct mssg_t *mssg_ptr, hbool_t add_req_to_tag)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: MPI_Send() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: MPI_Send() failed.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -1116,6 +1119,8 @@ setup_derived_types(void)
     MPI_Aint      displs[9];
     struct mssg_t sample; /* used to compute displacements */
 
+    HDmemset(&sample, 0, sizeof(struct mssg_t));
+
     /* setup the displacements array */
     if ((MPI_SUCCESS != MPI_Get_address(&sample.req, &displs[0])) ||
         (MPI_SUCCESS != MPI_Get_address(&sample.src, &displs[1])) ||
@@ -1130,7 +1135,7 @@ setup_derived_types(void)
         nerrors++;
         success = FALSE;
         if (verbose) {
-            HDfprintf(stdout, "%d:%s: MPI_Get_address() call failed.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: MPI_Get_address() call failed.\n", world_mpi_rank, __func__);
         }
     }
     else {
@@ -1150,7 +1155,7 @@ setup_derived_types(void)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: MPI_Type_create_struct() call failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: MPI_Type_create_struct() call failed.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -1164,7 +1169,7 @@ setup_derived_types(void)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: MPI_Type_commit() call failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: MPI_Type_commit() call failed.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -1193,6 +1198,9 @@ takedown_derived_types(void)
     hbool_t success = TRUE;
     int     result;
 
+    if (mpi_mssg_t == MPI_DATATYPE_NULL)
+        return (success);
+
     result = MPI_Type_free(&mpi_mssg_t);
 
     if (result != MPI_SUCCESS) {
@@ -1200,7 +1208,7 @@ takedown_derived_types(void)
         nerrors++;
         success = FALSE;
         if (verbose) {
-            HDfprintf(stdout, "%d:%s: MPI_Type_free() call failed.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: MPI_Type_free() call failed.\n", world_mpi_rank, __func__);
         }
     }
 
@@ -1253,7 +1261,7 @@ reset_server_counters(void)
         success = FALSE;
         nerrors++;
         if (verbose) {
-            HDfprintf(stdout, "%d:%s: actual/total reads mismatch (%ld/%d).\n", world_mpi_rank, FUNC,
+            HDfprintf(stdout, "%d:%s: actual/total reads mismatch (%ld/%d).\n", world_mpi_rank, __func__,
                       actual_total_reads, total_reads);
         }
     }
@@ -1263,7 +1271,7 @@ reset_server_counters(void)
         success = FALSE;
         nerrors++;
         if (verbose) {
-            HDfprintf(stdout, "%d:%s: actual/total writes mismatch (%ld/%d).\n", world_mpi_rank, FUNC,
+            HDfprintf(stdout, "%d:%s: actual/total writes mismatch (%ld/%d).\n", world_mpi_rank, __func__,
                       actual_total_writes, total_writes);
         }
     }
@@ -1311,7 +1319,7 @@ server_main(void)
         nerrors++;
         success = FALSE;
         if (verbose) {
-            HDfprintf(stdout, "%d:%s: This isn't the server process?!?!?\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: This isn't the server process?!?!?\n", world_mpi_rank, __func__);
         }
     }
 
@@ -1328,7 +1336,7 @@ server_main(void)
                 case WRITE_REQ_ACK_CODE:
                     success = FALSE;
                     if (verbose)
-                        HDfprintf(stdout, "%s: Received write ack?!?.\n", FUNC);
+                        HDfprintf(stdout, "%s: Received write ack?!?.\n", __func__);
                     break;
 
                 case READ_REQ_CODE:
@@ -1338,7 +1346,7 @@ server_main(void)
                 case READ_REQ_REPLY_CODE:
                     success = FALSE;
                     if (verbose)
-                        HDfprintf(stdout, "%s: Received read req reply?!?.\n", FUNC);
+                        HDfprintf(stdout, "%s: Received read req reply?!?.\n", __func__);
                     break;
 
                 case SYNC_REQ_CODE:
@@ -1348,7 +1356,7 @@ server_main(void)
                 case SYNC_ACK_CODE:
                     success = FALSE;
                     if (verbose)
-                        HDfprintf(stdout, "%s: Received sync ack?!?.\n", FUNC);
+                        HDfprintf(stdout, "%s: Received sync ack?!?.\n", __func__);
                     break;
 
                 case REQ_TTL_WRITES_CODE:
@@ -1358,7 +1366,7 @@ server_main(void)
                 case REQ_TTL_WRITES_RPLY_CODE:
                     success = FALSE;
                     if (verbose)
-                        HDfprintf(stdout, "%s: Received total writes reply?!?.\n", FUNC);
+                        HDfprintf(stdout, "%s: Received total writes reply?!?.\n", __func__);
                     break;
 
                 case REQ_TTL_READS_CODE:
@@ -1368,7 +1376,7 @@ server_main(void)
                 case REQ_TTL_READS_RPLY_CODE:
                     success = FALSE;
                     if (verbose)
-                        HDfprintf(stdout, "%s: Received total reads reply?!?.\n", FUNC);
+                        HDfprintf(stdout, "%s: Received total reads reply?!?.\n", __func__);
                     break;
 
                 case REQ_ENTRY_WRITES_CODE:
@@ -1378,7 +1386,7 @@ server_main(void)
                 case REQ_ENTRY_WRITES_RPLY_CODE:
                     success = FALSE;
                     if (verbose)
-                        HDfprintf(stdout, "%s: Received entry writes reply?!?.\n", FUNC);
+                        HDfprintf(stdout, "%s: Received entry writes reply?!?.\n", __func__);
                     break;
 
                 case REQ_ENTRY_READS_CODE:
@@ -1388,7 +1396,7 @@ server_main(void)
                 case REQ_ENTRY_READS_RPLY_CODE:
                     success = FALSE;
                     if (verbose)
-                        HDfprintf(stdout, "%s: Received entry reads reply?!?.\n", FUNC);
+                        HDfprintf(stdout, "%s: Received entry reads reply?!?.\n", __func__);
                     break;
 
                 case REQ_RW_COUNT_RESET_CODE:
@@ -1398,7 +1406,7 @@ server_main(void)
                 case REQ_RW_COUNT_RESET_RPLY_CODE:
                     success = FALSE;
                     if (verbose)
-                        HDfprintf(stdout, "%s: Received RW count reset reply?!?.\n", FUNC);
+                        HDfprintf(stdout, "%s: Received RW count reset reply?!?.\n", __func__);
                     break;
 
                 case DONE_REQ_CODE:
@@ -1411,7 +1419,7 @@ server_main(void)
                     nerrors++;
                     success = FALSE;
                     if (verbose)
-                        HDfprintf(stdout, "%d:%s: Unknown request code.\n", world_mpi_rank, FUNC);
+                        HDfprintf(stdout, "%d:%s: Unknown request code.\n", world_mpi_rank, __func__);
                     break;
             }
         }
@@ -1453,7 +1461,7 @@ serve_read_request(struct mssg_t *mssg_ptr)
         nerrors++;
         success = FALSE;
         if (verbose) {
-            HDfprintf(stdout, "%d:%s: Bad mssg on entry.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: Bad mssg on entry.\n", world_mpi_rank, __func__);
         }
     }
 
@@ -1467,7 +1475,7 @@ serve_read_request(struct mssg_t *mssg_ptr)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: addr lookup failed for %" PRIuHADDR ".\n", world_mpi_rank, FUNC,
+                HDfprintf(stdout, "%d:%s: addr lookup failed for %" PRIuHADDR ".\n", world_mpi_rank, __func__,
                           target_addr);
             }
         }
@@ -1476,7 +1484,7 @@ serve_read_request(struct mssg_t *mssg_ptr)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: data[i].len = %zu != mssg->len = %d.\n", world_mpi_rank, FUNC,
+                HDfprintf(stdout, "%d:%s: data[i].len = %zu != mssg->len = %d.\n", world_mpi_rank, __func__,
                           data[target_index].len, mssg_ptr->len);
             }
         }
@@ -1488,7 +1496,8 @@ serve_read_request(struct mssg_t *mssg_ptr)
                 HDfprintf(stdout,
                           "%d:%s: proc %d read invalid entry. "
                           "idx/base_addr = %d/%" PRIuHADDR ".\n",
-                          world_mpi_rank, FUNC, mssg_ptr->src, target_index, data[target_index].base_addr);
+                          world_mpi_rank, __func__, mssg_ptr->src, target_index,
+                          data[target_index].base_addr);
             }
         }
         else {
@@ -1568,7 +1577,7 @@ serve_sync_request(struct mssg_t *mssg_ptr)
         nerrors++;
         success = FALSE;
         if (verbose) {
-            HDfprintf(stdout, "%d:%s: Bad mssg on entry.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: Bad mssg on entry.\n", world_mpi_rank, __func__);
         }
     }
 
@@ -1642,7 +1651,7 @@ serve_write_request(struct mssg_t *mssg_ptr)
         nerrors++;
         success = FALSE;
         if (verbose) {
-            HDfprintf(stdout, "%d:%s: Bad mssg on entry.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: Bad mssg on entry.\n", world_mpi_rank, __func__);
         }
     }
 
@@ -1656,7 +1665,7 @@ serve_write_request(struct mssg_t *mssg_ptr)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: addr lookup failed for %" PRIuHADDR ".\n", world_mpi_rank, FUNC,
+                HDfprintf(stdout, "%d:%s: addr lookup failed for %" PRIuHADDR ".\n", world_mpi_rank, __func__,
                           target_addr);
             }
         }
@@ -1665,7 +1674,7 @@ serve_write_request(struct mssg_t *mssg_ptr)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: data[i].len = %zu != mssg->len = %d.\n", world_mpi_rank, FUNC,
+                HDfprintf(stdout, "%d:%s: data[i].len = %zu != mssg->len = %d.\n", world_mpi_rank, __func__,
                           data[target_index].len, mssg_ptr->len);
             }
         }
@@ -1681,8 +1690,8 @@ serve_write_request(struct mssg_t *mssg_ptr)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: new ver = %d <= old ver = %d.\n", world_mpi_rank, FUNC, new_ver_num,
-                          data[target_index].ver);
+                HDfprintf(stdout, "%d:%s: new ver = %d <= old ver = %d.\n", world_mpi_rank, __func__,
+                          new_ver_num, data[target_index].ver);
             }
         }
     }
@@ -1767,7 +1776,7 @@ serve_total_writes_request(struct mssg_t *mssg_ptr)
         nerrors++;
         success = FALSE;
         if (verbose) {
-            HDfprintf(stdout, "%d:%s: Bad mssg on entry.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: Bad mssg on entry.\n", world_mpi_rank, __func__);
         }
     }
 
@@ -1837,7 +1846,7 @@ serve_total_reads_request(struct mssg_t *mssg_ptr)
         nerrors++;
         success = FALSE;
         if (verbose) {
-            HDfprintf(stdout, "%d:%s: Bad mssg on entry.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: Bad mssg on entry.\n", world_mpi_rank, __func__);
         }
     }
 
@@ -1909,7 +1918,7 @@ serve_entry_writes_request(struct mssg_t *mssg_ptr)
         nerrors++;
         success = FALSE;
         if (verbose) {
-            HDfprintf(stdout, "%d:%s: Bad mssg on entry.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: Bad mssg on entry.\n", world_mpi_rank, __func__);
         }
     }
 
@@ -1923,7 +1932,7 @@ serve_entry_writes_request(struct mssg_t *mssg_ptr)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: addr lookup failed for %" PRIuHADDR ".\n", world_mpi_rank, FUNC,
+                HDfprintf(stdout, "%d:%s: addr lookup failed for %" PRIuHADDR ".\n", world_mpi_rank, __func__,
                           target_addr);
             }
         }
@@ -1998,7 +2007,7 @@ serve_entry_reads_request(struct mssg_t *mssg_ptr)
         nerrors++;
         success = FALSE;
         if (verbose) {
-            HDfprintf(stdout, "%d:%s: Bad mssg on entry.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: Bad mssg on entry.\n", world_mpi_rank, __func__);
         }
     }
 
@@ -2012,7 +2021,7 @@ serve_entry_reads_request(struct mssg_t *mssg_ptr)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: addr lookup failed for %" PRIuHADDR ".\n", world_mpi_rank, FUNC,
+                HDfprintf(stdout, "%d:%s: addr lookup failed for %" PRIuHADDR ".\n", world_mpi_rank, __func__,
                           target_addr);
             }
         }
@@ -2084,7 +2093,7 @@ serve_rw_count_reset_request(struct mssg_t *mssg_ptr)
         nerrors++;
         success = FALSE;
         if (verbose) {
-            HDfprintf(stdout, "%d:%s: Bad mssg on entry.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: Bad mssg on entry.\n", world_mpi_rank, __func__);
         }
     }
 
@@ -2252,13 +2261,13 @@ datum_deserialize(const void H5_ATTR_NDEBUG_UNUSED *image_ptr, H5_ATTR_UNUSED si
 static herr_t
 datum_image_len(const void *thing, size_t *image_len)
 {
-    int           idx;
-    struct datum *entry_ptr;
+    int                 idx;
+    const struct datum *entry_ptr;
 
     HDassert(thing);
     HDassert(image_len);
 
-    entry_ptr = (struct datum *)thing;
+    entry_ptr = (const struct datum *)thing;
 
     idx = addr_to_datum_index(entry_ptr->base_addr);
 
@@ -2299,7 +2308,7 @@ datum_serialize(const H5F_t *f, void H5_ATTR_NDEBUG_UNUSED *image_ptr, size_t le
 {
     herr_t             ret_value = SUCCEED;
     int                idx;
-    struct datum *     entry_ptr;
+    struct datum      *entry_ptr;
     struct H5AC_aux_t *aux_ptr;
 
     HDassert(thing_ptr);
@@ -2369,7 +2378,7 @@ datum_notify(H5C_notify_action_t action, void *thing)
 {
     hbool_t            was_dirty = FALSE;
     herr_t             ret_value = SUCCEED;
-    struct datum *     entry_ptr;
+    struct datum      *entry_ptr;
     struct H5AC_aux_t *aux_ptr;
     struct mssg_t      mssg;
     int                idx;
@@ -2436,7 +2445,7 @@ datum_notify(H5C_notify_action_t action, void *thing)
                 nerrors++;
                 ret_value = FAIL;
                 if (verbose) {
-                    HDfprintf(stdout, "%d:%s: send_mssg() failed.\n", world_mpi_rank, FUNC);
+                    HDfprintf(stdout, "%d:%s: send_mssg() failed.\n", world_mpi_rank, __func__);
                 }
             }
 
@@ -2447,7 +2456,7 @@ datum_notify(H5C_notify_action_t action, void *thing)
                     nerrors++;
                     ret_value = FAIL;
                     if (verbose) {
-                        HDfprintf(stdout, "%d:%s: recv_mssg() failed.\n", world_mpi_rank, FUNC);
+                        HDfprintf(stdout, "%d:%s: recv_mssg() failed.\n", world_mpi_rank, __func__);
                     }
                 }
             }
@@ -2462,7 +2471,7 @@ datum_notify(H5C_notify_action_t action, void *thing)
                     nerrors++;
                     ret_value = FAIL;
                     if (verbose) {
-                        HDfprintf(stdout, "%d:%s: Bad data in read req reply.\n", world_mpi_rank, FUNC);
+                        HDfprintf(stdout, "%d:%s: Bad data in read req reply.\n", world_mpi_rank, __func__);
                     }
 
 #if 0  /* This has been useful debugging code -- keep it for now. */
@@ -2470,35 +2479,35 @@ datum_notify(H5C_notify_action_t action, void *thing)
 
                 HDfprintf(stdout,
                                   "%d:%s: mssg.req != READ_REQ_REPLY_CODE.\n",
-                    world_mpi_rank, FUNC);
+                    world_mpi_rank, __func__);
                 HDfprintf(stdout, "%d:%s: mssg.req = %d.\n",
-                    world_mpi_rank, FUNC, (int)(mssg.req));
+                    world_mpi_rank, __func__, (int)(mssg.req));
                 }
 
                 if ( mssg.src != world_server_mpi_rank ) {
 
                 HDfprintf(stdout,
                                  "%d:%s: mssg.src != world_server_mpi_rank.\n",
-                    world_mpi_rank, FUNC);
+                    world_mpi_rank, __func__);
                 }
 
                 if ( mssg.dest != world_mpi_rank ) {
 
                 HDfprintf(stdout,
                                   "%d:%s: mssg.dest != world_mpi_rank.\n",
-                    world_mpi_rank, FUNC);
+                    world_mpi_rank, __func__);
                     }
 
                 if ( mssg.base_addr != entry_ptr->base_addr ) {
 
                 HDfprintf(stdout,
                 "%d:%s: mssg.base_addr != entry_ptr->base_addr.\n",
-                world_mpi_rank, FUNC);
+                world_mpi_rank, __func__);
                 HDfprintf(stdout, "%d:%s: mssg.base_addr = %" PRIuHADDR ".\n",
-                    world_mpi_rank, FUNC, mssg.base_addr);
+                    world_mpi_rank, __func__, mssg.base_addr);
                 HDfprintf(stdout,
                     "%d:%s: entry_ptr->base_addr = %" PRIuHADDR ".\n",
-                    world_mpi_rank, FUNC,
+                    world_mpi_rank, __func__,
                                    entry_ptr->base_addr);
                     }
 
@@ -2506,22 +2515,22 @@ datum_notify(H5C_notify_action_t action, void *thing)
 
                 HDfprintf(stdout,
                                   "%d:%s: mssg.len != entry_ptr->len.\n",
-                    world_mpi_rank, FUNC);
+                    world_mpi_rank, __func__);
                 HDfprintf(stdout, "%d:%s: mssg.len = %" PRIuHADDR ".\n",
-                    world_mpi_rank, FUNC, mssg.len);
+                    world_mpi_rank, __func__, mssg.len);
                     }
 
                 if ( mssg.ver < entry_ptr->ver ) {
 
                 HDfprintf(stdout,
                                   "%d:%s: mssg.ver < entry_ptr->ver.\n",
-                    world_mpi_rank, FUNC);
+                    world_mpi_rank, __func__);
                     }
 
                 if ( mssg.magic != MSSG_MAGIC ) {
 
                 HDfprintf(stdout, "%d:%s: mssg.magic != MSSG_MAGIC.\n",
-                    world_mpi_rank, FUNC);
+                    world_mpi_rank, __func__);
                      }
 #endif /* JRM */
                 }
@@ -2554,7 +2563,7 @@ datum_notify(H5C_notify_action_t action, void *thing)
 
                 ret_value = FAIL;
                 HDfprintf(stdout, "%d:%s: Flushed dirty entry from non-zero file process.", world_mpi_rank,
-                          FUNC);
+                          __func__);
             }
 
             if (ret_value == SUCCEED) {
@@ -2581,7 +2590,7 @@ datum_notify(H5C_notify_action_t action, void *thing)
                         nerrors++;
                         ret_value = FAIL;
                         if (verbose) {
-                            HDfprintf(stdout, "%d:%s: send_mssg() failed.\n", world_mpi_rank, FUNC);
+                            HDfprintf(stdout, "%d:%s: send_mssg() failed.\n", world_mpi_rank, __func__);
                         }
                     }
                     else {
@@ -2600,7 +2609,7 @@ datum_notify(H5C_notify_action_t action, void *thing)
                     nerrors++;
                     ret_value = FAIL;
                     if (verbose) {
-                        HDfprintf(stdout, "%d:%s: recv_mssg() failed.\n", world_mpi_rank, FUNC);
+                        HDfprintf(stdout, "%d:%s: recv_mssg() failed.\n", world_mpi_rank, __func__);
                     }
                 }
                 else if ((mssg.req != WRITE_REQ_ACK_CODE) || (mssg.src != world_server_mpi_rank) ||
@@ -2611,7 +2620,7 @@ datum_notify(H5C_notify_action_t action, void *thing)
                     nerrors++;
                     ret_value = FAIL;
                     if (verbose) {
-                        HDfprintf(stdout, "%d:%s: Bad data in write req ack.\n", world_mpi_rank, FUNC);
+                        HDfprintf(stdout, "%d:%s: Bad data in write req ack.\n", world_mpi_rank, __func__);
                     }
                 }
             }
@@ -2717,7 +2726,7 @@ datum_notify(H5C_notify_action_t action, void *thing)
             nerrors++;
             ret_value = FAIL;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: Unknown notify action.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: Unknown notify action.\n", world_mpi_rank, __func__);
             }
             break;
     }
@@ -2824,7 +2833,7 @@ expunge_entry(H5F_t *file_ptr, int32_t idx)
 
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: Error in H5AC_expunge_entry().\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: Error in H5AC_expunge_entry().\n", world_mpi_rank, __func__);
             }
         }
 
@@ -2838,14 +2847,14 @@ expunge_entry(H5F_t *file_ptr, int32_t idx)
 
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: Error in H5C_get_entry_status().\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: Error in H5C_get_entry_status().\n", world_mpi_rank, __func__);
             }
         }
         else if (in_cache) {
 
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: Expunged entry still in cache?!?\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: Expunged entry still in cache?!?\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -2906,7 +2915,7 @@ insert_entry(H5C_t *cache_ptr, H5F_t *file_ptr, int32_t idx, unsigned int flags)
 
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: Error in H5AC_insert_entry().\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: Error in H5AC_insert_entry().\n", world_mpi_rank, __func__);
             }
         }
 
@@ -2927,8 +2936,8 @@ insert_entry(H5C_t *cache_ptr, H5F_t *file_ptr, int32_t idx, unsigned int flags)
 
                 nerrors++;
                 if (verbose) {
-                    HDfprintf(stdout, "%d:%s: data[%d].header.is_dirty = %d.\n", world_mpi_rank, FUNC, idx,
-                              (int)(data[idx].header.is_dirty));
+                    HDfprintf(stdout, "%d:%s: data[%d].header.is_dirty = %d.\n", world_mpi_rank, __func__,
+                              idx, (int)(data[idx].header.is_dirty));
                 }
             }
         }
@@ -3246,7 +3255,7 @@ lock_and_unlock_random_entry(H5F_t *file_ptr, int min_idx, int max_idx)
 static void
 lock_entry(H5F_t *file_ptr, int32_t idx)
 {
-    struct datum *     entry_ptr;
+    struct datum      *entry_ptr;
     H5C_cache_entry_t *cache_entry_ptr;
 
     if (nerrors == 0) {
@@ -3268,7 +3277,7 @@ lock_entry(H5F_t *file_ptr, int32_t idx)
 
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: error in H5AC_protect().\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: error in H5AC_protect().\n", world_mpi_rank, __func__);
             }
         }
         else {
@@ -3321,7 +3330,7 @@ mark_entry_dirty(int32_t idx)
 
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: error in H5AC_mark_entry_dirty().\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: error in H5AC_mark_entry_dirty().\n", world_mpi_rank, __func__);
             }
         }
         else if (!(entry_ptr->locked)) {
@@ -3432,7 +3441,7 @@ pin_protected_entry(int32_t idx, hbool_t global)
 
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: Error in H5AC_pin_protected entry().\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: Error in H5AC_pin_protected entry().\n", world_mpi_rank, __func__);
             }
         }
 
@@ -3536,7 +3545,7 @@ move_entry(H5F_t *file_ptr, int32_t old_idx, int32_t new_idx)
 
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: H5AC_move_entry() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: H5AC_move_entry() failed.\n", world_mpi_rank, __func__);
             }
         }
         else {
@@ -3560,7 +3569,7 @@ move_entry(H5F_t *file_ptr, int32_t old_idx, int32_t new_idx)
 
                     nerrors++;
                     if (verbose) {
-                        HDfprintf(stdout, "%d:%s: data[%d].header.is_dirty = %d.\n", world_mpi_rank, FUNC,
+                        HDfprintf(stdout, "%d:%s: data[%d].header.is_dirty = %d.\n", world_mpi_rank, __func__,
                                   new_idx, (int)(data[new_idx].header.is_dirty));
                     }
                 }
@@ -3612,7 +3621,7 @@ reset_server_counts(void)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: send_mssg() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: send_mssg() failed.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -3624,7 +3633,7 @@ reset_server_counts(void)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: recv_mssg() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: recv_mssg() failed.\n", world_mpi_rank, __func__);
             }
         }
         else if ((mssg.req != REQ_RW_COUNT_RESET_RPLY_CODE) || (mssg.src != world_server_mpi_rank) ||
@@ -3634,7 +3643,8 @@ reset_server_counts(void)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: Bad data in req r/w counter reset reply.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: Bad data in req r/w counter reset reply.\n", world_mpi_rank,
+                          __func__);
             }
         }
     }
@@ -3685,7 +3695,7 @@ resize_entry(int32_t idx, size_t new_size)
 
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: H5AC_resize_entry() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: H5AC_resize_entry() failed.\n", world_mpi_rank, __func__);
             }
         }
         else {
@@ -3734,8 +3744,8 @@ setup_cache_for_test(hid_t *fid_ptr, H5F_t **file_ptr_ptr, H5C_t **cache_ptr_ptr
     hid_t               fid            = -1;
     H5AC_cache_config_t config;
     H5AC_cache_config_t test_config;
-    H5F_t *             file_ptr  = NULL;
-    H5C_t *             cache_ptr = NULL;
+    H5F_t              *file_ptr  = NULL;
+    H5C_t              *cache_ptr = NULL;
     haddr_t             actual_base_addr;
 
     HDassert(fid_ptr != NULL);
@@ -3750,13 +3760,13 @@ setup_cache_for_test(hid_t *fid_ptr, H5F_t **file_ptr_ptr, H5C_t **cache_ptr_ptr
     if (fid < 0) {
         nerrors++;
         if (verbose) {
-            HDfprintf(stdout, "%d:%s: H5Fcreate() failed.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: H5Fcreate() failed.\n", world_mpi_rank, __func__);
         }
     }
     else if (H5Fflush(fid, H5F_SCOPE_GLOBAL) < 0) {
         nerrors++;
         if (verbose) {
-            HDfprintf(stdout, "%d:%s: H5Fflush() failed.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: H5Fflush() failed.\n", world_mpi_rank, __func__);
         }
     }
     else {
@@ -3766,7 +3776,7 @@ setup_cache_for_test(hid_t *fid_ptr, H5F_t **file_ptr_ptr, H5C_t **cache_ptr_ptr
     if (file_ptr == NULL) {
         nerrors++;
         if (verbose) {
-            HDfprintf(stdout, "%d:%s: Can't get file_ptr.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: Can't get file_ptr.\n", world_mpi_rank, __func__);
         }
     }
     else {
@@ -3776,13 +3786,13 @@ setup_cache_for_test(hid_t *fid_ptr, H5F_t **file_ptr_ptr, H5C_t **cache_ptr_ptr
     if (cache_ptr == NULL) {
         nerrors++;
         if (verbose) {
-            HDfprintf(stdout, "%d:%s: Can't get cache_ptr.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: Can't get cache_ptr.\n", world_mpi_rank, __func__);
         }
     }
     else if (cache_ptr->magic != H5C__H5C_T_MAGIC) {
         nerrors++;
         if (verbose) {
-            HDfprintf(stdout, "%d:%s: Bad cache_ptr magic.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: Bad cache_ptr magic.\n", world_mpi_rank, __func__);
         }
     }
     else {
@@ -3800,7 +3810,8 @@ setup_cache_for_test(hid_t *fid_ptr, H5F_t **file_ptr_ptr, H5C_t **cache_ptr_ptr
 
         if (H5AC_get_cache_auto_resize_config(cache_ptr, &config) != SUCCEED) {
 
-            HDfprintf(stdout, "%d:%s: H5AC_get_cache_auto_resize_config(1) failed.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: H5AC_get_cache_auto_resize_config(1) failed.\n", world_mpi_rank,
+                      __func__);
         }
         else {
 
@@ -3810,11 +3821,11 @@ setup_cache_for_test(hid_t *fid_ptr, H5F_t **file_ptr_ptr, H5C_t **cache_ptr_ptr
             if (H5AC_set_cache_auto_resize_config(cache_ptr, &config) != SUCCEED) {
 
                 HDfprintf(stdout, "%d:%s: H5AC_set_cache_auto_resize_config() failed.\n", world_mpi_rank,
-                          FUNC);
+                          __func__);
             }
             else if (enable_rpt_fcn) {
 
-                HDfprintf(stdout, "%d:%s: rpt_fcn enabled.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: rpt_fcn enabled.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -3830,7 +3841,7 @@ setup_cache_for_test(hid_t *fid_ptr, H5F_t **file_ptr_ptr, H5C_t **cache_ptr_ptr
 
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: cache_ptr->aux_ptr == NULL.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: cache_ptr->aux_ptr == NULL.\n", world_mpi_rank, __func__);
             }
         }
         else if (((H5AC_aux_t *)(cache_ptr->aux_ptr))->magic != H5AC__H5AC_AUX_T_MAGIC) {
@@ -3838,7 +3849,7 @@ setup_cache_for_test(hid_t *fid_ptr, H5F_t **file_ptr_ptr, H5C_t **cache_ptr_ptr
             nerrors++;
             if (verbose) {
                 HDfprintf(stdout, "%d:%s: cache_ptr->aux_ptr->magic != H5AC__H5AC_AUX_T_MAGIC.\n",
-                          world_mpi_rank, FUNC);
+                          world_mpi_rank, __func__);
             }
         }
         else if (((H5AC_aux_t *)(cache_ptr->aux_ptr))->metadata_write_strategy != metadata_write_strategy) {
@@ -3846,7 +3857,7 @@ setup_cache_for_test(hid_t *fid_ptr, H5F_t **file_ptr_ptr, H5C_t **cache_ptr_ptr
             nerrors++;
             if (verbose) {
                 HDfprintf(stdout, "%d:%s: bad cache_ptr->aux_ptr->metadata_write_strategy\n", world_mpi_rank,
-                          FUNC);
+                          __func__);
             }
         }
     }
@@ -3861,7 +3872,8 @@ setup_cache_for_test(hid_t *fid_ptr, H5F_t **file_ptr_ptr, H5C_t **cache_ptr_ptr
 
         if (H5AC_get_cache_auto_resize_config(cache_ptr, &test_config) != SUCCEED) {
 
-            HDfprintf(stdout, "%d:%s: H5AC_get_cache_auto_resize_config(2) failed.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: H5AC_get_cache_auto_resize_config(2) failed.\n", world_mpi_rank,
+                      __func__);
         }
         else if (test_config.metadata_write_strategy != metadata_write_strategy) {
 
@@ -3869,7 +3881,7 @@ setup_cache_for_test(hid_t *fid_ptr, H5F_t **file_ptr_ptr, H5C_t **cache_ptr_ptr
 
             if (verbose) {
 
-                HDfprintf(stdout, "%d:%s: unexpected metadata_write_strategy.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: unexpected metadata_write_strategy.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -3889,7 +3901,7 @@ setup_cache_for_test(hid_t *fid_ptr, H5F_t **file_ptr_ptr, H5C_t **cache_ptr_ptr
             nerrors++;
 
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: H5MF_alloc() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: H5MF_alloc() failed.\n", world_mpi_rank, __func__);
             }
         }
         else if (actual_base_addr > BASE_ADDR) {
@@ -3902,7 +3914,7 @@ setup_cache_for_test(hid_t *fid_ptr, H5F_t **file_ptr_ptr, H5C_t **cache_ptr_ptr
             nerrors++;
 
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: actual_base_addr > BASE_ADDR.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: actual_base_addr > BASE_ADDR.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -3913,7 +3925,7 @@ setup_cache_for_test(hid_t *fid_ptr, H5F_t **file_ptr_ptr, H5C_t **cache_ptr_ptr
         if (H5Fflush(fid, H5F_SCOPE_GLOBAL) < 0) {
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: second H5Fflush() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: second H5Fflush() failed.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -3926,7 +3938,7 @@ setup_cache_for_test(hid_t *fid_ptr, H5F_t **file_ptr_ptr, H5C_t **cache_ptr_ptr
 
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: H5C_set_write_done_callback failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: H5C_set_write_done_callback failed.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -3940,7 +3952,7 @@ setup_cache_for_test(hid_t *fid_ptr, H5F_t **file_ptr_ptr, H5C_t **cache_ptr_ptr
             nerrors++;
             if (verbose) {
                 HDfprintf(stdout, "%d:%s: H5AC__set_sync_point_done_callback failed.\n", world_mpi_rank,
-                          FUNC);
+                          __func__);
             }
         }
     }
@@ -3996,7 +4008,7 @@ verify_writes(unsigned num_writes, haddr_t *written_entries_tbl)
             proceed = FALSE;
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: barrier 1 failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: barrier 1 failed.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -4019,7 +4031,7 @@ verify_writes(unsigned num_writes, haddr_t *written_entries_tbl)
             proceed = FALSE;
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: barrier 2 failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: barrier 2 failed.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -4034,11 +4046,11 @@ verify_writes(unsigned num_writes, haddr_t *written_entries_tbl)
 
         if (proceed) {
 
-            HDfprintf(stdout, "%d:%s: verified %u writes.\n", world_mpi_rank, FUNC, num_writes);
+            HDfprintf(stdout, "%d:%s: verified %u writes.\n", world_mpi_rank, __func__, num_writes);
         }
         else {
 
-            HDfprintf(stdout, "%d:%s: FAILED to verify %u writes.\n", world_mpi_rank, FUNC, num_writes);
+            HDfprintf(stdout, "%d:%s: FAILED to verify %u writes.\n", world_mpi_rank, __func__, num_writes);
         }
     }
 
@@ -4055,7 +4067,7 @@ verify_writes(unsigned num_writes, haddr_t *written_entries_tbl)
             proceed = FALSE;
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: barrier 3 failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: barrier 3 failed.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -4098,7 +4110,7 @@ setup_rand(void)
         HDassert(world_mpi_rank < world_mpi_size);
 
         seed = predefined_seeds[world_mpi_rank];
-        HDfprintf(stdout, "%d:%s: predefined_seed = %d.\n", world_mpi_rank, FUNC, seed);
+        HDfprintf(stdout, "%d:%s: predefined_seed = %d.\n", world_mpi_rank, __func__, seed);
         fflush(stdout);
         HDsrand(seed);
     }
@@ -4108,13 +4120,13 @@ setup_rand(void)
 
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: gettimeofday() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: gettimeofday() failed.\n", world_mpi_rank, __func__);
             }
         }
         else {
             seed = (unsigned)tv.tv_usec;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: seed = %d.\n", world_mpi_rank, FUNC, seed);
+                HDfprintf(stdout, "%d:%s: seed = %d.\n", world_mpi_rank, __func__, seed);
                 fflush(stdout);
             }
             HDsrand(seed);
@@ -4154,7 +4166,7 @@ take_down_cache(hid_t fid, H5C_t *cache_ptr)
         success = FALSE;
         nerrors++;
         if (verbose) {
-            HDfprintf(stdout, "%d:%s: H5Fflush() failed.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: H5Fflush() failed.\n", world_mpi_rank, __func__);
         }
     }
 
@@ -4171,7 +4183,7 @@ take_down_cache(hid_t fid, H5C_t *cache_ptr)
             nerrors++;
             if (verbose) {
                 HDfprintf(stdout, "%d:%s: H5AC__set_sync_point_done_callback failed.\n", world_mpi_rank,
-                          FUNC);
+                          __func__);
             }
         }
     }
@@ -4182,12 +4194,12 @@ take_down_cache(hid_t fid, H5C_t *cache_ptr)
         success = FALSE;
         nerrors++;
         if (verbose) {
-            HDfprintf(stdout, "%d:%s: H5Fclose() failed.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: H5Fclose() failed.\n", world_mpi_rank, __func__);
         }
     }
 
     /* Pop API context */
-    H5CX_pop();
+    H5CX_pop(FALSE);
 
     if (success) {
 
@@ -4198,7 +4210,7 @@ take_down_cache(hid_t fid, H5C_t *cache_ptr)
                 success = FALSE;
                 nerrors++;
                 if (verbose) {
-                    HDfprintf(stdout, "%d:%s: HDremove() failed.\n", world_mpi_rank, FUNC);
+                    HDfprintf(stdout, "%d:%s: HDremove() failed.\n", world_mpi_rank, __func__);
                 }
             }
         }
@@ -4260,7 +4272,7 @@ verify_entry_reads(haddr_t addr, int expected_entry_reads)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: send_mssg() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: send_mssg() failed.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -4272,7 +4284,7 @@ verify_entry_reads(haddr_t addr, int expected_entry_reads)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: recv_mssg() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: recv_mssg() failed.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -4286,7 +4298,7 @@ verify_entry_reads(haddr_t addr, int expected_entry_reads)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: Bad data in req entry reads reply.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: Bad data in req entry reads reply.\n", world_mpi_rank, __func__);
             }
         }
         else {
@@ -4303,7 +4315,7 @@ verify_entry_reads(haddr_t addr, int expected_entry_reads)
             success = FALSE;
             if (verbose) {
                 HDfprintf(stdout, "%d:%s: rep/exp entry 0x%" PRIxHADDR " reads mismatch (%d/%d).\n",
-                          world_mpi_rank, FUNC, addr, reported_entry_reads, expected_entry_reads);
+                          world_mpi_rank, __func__, addr, reported_entry_reads, expected_entry_reads);
             }
         }
     }
@@ -4357,7 +4369,7 @@ verify_entry_writes(haddr_t addr, int expected_entry_writes)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: send_mssg() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: send_mssg() failed.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -4369,7 +4381,7 @@ verify_entry_writes(haddr_t addr, int expected_entry_writes)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: recv_mssg() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: recv_mssg() failed.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -4383,7 +4395,7 @@ verify_entry_writes(haddr_t addr, int expected_entry_writes)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: Bad data in req entry writes reply.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: Bad data in req entry writes reply.\n", world_mpi_rank, __func__);
             }
         }
         else {
@@ -4400,7 +4412,7 @@ verify_entry_writes(haddr_t addr, int expected_entry_writes)
             success = FALSE;
             if (verbose) {
                 HDfprintf(stdout, "%d:%s: rep/exp entry 0x%llx writes mismatch (%d/%d).\n", world_mpi_rank,
-                          FUNC, (long long)addr, reported_entry_writes, expected_entry_writes);
+                          __func__, (long long)addr, reported_entry_writes, expected_entry_writes);
             }
         }
     }
@@ -4453,7 +4465,7 @@ verify_total_reads(int expected_total_reads)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: send_mssg() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: send_mssg() failed.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -4465,7 +4477,7 @@ verify_total_reads(int expected_total_reads)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: recv_mssg() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: recv_mssg() failed.\n", world_mpi_rank, __func__);
             }
         }
         else if ((mssg.req != REQ_TTL_READS_RPLY_CODE) || (mssg.src != world_server_mpi_rank) ||
@@ -4475,7 +4487,7 @@ verify_total_reads(int expected_total_reads)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: Bad data in req total reads reply.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: Bad data in req total reads reply.\n", world_mpi_rank, __func__);
             }
         }
         else {
@@ -4492,7 +4504,7 @@ verify_total_reads(int expected_total_reads)
             success = FALSE;
             if (verbose) {
                 HDfprintf(stdout, "%d:%s: reported/expected total reads mismatch (%ld/%d).\n", world_mpi_rank,
-                          FUNC, reported_total_reads, expected_total_reads);
+                          __func__, reported_total_reads, expected_total_reads);
             }
         }
     }
@@ -4545,7 +4557,7 @@ verify_total_writes(unsigned expected_total_writes)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: send_mssg() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: send_mssg() failed.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -4557,7 +4569,7 @@ verify_total_writes(unsigned expected_total_writes)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: recv_mssg() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: recv_mssg() failed.\n", world_mpi_rank, __func__);
             }
         }
         else if ((mssg.req != REQ_TTL_WRITES_RPLY_CODE) || (mssg.src != world_server_mpi_rank) ||
@@ -4567,7 +4579,7 @@ verify_total_writes(unsigned expected_total_writes)
             nerrors++;
             success = FALSE;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: Bad data in req total reads reply.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: Bad data in req total reads reply.\n", world_mpi_rank, __func__);
             }
         }
         else {
@@ -4584,7 +4596,7 @@ verify_total_writes(unsigned expected_total_writes)
             success = FALSE;
             if (verbose) {
                 HDfprintf(stdout, "%d:%s: reported/expected total writes mismatch (%u/%u).\n", world_mpi_rank,
-                          FUNC, reported_total_writes, expected_total_writes);
+                          __func__, reported_total_writes, expected_total_writes);
             }
         }
     }
@@ -4646,7 +4658,7 @@ unlock_entry(H5F_t *file_ptr, int32_t idx, unsigned int flags)
 
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: error in H5AC_unprotect().\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: error in H5AC_unprotect().\n", world_mpi_rank, __func__);
             }
         }
         else {
@@ -4730,7 +4742,7 @@ unpin_entry(H5F_t *file_ptr, int32_t idx, hbool_t global, hbool_t dirty, hbool_t
 
                 nerrors++;
                 if (verbose) {
-                    HDfprintf(stdout, "%d:%s: error in H5AC_unpin_entry().\n", world_mpi_rank, FUNC);
+                    HDfprintf(stdout, "%d:%s: error in H5AC_unpin_entry().\n", world_mpi_rank, __func__);
                 }
             }
         }
@@ -4791,7 +4803,7 @@ server_smoke_check(void)
             /* some error occurred in the server -- report failure */
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: server_main() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: server_main() failed.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -4812,7 +4824,7 @@ server_smoke_check(void)
 
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: send_mssg() failed on write.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: send_mssg() failed on write.\n", world_mpi_rank, __func__);
             }
         }
 
@@ -4827,7 +4839,7 @@ server_smoke_check(void)
 
                 nerrors++;
                 if (verbose) {
-                    HDfprintf(stdout, "%d:%s: recv_mssg() failed.\n", world_mpi_rank, FUNC);
+                    HDfprintf(stdout, "%d:%s: recv_mssg() failed.\n", world_mpi_rank, __func__);
                 }
             }
         }
@@ -4843,7 +4855,7 @@ server_smoke_check(void)
                 success = FALSE;
                 nerrors++;
                 if (verbose) {
-                    HDfprintf(stdout, "%d:%s: Bad data in write req ack.\n", world_mpi_rank, FUNC);
+                    HDfprintf(stdout, "%d:%s: Bad data in write req ack.\n", world_mpi_rank, __func__);
                 }
             }
         }
@@ -4858,7 +4870,7 @@ server_smoke_check(void)
             success = FALSE;
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: barrier 1 failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: barrier 1 failed.\n", world_mpi_rank, __func__);
             }
         }
 
@@ -4890,7 +4902,7 @@ server_smoke_check(void)
             nerrors++;
             if (verbose) {
 
-                HDfprintf(stdout, "%d:%s: barrier 2 failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: barrier 2 failed.\n", world_mpi_rank, __func__);
             }
         }
 
@@ -4913,7 +4925,7 @@ server_smoke_check(void)
 
                 nerrors++;
                 if (verbose) {
-                    HDfprintf(stdout, "%d:%s: send_mssg() failed on write.\n", world_mpi_rank, FUNC);
+                    HDfprintf(stdout, "%d:%s: send_mssg() failed on write.\n", world_mpi_rank, __func__);
                 }
             }
         }
@@ -4927,7 +4939,7 @@ server_smoke_check(void)
 
                 nerrors++;
                 if (verbose) {
-                    HDfprintf(stdout, "%d:%s: recv_mssg() failed.\n", world_mpi_rank, FUNC);
+                    HDfprintf(stdout, "%d:%s: recv_mssg() failed.\n", world_mpi_rank, __func__);
                 }
             }
         }
@@ -4943,7 +4955,7 @@ server_smoke_check(void)
                 success = FALSE;
                 nerrors++;
                 if (verbose) {
-                    HDfprintf(stdout, "%d:%s: Bad data in read req reply.\n", world_mpi_rank, FUNC);
+                    HDfprintf(stdout, "%d:%s: Bad data in read req reply.\n", world_mpi_rank, __func__);
                 }
             }
         }
@@ -4954,7 +4966,7 @@ server_smoke_check(void)
             success = FALSE;
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: barrier 3 failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: barrier 3 failed.\n", world_mpi_rank, __func__);
             }
         }
 
@@ -4985,7 +4997,7 @@ server_smoke_check(void)
             nerrors++;
             if (verbose) {
 
-                HDfprintf(stdout, "%d:%s: barrier 4 failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: barrier 4 failed.\n", world_mpi_rank, __func__);
             }
         }
 
@@ -5001,7 +5013,7 @@ server_smoke_check(void)
             nerrors++;
             if (verbose) {
 
-                HDfprintf(stdout, "%d:%s: barrier 5 failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: barrier 5 failed.\n", world_mpi_rank, __func__);
             }
         }
 
@@ -5032,7 +5044,7 @@ server_smoke_check(void)
             nerrors++;
             if (verbose) {
 
-                HDfprintf(stdout, "%d:%s: barrier 6 failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: barrier 6 failed.\n", world_mpi_rank, __func__);
             }
         }
 
@@ -5055,7 +5067,7 @@ server_smoke_check(void)
 
                 nerrors++;
                 if (verbose) {
-                    HDfprintf(stdout, "%d:%s: send_mssg() failed on done.\n", world_mpi_rank, FUNC);
+                    HDfprintf(stdout, "%d:%s: send_mssg() failed on done.\n", world_mpi_rank, __func__);
                 }
             }
         }
@@ -5102,8 +5114,8 @@ smoke_check_1(int metadata_write_strategy)
     int           i;
     int           max_nerrors;
     hid_t         fid       = -1;
-    H5F_t *       file_ptr  = NULL;
-    H5C_t *       cache_ptr = NULL;
+    H5F_t        *file_ptr  = NULL;
+    H5C_t        *cache_ptr = NULL;
     struct mssg_t mssg;
 
     switch (metadata_write_strategy) {
@@ -5138,7 +5150,7 @@ smoke_check_1(int metadata_write_strategy)
             /* some error occurred in the server -- report failure */
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: server_main() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: server_main() failed.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -5150,7 +5162,7 @@ smoke_check_1(int metadata_write_strategy)
             fid       = -1;
             cache_ptr = NULL;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: setup_cache_for_test() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: setup_cache_for_test() failed.\n", world_mpi_rank, __func__);
             }
         }
 
@@ -5183,7 +5195,7 @@ smoke_check_1(int metadata_write_strategy)
 
                 nerrors++;
                 if (verbose) {
-                    HDfprintf(stdout, "%d:%s: take_down_cache() failed.\n", world_mpi_rank, FUNC);
+                    HDfprintf(stdout, "%d:%s: take_down_cache() failed.\n", world_mpi_rank, __func__);
                 }
             }
         }
@@ -5216,7 +5228,7 @@ smoke_check_1(int metadata_write_strategy)
 
                 nerrors++;
                 if (verbose) {
-                    HDfprintf(stdout, "%d:%s: send_mssg() failed on done.\n", world_mpi_rank, FUNC);
+                    HDfprintf(stdout, "%d:%s: send_mssg() failed on done.\n", world_mpi_rank, __func__);
                 }
             }
         }
@@ -5266,8 +5278,8 @@ smoke_check_2(int metadata_write_strategy)
     int           i;
     int           max_nerrors;
     hid_t         fid       = -1;
-    H5F_t *       file_ptr  = NULL;
-    H5C_t *       cache_ptr = NULL;
+    H5F_t        *file_ptr  = NULL;
+    H5C_t        *cache_ptr = NULL;
     struct mssg_t mssg;
 
     switch (metadata_write_strategy) {
@@ -5302,7 +5314,7 @@ smoke_check_2(int metadata_write_strategy)
             /* some error occurred in the server -- report failure */
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: server_main() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: server_main() failed.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -5314,7 +5326,7 @@ smoke_check_2(int metadata_write_strategy)
             fid       = -1;
             cache_ptr = NULL;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: setup_cache_for_test() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: setup_cache_for_test() failed.\n", world_mpi_rank, __func__);
             }
         }
 
@@ -5381,7 +5393,7 @@ smoke_check_2(int metadata_write_strategy)
 
                 nerrors++;
                 if (verbose) {
-                    HDfprintf(stdout, "%d:%s: take_down_cache() failed.\n", world_mpi_rank, FUNC);
+                    HDfprintf(stdout, "%d:%s: take_down_cache() failed.\n", world_mpi_rank, __func__);
                 }
             }
         }
@@ -5414,7 +5426,7 @@ smoke_check_2(int metadata_write_strategy)
 
                 nerrors++;
                 if (verbose) {
-                    HDfprintf(stdout, "%d:%s: send_mssg() failed on done.\n", world_mpi_rank, FUNC);
+                    HDfprintf(stdout, "%d:%s: send_mssg() failed on done.\n", world_mpi_rank, __func__);
                 }
             }
         }
@@ -5471,8 +5483,8 @@ smoke_check_3(int metadata_write_strategy)
     int           min_idx;
     int           max_idx;
     hid_t         fid       = -1;
-    H5F_t *       file_ptr  = NULL;
-    H5C_t *       cache_ptr = NULL;
+    H5F_t        *file_ptr  = NULL;
+    H5C_t        *cache_ptr = NULL;
     struct mssg_t mssg;
 
     switch (metadata_write_strategy) {
@@ -5507,7 +5519,7 @@ smoke_check_3(int metadata_write_strategy)
             /* some error occurred in the server -- report failure */
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: server_main() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: server_main() failed.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -5519,7 +5531,7 @@ smoke_check_3(int metadata_write_strategy)
             fid       = -1;
             cache_ptr = NULL;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: setup_cache_for_test() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: setup_cache_for_test() failed.\n", world_mpi_rank, __func__);
             }
         }
 
@@ -5573,7 +5585,7 @@ smoke_check_3(int metadata_write_strategy)
         if (H5Fflush(fid, H5F_SCOPE_GLOBAL) < 0) {
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: H5Fflush() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: H5Fflush() failed.\n", world_mpi_rank, __func__);
             }
         }
 
@@ -5666,7 +5678,7 @@ smoke_check_3(int metadata_write_strategy)
 
                 nerrors++;
                 if (verbose) {
-                    HDfprintf(stdout, "%d:%s: take_down_cache() failed.\n", world_mpi_rank, FUNC);
+                    HDfprintf(stdout, "%d:%s: take_down_cache() failed.\n", world_mpi_rank, __func__);
                 }
             }
         }
@@ -5699,7 +5711,7 @@ smoke_check_3(int metadata_write_strategy)
 
                 nerrors++;
                 if (verbose) {
-                    HDfprintf(stdout, "%d:%s: send_mssg() failed on done.\n", world_mpi_rank, FUNC);
+                    HDfprintf(stdout, "%d:%s: send_mssg() failed on done.\n", world_mpi_rank, __func__);
                 }
             }
         }
@@ -5756,8 +5768,8 @@ smoke_check_4(int metadata_write_strategy)
     int           min_idx;
     int           max_idx;
     hid_t         fid       = -1;
-    H5F_t *       file_ptr  = NULL;
-    H5C_t *       cache_ptr = NULL;
+    H5F_t        *file_ptr  = NULL;
+    H5C_t        *cache_ptr = NULL;
     struct mssg_t mssg;
 
     switch (metadata_write_strategy) {
@@ -5792,7 +5804,7 @@ smoke_check_4(int metadata_write_strategy)
             /* some error occurred in the server -- report failure */
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: server_main() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: server_main() failed.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -5804,7 +5816,7 @@ smoke_check_4(int metadata_write_strategy)
             fid       = -1;
             cache_ptr = NULL;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: setup_cache_for_test() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: setup_cache_for_test() failed.\n", world_mpi_rank, __func__);
             }
         }
 
@@ -5870,7 +5882,7 @@ smoke_check_4(int metadata_write_strategy)
         if (H5Fflush(fid, H5F_SCOPE_GLOBAL) < 0) {
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: H5Fflush() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: H5Fflush() failed.\n", world_mpi_rank, __func__);
             }
         }
 
@@ -5950,7 +5962,7 @@ smoke_check_4(int metadata_write_strategy)
 
                 nerrors++;
                 if (verbose) {
-                    HDfprintf(stdout, "%d:%s: take_down_cache() failed.\n", world_mpi_rank, FUNC);
+                    HDfprintf(stdout, "%d:%s: take_down_cache() failed.\n", world_mpi_rank, __func__);
                 }
             }
         }
@@ -5983,7 +5995,7 @@ smoke_check_4(int metadata_write_strategy)
 
                 nerrors++;
                 if (verbose) {
-                    HDfprintf(stdout, "%d:%s: send_mssg() failed on done.\n", world_mpi_rank, FUNC);
+                    HDfprintf(stdout, "%d:%s: send_mssg() failed on done.\n", world_mpi_rank, __func__);
                 }
             }
         }
@@ -6031,8 +6043,8 @@ smoke_check_5(int metadata_write_strategy)
     int           i;
     int           max_nerrors;
     hid_t         fid       = -1;
-    H5F_t *       file_ptr  = NULL;
-    H5C_t *       cache_ptr = NULL;
+    H5F_t        *file_ptr  = NULL;
+    H5C_t        *cache_ptr = NULL;
     struct mssg_t mssg;
 
     switch (metadata_write_strategy) {
@@ -6067,7 +6079,7 @@ smoke_check_5(int metadata_write_strategy)
             /* some error occurred in the server -- report failure */
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: server_main() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: server_main() failed.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -6080,7 +6092,7 @@ smoke_check_5(int metadata_write_strategy)
             fid       = -1;
             cache_ptr = NULL;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: setup_cache_for_test() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: setup_cache_for_test() failed.\n", world_mpi_rank, __func__);
             }
         }
 
@@ -6092,7 +6104,7 @@ smoke_check_5(int metadata_write_strategy)
         if (H5Fflush(fid, H5F_SCOPE_GLOBAL) < 0) {
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: H5Fflush() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: H5Fflush() failed.\n", world_mpi_rank, __func__);
             }
         }
 
@@ -6142,7 +6154,7 @@ smoke_check_5(int metadata_write_strategy)
 
                 nerrors++;
                 if (verbose) {
-                    HDfprintf(stdout, "%d:%s: take_down_cache() failed.\n", world_mpi_rank, FUNC);
+                    HDfprintf(stdout, "%d:%s: take_down_cache() failed.\n", world_mpi_rank, __func__);
                 }
             }
         }
@@ -6175,7 +6187,7 @@ smoke_check_5(int metadata_write_strategy)
 
                 nerrors++;
                 if (verbose) {
-                    HDfprintf(stdout, "%d:%s: send_mssg() failed on done.\n", world_mpi_rank, FUNC);
+                    HDfprintf(stdout, "%d:%s: send_mssg() failed on done.\n", world_mpi_rank, __func__);
                 }
             }
         }
@@ -6245,7 +6257,7 @@ trace_file_check(int metadata_write_strategy)
     hbool_t success = TRUE;
 
     const char *((*expected_output)[])      = NULL;
-    const char *        expected_output_0[] = {"### HDF5 metadata cache trace file version 1 ###\n",
+    const char         *expected_output_0[] = {"### HDF5 metadata cache trace file version 1 ###\n",
                                        "H5AC_set_cache_auto_resize_config",
                                        "H5AC_insert_entry",
                                        "H5AC_insert_entry",
@@ -6271,7 +6283,7 @@ trace_file_check(int metadata_write_strategy)
                                        "H5AC_flush",
                                        "H5AC_flush",
                                        NULL};
-    const char *        expected_output_1[] = {"### HDF5 metadata cache trace file version 1 ###\n",
+    const char         *expected_output_1[] = {"### HDF5 metadata cache trace file version 1 ###\n",
                                        "H5AC_set_cache_auto_resize_config",
                                        "H5AC_insert_entry",
                                        "H5AC_insert_entry",
@@ -6305,9 +6317,9 @@ trace_file_check(int metadata_write_strategy)
     size_t              expected_line_len;
     size_t              actual_line_len;
     hid_t               fid            = -1;
-    H5F_t *             file_ptr       = NULL;
-    H5C_t *             cache_ptr      = NULL;
-    FILE *              trace_file_ptr = NULL;
+    H5F_t              *file_ptr       = NULL;
+    H5C_t              *cache_ptr      = NULL;
+    FILE               *trace_file_ptr = NULL;
     H5AC_cache_config_t config;
     struct mssg_t       mssg;
 
@@ -6352,7 +6364,7 @@ trace_file_check(int metadata_write_strategy)
             /* some error occurred in the server -- report failure */
             nerrors++;
             if (verbose)
-                HDfprintf(stdout, "%d:%s: server_main() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: server_main() failed.\n", world_mpi_rank, __func__);
         }
     }
     else {
@@ -6364,7 +6376,7 @@ trace_file_check(int metadata_write_strategy)
             fid       = -1;
             cache_ptr = NULL;
             if (verbose)
-                HDfprintf(stdout, "%d:%s: setup_cache_for_test() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: setup_cache_for_test() failed.\n", world_mpi_rank, __func__);
         }
 
         if (nerrors == 0) {
@@ -6374,7 +6386,7 @@ trace_file_check(int metadata_write_strategy)
             if (H5AC_get_cache_auto_resize_config(cache_ptr, &config) != SUCCEED) {
                 nerrors++;
                 HDfprintf(stdout, "%d:%s: H5AC_get_cache_auto_resize_config() failed.\n", world_mpi_rank,
-                          FUNC);
+                          __func__);
             }
             else {
                 config.open_trace_file = TRUE;
@@ -6383,7 +6395,7 @@ trace_file_check(int metadata_write_strategy)
                 if (H5AC_set_cache_auto_resize_config(cache_ptr, &config) != SUCCEED) {
                     nerrors++;
                     HDfprintf(stdout, "%d:%s: H5AC_set_cache_auto_resize_config() failed.\n", world_mpi_rank,
-                              FUNC);
+                              __func__);
                 }
             }
         } /* end if */
@@ -6418,7 +6430,7 @@ trace_file_check(int metadata_write_strategy)
         if (H5Fflush(fid, H5F_SCOPE_GLOBAL) < 0) {
             nerrors++;
             if (verbose)
-                HDfprintf(stdout, "%d:%s: H5Fflush() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: H5Fflush() failed.\n", world_mpi_rank, __func__);
         }
 
         if (nerrors == 0) {
@@ -6427,7 +6439,7 @@ trace_file_check(int metadata_write_strategy)
             if (H5AC_get_cache_auto_resize_config(cache_ptr, &config) != SUCCEED) {
                 nerrors++;
                 HDfprintf(stdout, "%d:%s: H5AC_get_cache_auto_resize_config() failed.\n", world_mpi_rank,
-                          FUNC);
+                          __func__);
             }
             else {
                 config.open_trace_file    = FALSE;
@@ -6437,7 +6449,7 @@ trace_file_check(int metadata_write_strategy)
                 if (H5AC_set_cache_auto_resize_config(cache_ptr, &config) != SUCCEED) {
                     nerrors++;
                     HDfprintf(stdout, "%d:%s: H5AC_set_cache_auto_resize_config() failed.\n", world_mpi_rank,
-                              FUNC);
+                              __func__);
                 }
             }
         } /* end if */
@@ -6447,7 +6459,7 @@ trace_file_check(int metadata_write_strategy)
 
                 nerrors++;
                 if (verbose)
-                    HDfprintf(stdout, "%d:%s: take_down_cache() failed.\n", world_mpi_rank, FUNC);
+                    HDfprintf(stdout, "%d:%s: take_down_cache() failed.\n", world_mpi_rank, __func__);
             }
         } /* end if */
 
@@ -6477,7 +6489,7 @@ trace_file_check(int metadata_write_strategy)
             if (!success) {
                 nerrors++;
                 if (verbose)
-                    HDfprintf(stdout, "%d:%s: send_mssg() failed on done.\n", world_mpi_rank, FUNC);
+                    HDfprintf(stdout, "%d:%s: send_mssg() failed on done.\n", world_mpi_rank, __func__);
             }
         } /* end if */
 
@@ -6488,7 +6500,7 @@ trace_file_check(int metadata_write_strategy)
 
                 nerrors++;
                 if (verbose)
-                    HDfprintf(stdout, "%d:%s: HDfopen failed.\n", world_mpi_rank, FUNC);
+                    HDfprintf(stdout, "%d:%s: HDfopen failed.\n", world_mpi_rank, __func__);
             }
         } /* end if */
 
@@ -6517,17 +6529,17 @@ trace_file_check(int metadata_write_strategy)
                     nerrors++;
                     if (verbose) {
                         HDfprintf(stdout, "%d:%s: Unexpected data in trace file line %d.\n", world_mpi_rank,
-                                  FUNC, i);
+                                  __func__, i);
                         if (expected_line_len == 0) {
-                            HDfprintf(stdout, "%d:%s: expected = \"%s\" %zu\n", world_mpi_rank, FUNC,
+                            HDfprintf(stdout, "%d:%s: expected = \"%s\" %zu\n", world_mpi_rank, __func__,
                                       "<EMPTY>", expected_line_len);
-                            HDfprintf(stdout, "%d:%s: actual   = \"%s\" %zu\n", world_mpi_rank, FUNC, buffer,
-                                      actual_line_len);
+                            HDfprintf(stdout, "%d:%s: actual   = \"%s\" %zu\n", world_mpi_rank, __func__,
+                                      buffer, actual_line_len);
                         }
                         if (actual_line_len == 0) {
-                            HDfprintf(stdout, "%d:%s: expected = \"%s\" %zu\n", world_mpi_rank, FUNC,
+                            HDfprintf(stdout, "%d:%s: expected = \"%s\" %zu\n", world_mpi_rank, __func__,
                                       (*expected_output)[i], expected_line_len);
-                            HDfprintf(stdout, "%d:%s: actual   = \"%s\" %zu\n", world_mpi_rank, FUNC,
+                            HDfprintf(stdout, "%d:%s: actual   = \"%s\" %zu\n", world_mpi_rank, __func__,
                                       "<EMPTY>", actual_line_len);
                         }
                     }
@@ -6542,10 +6554,10 @@ trace_file_check(int metadata_write_strategy)
                     nerrors++;
                     if (verbose) {
                         HDfprintf(stdout, "%d:%s: Unexpected data in trace file line %d.\n", world_mpi_rank,
-                                  FUNC, i);
-                        HDfprintf(stdout, "%d:%s: expected = \"%s\" %zu\n", world_mpi_rank, FUNC,
+                                  __func__, i);
+                        HDfprintf(stdout, "%d:%s: expected = \"%s\" %zu\n", world_mpi_rank, __func__,
                                   (*expected_output)[i], expected_line_len);
-                        HDfprintf(stdout, "%d:%s: actual   = \"%s\" %zu\n", world_mpi_rank, FUNC, buffer,
+                        HDfprintf(stdout, "%d:%s: actual   = \"%s\" %zu\n", world_mpi_rank, __func__, buffer,
                                   actual_line_len);
                     }
                 }
@@ -6563,10 +6575,10 @@ trace_file_check(int metadata_write_strategy)
                     nerrors++;
                     if (verbose) {
                         HDfprintf(stdout, "%d:%s: Unexpected data in trace file line %d.\n", world_mpi_rank,
-                                  FUNC, i);
-                        HDfprintf(stdout, "%d:%s: expected = \"%s\"\n", world_mpi_rank, FUNC,
+                                  __func__, i);
+                        HDfprintf(stdout, "%d:%s: expected = \"%s\"\n", world_mpi_rank, __func__,
                                   (*expected_output)[i]);
-                        HDfprintf(stdout, "%d:%s: actual   = \"%s\"\n", world_mpi_rank, FUNC, tok);
+                        HDfprintf(stdout, "%d:%s: actual   = \"%s\"\n", world_mpi_rank, __func__, tok);
                     }
                 }
             } /* end else */
@@ -6623,8 +6635,8 @@ smoke_check_6(int metadata_write_strategy)
     int                     i;
     int                     max_nerrors;
     hid_t                   fid       = -1;
-    H5F_t *                 file_ptr  = NULL;
-    H5C_t *                 cache_ptr = NULL;
+    H5F_t                  *file_ptr  = NULL;
+    H5C_t                  *cache_ptr = NULL;
     struct mssg_t           mssg;
 
     switch (metadata_write_strategy) {
@@ -6659,7 +6671,7 @@ smoke_check_6(int metadata_write_strategy)
             /* some error occurred in the server -- report failure */
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: server_main() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: server_main() failed.\n", world_mpi_rank, __func__);
             }
         }
     }
@@ -6673,7 +6685,7 @@ smoke_check_6(int metadata_write_strategy)
             fid       = -1;
             cache_ptr = NULL;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: setup_cache_for_test() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: setup_cache_for_test() failed.\n", world_mpi_rank, __func__);
             }
         }
 
@@ -6694,7 +6706,7 @@ smoke_check_6(int metadata_write_strategy)
                 nerrors++;
                 if (verbose) {
                     HDfprintf(stdout, "%d:%s: Entry inserted not marked as collective.\n", world_mpi_rank,
-                              FUNC);
+                              __func__);
                 }
             }
 
@@ -6719,7 +6731,7 @@ smoke_check_6(int metadata_write_strategy)
                 nerrors++;
                 if (verbose) {
                     HDfprintf(stdout, "%d:%s: Entry inserted independently marked as collective.\n",
-                              world_mpi_rank, FUNC);
+                              world_mpi_rank, __func__);
                 }
             }
 
@@ -6733,7 +6745,7 @@ smoke_check_6(int metadata_write_strategy)
         if (H5Fflush(fid, H5F_SCOPE_GLOBAL) < 0) {
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: H5Fflush() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: H5Fflush() failed.\n", world_mpi_rank, __func__);
             }
         }
 
@@ -6751,7 +6763,7 @@ smoke_check_6(int metadata_write_strategy)
                 nerrors++;
                 if (verbose) {
                     HDfprintf(stdout, "%d:%s: Entry protected not marked as collective.\n", world_mpi_rank,
-                              FUNC);
+                              __func__);
                 }
             }
 
@@ -6775,7 +6787,7 @@ smoke_check_6(int metadata_write_strategy)
                 nerrors++;
                 if (verbose) {
                     HDfprintf(stdout, "%d:%s: Entry inserted independently marked as collective.\n",
-                              world_mpi_rank, FUNC);
+                              world_mpi_rank, __func__);
                 }
             }
 
@@ -6795,7 +6807,7 @@ smoke_check_6(int metadata_write_strategy)
 
                 nerrors++;
                 if (verbose) {
-                    HDfprintf(stdout, "%d:%s: take_down_cache() failed.\n", world_mpi_rank, FUNC);
+                    HDfprintf(stdout, "%d:%s: take_down_cache() failed.\n", world_mpi_rank, __func__);
                 }
             }
         }
@@ -6828,7 +6840,7 @@ smoke_check_6(int metadata_write_strategy)
 
                 nerrors++;
                 if (verbose) {
-                    HDfprintf(stdout, "%d:%s: send_mssg() failed on done.\n", world_mpi_rank, FUNC);
+                    HDfprintf(stdout, "%d:%s: send_mssg() failed on done.\n", world_mpi_rank, __func__);
                 }
             }
         }
@@ -6903,12 +6915,6 @@ main(int argc, char **argv)
     else
         virt_num_data_entries = STD_VIRT_NUM_DATA_ENTRIES;
 
-#ifdef H5_HAVE_MPE
-    if (MAINPROCESS)
-        HDprintf("    Tests compiled for MPE.\n");
-    virt_num_data_entries = MPE_VIRT_NUM_DATA_ENTIES;
-#endif /* H5_HAVE_MPE */
-
     if (MAINPROCESS) {
         HDprintf("===================================\n");
         HDprintf("Parallel metadata cache tests\n");
@@ -6921,6 +6927,23 @@ main(int argc, char **argv)
         if (MAINPROCESS)
             HDprintf("    Need at least 3 processes.  Exiting.\n");
         goto finish;
+    }
+
+    if (NULL == (data = HDmalloc(NUM_DATA_ENTRIES * sizeof(*data)))) {
+        HDprintf("    Couldn't allocate data array.  Exiting.\n");
+        MPI_Abort(MPI_COMM_WORLD, -1);
+    }
+    if (NULL == (data_index = HDmalloc(NUM_DATA_ENTRIES * sizeof(*data_index)))) {
+        HDprintf("    Couldn't allocate data index array.  Exiting.\n");
+        MPI_Abort(MPI_COMM_WORLD, -1);
+    }
+
+    HDmemset(filenames, 0, sizeof(filenames));
+    for (int i = 0; i < NFILENAME; i++) {
+        if (NULL == (filenames[i] = HDmalloc(PATH_MAX))) {
+            HDprintf("couldn't allocate filename array\n");
+            MPI_Abort(MPI_COMM_WORLD, -1);
+        }
     }
 
     set_up_file_communicator();
@@ -6938,21 +6961,21 @@ main(int argc, char **argv)
     if (FAIL == (fapl = H5Pcreate(H5P_FILE_ACCESS))) {
         nerrors++;
         if (verbose)
-            HDfprintf(stdout, "%d:%s: H5Pcreate() failed 1.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: H5Pcreate() failed 1.\n", world_mpi_rank, __func__);
     }
 
     if (H5Pset_fapl_mpio(fapl, world_mpi_comm, MPI_INFO_NULL) < 0) {
         nerrors++;
         if (verbose)
-            HDfprintf(stdout, "%d:%s: H5Pset_fapl_mpio() failed 1.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: H5Pset_fapl_mpio() failed 1.\n", world_mpi_rank, __func__);
     }
 
     /* fix the file names */
     for (u = 0; u < sizeof(FILENAME) / sizeof(FILENAME[0]) - 1; ++u) {
-        if (h5_fixname(FILENAME[u], fapl, filenames[u], sizeof(filenames[u])) == NULL) {
+        if (h5_fixname(FILENAME[u], fapl, filenames[u], PATH_MAX) == NULL) {
             nerrors++;
             if (verbose)
-                HDfprintf(stdout, "%d:%s: h5_fixname() failed.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: h5_fixname() failed.\n", world_mpi_rank, __func__);
             break;
         }
     }
@@ -6961,7 +6984,7 @@ main(int argc, char **argv)
     if (H5Pclose(fapl) < 0) {
         nerrors++;
         if (verbose)
-            HDfprintf(stdout, "%d:%s: H5Pclose() failed.\n", world_mpi_rank, FUNC);
+            HDfprintf(stdout, "%d:%s: H5Pclose() failed.\n", world_mpi_rank, __func__);
     }
 
     /* now create the fapl again, excluding the server process. */
@@ -6971,13 +6994,13 @@ main(int argc, char **argv)
         if (FAIL == (fapl = H5Pcreate(H5P_FILE_ACCESS))) {
             nerrors++;
             if (verbose)
-                HDfprintf(stdout, "%d:%s: H5Pcreate() failed 2.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: H5Pcreate() failed 2.\n", world_mpi_rank, __func__);
         }
 
         if (H5Pset_fapl_mpio(fapl, file_mpi_comm, MPI_INFO_NULL) < 0) {
             nerrors++;
             if (verbose)
-                HDfprintf(stdout, "%d:%s: H5Pset_fapl_mpio() failed 2.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: H5Pset_fapl_mpio() failed 2.\n", world_mpi_rank, __func__);
         }
     }
 
@@ -7022,7 +7045,8 @@ main(int argc, char **argv)
 
             nerrors++;
             if (verbose) {
-                HDfprintf(stdout, "%d:%s: H5Pset_all_coll_metadata_ops() failed 1.\n", world_mpi_rank, FUNC);
+                HDfprintf(stdout, "%d:%s: H5Pset_all_coll_metadata_ops() failed 1.\n", world_mpi_rank,
+                          __func__);
             }
         }
     }
@@ -7037,14 +7061,23 @@ main(int argc, char **argv)
 #endif
 
 finish:
+    if (data_index)
+        HDfree(data_index);
+    if (data)
+        HDfree(data);
+
     /* make sure all processes are finished before final report, cleanup
      * and exit.
      */
+
+    if (file_mpi_comm != MPI_COMM_NULL)
+        MPI_Comm_free(&file_mpi_comm);
+
     MPI_Barrier(MPI_COMM_WORLD);
     if (MAINPROCESS) { /* only process 0 reports */
         HDprintf("===================================\n");
-        if (failures) {
-            HDprintf("***metadata cache tests detected %d failures***\n", failures);
+        if (nerrors || failures) {
+            HDprintf("***metadata cache tests detected %d failures***\n", nerrors + failures);
         }
         else {
             HDprintf("metadata cache tests finished with no failures\n");
@@ -7061,5 +7094,5 @@ finish:
     MPI_Finalize();
 
     /* cannot just return (failures) because exit code is limited to 1byte */
-    return (failures != 0);
+    return (nerrors != 0 || failures != 0);
 }

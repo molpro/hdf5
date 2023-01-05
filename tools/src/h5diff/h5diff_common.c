@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -25,30 +24,58 @@ static int check_d_input(const char *);
  * Command-line options: The user can specify short or long-named
  * parameters.
  */
-static const char *        s_opts   = "hVrv*qn:d:p:NcelxE:A:S*";
-static struct long_options l_opts[] = {{"help", no_arg, 'h'},
-                                       {"version", no_arg, 'V'},
-                                       {"report", no_arg, 'r'},
-                                       {"verbose", optional_arg, 'v'},
-                                       {"quiet", no_arg, 'q'},
-                                       {"count", require_arg, 'n'},
-                                       {"delta", require_arg, 'd'},
-                                       {"relative", require_arg, 'p'},
-                                       {"nan", no_arg, 'N'},
-                                       {"compare", no_arg, 'c'},
-                                       {"use-system-epsilon", no_arg, 'e'},
-                                       {"follow-symlinks", no_arg, 'l'},
-                                       {"no-dangling-links", no_arg, 'x'},
-                                       {"exclude-path", require_arg, 'E'},
-                                       {"exclude-attribute", require_arg, 'A'},
-                                       {"enable-error-stack", optional_arg, 'S'},
-                                       {"vol-value-1", require_arg, '1'},
-                                       {"vol-name-1", require_arg, '2'},
-                                       {"vol-info-1", require_arg, '3'},
-                                       {"vol-value-2", require_arg, '4'},
-                                       {"vol-name-2", require_arg, '5'},
-                                       {"vol-info-2", require_arg, '6'},
-                                       {NULL, 0, '\0'}};
+static const char            *s_opts   = "hVrv*qn:d:p:NcelxE:A:S*";
+static struct h5_long_options l_opts[] = {{"help", no_arg, 'h'},
+                                          {"version", no_arg, 'V'},
+                                          {"report", no_arg, 'r'},
+                                          {"verbose", optional_arg, 'v'},
+                                          {"quiet", no_arg, 'q'},
+                                          {"count", require_arg, 'n'},
+                                          {"delta", require_arg, 'd'},
+                                          {"relative", require_arg, 'p'},
+                                          {"nan", no_arg, 'N'},
+                                          {"compare", no_arg, 'c'},
+                                          {"use-system-epsilon", no_arg, 'e'},
+                                          {"follow-symlinks", no_arg, 'l'},
+                                          {"no-dangling-links", no_arg, 'x'},
+                                          {"exclude-path", require_arg, 'E'},
+                                          {"exclude-attribute", require_arg, 'A'},
+                                          {"enable-error-stack", optional_arg, 'S'},
+                                          {"vol-value-1", require_arg, '1'},
+                                          {"vol-name-1", require_arg, '2'},
+                                          {"vol-info-1", require_arg, '3'},
+                                          {"vol-value-2", require_arg, '4'},
+                                          {"vol-name-2", require_arg, '5'},
+                                          {"vol-info-2", require_arg, '6'},
+                                          {"vfd-value-1", require_arg, '7'},
+                                          {"vfd-name-1", require_arg, '8'},
+                                          {"vfd-info-1", require_arg, '9'},
+                                          {"vfd-value-2", require_arg, '0'},
+                                          {"vfd-name-2", require_arg, 'Y'},
+                                          {"vfd-info-2", require_arg, 'Z'},
+                                          {NULL, 0, '\0'}};
+
+static H5FD_onion_fapl_info_t onion_fa_g_1 = {
+    H5FD_ONION_FAPL_INFO_VERSION_CURR,
+    H5P_DEFAULT,                   /* backing_fapl_id                */
+    32,                            /* page_size                      */
+    H5FD_ONION_STORE_TARGET_ONION, /* store_target                   */
+    H5FD_ONION_FAPL_INFO_REVISION_ID_LATEST,
+    0,                  /* force_write_open               */
+    0,                  /* creation_flags                 */
+    "first input file", /* comment                        */
+};
+
+static H5FD_onion_fapl_info_t onion_fa_g_2 = {
+    H5FD_ONION_FAPL_INFO_VERSION_CURR,
+    H5P_DEFAULT,                   /* backing_fapl_id                */
+    32,                            /* page_size                      */
+    H5FD_ONION_STORE_TARGET_ONION, /* store_target                   */
+    H5FD_ONION_FAPL_INFO_REVISION_ID_LATEST,
+    0,                   /* force_write_open               */
+    0,                   /* creation_flags                 */
+    "second input file", /* comment                        */
+};
 
 /*-------------------------------------------------------------------------
  * Function: check_options
@@ -94,8 +121,8 @@ check_options(diff_opt_t *opts)
 static void
 parse_hsize_list(const char *h_list, subset_d *d)
 {
-    hsize_t *    p_list;
-    const char * ptr;
+    hsize_t     *p_list;
+    const char  *ptr;
     unsigned int size_count = 0;
     unsigned int i          = 0;
     unsigned int last_digit = 0;
@@ -154,7 +181,7 @@ static struct subset_t *
 parse_subset_params(const char *dset)
 {
     struct subset_t *s = NULL;
-    char *           brace;
+    char            *brace;
 
     H5TOOLS_START_DEBUG(" - dset:%s", dset);
     if ((brace = HDstrrchr(dset, '[')) != NULL) {
@@ -232,7 +259,7 @@ parse_command_line(int argc, const char *const *argv, const char **fname1, const
     exclude_attr_head = NULL;
 
     /* parse command line options */
-    while ((opt = get_option(argc, argv, s_opts, l_opts)) != EOF) {
+    while ((opt = H5_get_option(argc, argv, s_opts, l_opts)) != EOF) {
         switch ((char)opt) {
             default:
                 usage();
@@ -256,20 +283,20 @@ parse_command_line(int argc, const char *const *argv, const char **fname1, const
                      * special check for short opt
                      */
                     if (!strcmp(argv[i], "-v")) {
-                        if (opt_arg != NULL)
-                            opt_ind--;
+                        if (H5_optarg != NULL)
+                            H5_optind--;
                         opts->mode_verbose_level = 0;
                         break;
                     }
                     else if (!strncmp(argv[i], "-v", (size_t)2)) {
-                        if (opt_arg != NULL)
-                            opt_ind--;
+                        if (H5_optarg != NULL)
+                            H5_optind--;
                         opts->mode_verbose_level = atoi(&argv[i][2]);
                         break;
                     }
                     else {
-                        if (opt_arg != NULL)
-                            opts->mode_verbose_level = HDatoi(opt_arg);
+                        if (H5_optarg != NULL)
+                            opts->mode_verbose_level = HDatoi(H5_optarg);
                         else
                             opts->mode_verbose_level = 0;
                     }
@@ -294,8 +321,8 @@ parse_command_line(int argc, const char *const *argv, const char **fname1, const
                 break;
 
             case 'S':
-                if (opt_arg != NULL)
-                    enable_error_stack = HDatoi(opt_arg);
+                if (H5_optarg != NULL)
+                    enable_error_stack = HDatoi(H5_optarg);
                 else
                     enable_error_stack = 1;
                 break;
@@ -311,7 +338,7 @@ parse_command_line(int argc, const char *const *argv, const char **fname1, const
                 }
 
                 /* init */
-                exclude_node->obj_path = opt_arg;
+                exclude_node->obj_path = H5_optarg;
                 exclude_node->obj_type = H5TRAV_TYPE_UNKNOWN;
                 exclude_prev           = exclude_head;
 
@@ -339,7 +366,7 @@ parse_command_line(int argc, const char *const *argv, const char **fname1, const
                 }
 
                 /* init */
-                exclude_attr_node->obj_path = opt_arg;
+                exclude_attr_node->obj_path = H5_optarg;
                 exclude_attr_node->obj_type = H5TRAV_TYPE_UNKNOWN;
                 exclude_attr_prev           = exclude_attr_head;
 
@@ -359,23 +386,23 @@ parse_command_line(int argc, const char *const *argv, const char **fname1, const
             case 'd':
                 opts->delta_bool = 1;
 
-                if (check_d_input(opt_arg) == -1) {
-                    HDprintf("<-d %s> is not a valid option\n", opt_arg);
+                if (check_d_input(H5_optarg) == -1) {
+                    HDprintf("<-d %s> is not a valid option\n", H5_optarg);
                     usage();
                     h5diff_exit(EXIT_FAILURE);
                 }
-                opts->delta = HDatof(opt_arg);
+                opts->delta = HDatof(H5_optarg);
                 /* do not check against default, the DBL_EPSILON is being replaced by user */
                 break;
 
             case 'p':
                 opts->percent_bool = 1;
-                if (check_p_input(opt_arg) == -1) {
-                    HDprintf("<-p %s> is not a valid option\n", opt_arg);
+                if (check_p_input(H5_optarg) == -1) {
+                    HDprintf("<-p %s> is not a valid option\n", H5_optarg);
                     usage();
                     h5diff_exit(EXIT_FAILURE);
                 }
-                opts->percent = HDatof(opt_arg);
+                opts->percent = HDatof(H5_optarg);
 
                 /* -p 0 is the same as default */
                 if (H5_DBL_ABS_EQUAL(opts->percent, 0.0))
@@ -384,12 +411,12 @@ parse_command_line(int argc, const char *const *argv, const char **fname1, const
 
             case 'n':
                 opts->count_bool = 1;
-                if (check_n_input(opt_arg) == -1) {
-                    HDprintf("<-n %s> is not a valid option\n", opt_arg);
+                if (check_n_input(H5_optarg) == -1) {
+                    HDprintf("<-n %s> is not a valid option\n", H5_optarg);
                     usage();
                     h5diff_exit(EXIT_FAILURE);
                 }
-                opts->count = HDstrtoull(opt_arg, NULL, 0);
+                opts->count = HDstrtoull(H5_optarg, NULL, 0);
                 break;
 
             case 'N':
@@ -406,36 +433,102 @@ parse_command_line(int argc, const char *const *argv, const char **fname1, const
 
             case '1':
                 opts->vol_info[0].type    = VOL_BY_VALUE;
-                opts->vol_info[0].u.value = (H5VL_class_value_t)HDatoi(opt_arg);
+                opts->vol_info[0].u.value = (H5VL_class_value_t)HDatoi(H5_optarg);
                 opts->custom_vol[0]       = TRUE;
                 break;
 
             case '2':
                 opts->vol_info[0].type   = VOL_BY_NAME;
-                opts->vol_info[0].u.name = opt_arg;
+                opts->vol_info[0].u.name = H5_optarg;
                 opts->custom_vol[0]      = TRUE;
                 break;
 
             case '3':
-                opts->vol_info[0].info_string = opt_arg;
+                opts->vol_info[0].info_string = H5_optarg;
                 break;
 
             case '4':
                 opts->vol_info[1].type    = VOL_BY_VALUE;
-                opts->vol_info[1].u.value = (H5VL_class_value_t)HDatoi(opt_arg);
+                opts->vol_info[1].u.value = (H5VL_class_value_t)HDatoi(H5_optarg);
                 opts->custom_vol[1]       = TRUE;
                 break;
 
             case '5':
                 opts->vol_info[1].type   = VOL_BY_NAME;
-                opts->vol_info[1].u.name = opt_arg;
+                opts->vol_info[1].u.name = H5_optarg;
                 opts->custom_vol[1]      = TRUE;
                 break;
 
             case '6':
-                opts->vol_info[1].info_string = opt_arg;
+                opts->vol_info[1].info_string = H5_optarg;
+                break;
+
+            case '7':
+                opts->vfd_info[0].type    = VFD_BY_VALUE;
+                opts->vfd_info[0].u.value = (H5FD_class_value_t)HDatoi(H5_optarg);
+                opts->custom_vfd[0]       = TRUE;
+                break;
+
+            case '8':
+                opts->vfd_info[0].type   = VFD_BY_NAME;
+                opts->vfd_info[0].u.name = H5_optarg;
+                opts->custom_vfd[0]      = TRUE;
+                break;
+
+            case '9':
+                opts->vfd_info[0].info = (const void *)H5_optarg;
+                break;
+
+            case '0':
+                opts->vfd_info[1].type    = VFD_BY_VALUE;
+                opts->vfd_info[1].u.value = (H5FD_class_value_t)HDatoi(H5_optarg);
+                opts->custom_vfd[1]       = TRUE;
+                break;
+
+            case 'Y':
+                opts->vfd_info[1].type   = VFD_BY_NAME;
+                opts->vfd_info[1].u.name = H5_optarg;
+                opts->custom_vfd[1]      = TRUE;
+                break;
+
+            case 'Z':
+                opts->vfd_info[1].info = (const void *)H5_optarg;
                 break;
         }
+    }
+
+    /* If file 1 uses the onion VFD, get the revision number */
+    if (opts->vfd_info[0].u.name && !HDstrcmp(opts->vfd_info[0].u.name, "onion")) {
+        if (opts->vfd_info[0].info) {
+            errno                     = 0;
+            onion_fa_g_1.revision_num = HDstrtoull(opts->vfd_info[0].info, NULL, 10);
+            if (errno == ERANGE) {
+                HDprintf("Invalid onion revision specified for file 1\n");
+                usage();
+                h5diff_exit(EXIT_FAILURE);
+            }
+        }
+        else
+            onion_fa_g_1.revision_num = 0;
+
+        opts->vfd_info[0].info = &onion_fa_g_1;
+    }
+
+    /* If file 2 uses the onion VFD, get the revision number */
+    if (opts->vfd_info[1].u.name && !HDstrcmp(opts->vfd_info[1].u.name, "onion")) {
+        if (opts->vfd_info[1].info) {
+            errno                     = 0;
+            onion_fa_g_2.revision_num = HDstrtoull(opts->vfd_info[1].info, NULL, 10);
+            if (errno == ERANGE) {
+                HDprintf("Invalid onion revision specified for file 2\n");
+                usage();
+                h5diff_exit(EXIT_FAILURE);
+            }
+        }
+        else
+            onion_fa_g_2.revision_num = 0;
+
+        opts->vfd_info[1].info = &onion_fa_g_2;
     }
 
     /* check options */
@@ -450,15 +543,15 @@ parse_command_line(int argc, const char *const *argv, const char **fname1, const
         opts->exclude_attr = exclude_attr_head;
 
     /* check for file names to be processed */
-    if (argc <= opt_ind || argv[opt_ind + 1] == NULL) {
+    if (argc <= H5_optind || argv[H5_optind + 1] == NULL) {
         error_msg("missing file names\n");
         usage();
         h5diff_exit(EXIT_FAILURE);
     }
 
-    *fname1   = argv[opt_ind];
-    *fname2   = argv[opt_ind + 1];
-    *objname1 = argv[opt_ind + 2];
+    *fname1   = argv[H5_optind];
+    *fname2   = argv[H5_optind + 1];
+    *objname1 = argv[H5_optind + 2];
     H5TOOLS_DEBUG("file1 = %s", *fname1);
     H5TOOLS_DEBUG("file2 = %s", *fname2);
 
@@ -469,8 +562,8 @@ parse_command_line(int argc, const char *const *argv, const char **fname1, const
     }
     H5TOOLS_DEBUG("objname1 = %s", *objname1);
 
-    if (argv[opt_ind + 3] != NULL) {
-        *objname2 = argv[opt_ind + 3];
+    if (argv[H5_optind + 3] != NULL) {
+        *objname2 = argv[H5_optind + 3];
     }
     else {
         *objname2 = *objname1;
@@ -660,6 +753,24 @@ usage(void)
     PRINTVALSTREAM(rawoutstream, "                           HDF5 file specified\n");
     PRINTVALSTREAM(rawoutstream,
                    "   --vol-info-2            VOL-specific info to pass to the VOL connector used for\n");
+    PRINTVALSTREAM(rawoutstream, "                           opening the second HDF5 file specified\n");
+    PRINTVALSTREAM(rawoutstream,
+                   "   --vfd-value-1           Value (ID) of the VFL driver to use for opening the\n");
+    PRINTVALSTREAM(rawoutstream, "                           first HDF5 file specified\n");
+    PRINTVALSTREAM(rawoutstream,
+                   "   --vfd-name-1            Name of the VFL driver to use for opening the first\n");
+    PRINTVALSTREAM(rawoutstream, "                           HDF5 file specified\n");
+    PRINTVALSTREAM(rawoutstream,
+                   "   --vfd-info-1            VFD-specific info to pass to the VFL driver used for\n");
+    PRINTVALSTREAM(rawoutstream, "                           opening the first HDF5 file specified\n");
+    PRINTVALSTREAM(rawoutstream,
+                   "   --vfd-value-2           Value (ID) of the VFL driver to use for opening the\n");
+    PRINTVALSTREAM(rawoutstream, "                           second HDF5 file specified\n");
+    PRINTVALSTREAM(rawoutstream,
+                   "   --vfd-name-2            Name of the VFL driver to use for opening the second\n");
+    PRINTVALSTREAM(rawoutstream, "                           HDF5 file specified\n");
+    PRINTVALSTREAM(rawoutstream,
+                   "   --vfd-info-2            VFD-specific info to pass to the VFL driver used for\n");
     PRINTVALSTREAM(rawoutstream, "                           opening the second HDF5 file specified\n");
     PRINTVALSTREAM(rawoutstream, "   --follow-symlinks\n");
     PRINTVALSTREAM(rawoutstream,

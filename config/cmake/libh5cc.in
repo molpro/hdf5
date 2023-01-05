@@ -1,7 +1,6 @@
 #! /bin/sh
 ##
 # Copyright by The HDF Group.
-# Copyright by the Board of Trustees of the University of Illinois.
 # All rights reserved.
 #
 # This file is part of HDF5.  The full HDF5 copyright notice, including
@@ -29,7 +28,7 @@ printf 'dir is %s\n' "$dir"
 
 
 # Show the configuration summary of the library recorded in the
-# libhdf5.settings file reside in the lib directory.
+# libhdf5.settings file residing in the lib directory.
 showconfigure()
 {
   cat $dir/lib/libhdf5.settings

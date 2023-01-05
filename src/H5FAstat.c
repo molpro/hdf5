@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -84,7 +83,7 @@ H5FA_get_stats(const H5FA_t *fa, H5FA_stat_t *stats)
     FUNC_ENTER_NOAPI_NOERR
 
 #ifdef H5FA_DEBUG
-    HDfprintf(stderr, "%s: Called\n", FUNC);
+    HDfprintf(stderr, "%s: Called\n", __func__);
 #endif /* H5FA_DEBUG */
 
     /* Check arguments */

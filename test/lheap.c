@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -50,15 +49,16 @@ main(void)
 {
     hid_t       fapl = H5P_DEFAULT;     /* file access properties   */
     hid_t       file = -1;              /* hdf5 file                */
-    H5F_t *     f    = NULL;            /* hdf5 file pointer        */
+    H5F_t      *f    = NULL;            /* hdf5 file pointer        */
     char        filename[1024];         /* file name                */
     haddr_t     heap_addr;              /* local heap address       */
-    H5HL_t *    heap = NULL;            /* local heap               */
+    H5HL_t     *heap = NULL;            /* local heap               */
     size_t      obj[NOBJS];             /* offsets within the heap  */
     int         i, j;                   /* miscellaneous counters   */
     char        buf[1024];              /* the value to store       */
     const char *s;                      /* value to read            */
     hbool_t     api_ctx_pushed = FALSE; /* Whether API context pushed */
+    hbool_t     driver_is_default_compatible;
 
     /* Reset library */
     h5_reset();
@@ -66,7 +66,7 @@ main(void)
 
     /* Push API context */
     if (H5CX_push() < 0)
-        FAIL_STACK_ERROR
+        FAIL_STACK_ERROR;
     api_ctx_pushed = TRUE;
 
     /*
@@ -97,7 +97,7 @@ main(void)
         goto error;
     }
     for (i = 0; i < NOBJS; i++) {
-        HDsprintf(buf, "%03d-", i);
+        HDsnprintf(buf, sizeof(buf), "%03d-", i);
         for (j = 4; j < i; j++)
             buf[j] = (char)('0' + j % 10);
         if (j > 4)
@@ -137,7 +137,7 @@ main(void)
         goto error;
     }
     for (i = 0; i < NOBJS; i++) {
-        HDsprintf(buf, "%03d-", i);
+        HDsnprintf(buf, sizeof(buf), "%03d-", i);
         for (j = 4; j < i; j++)
             buf[j] = (char)('0' + j % 10);
         if (j > 4)
@@ -174,35 +174,40 @@ main(void)
         goto error;
     PASSED();
 
-    /* Check opening existing file non-default sizes of lengths and addresses */
-    TESTING("opening pre-created file with non-default sizes");
-    {
-        const char *testfile = H5_get_srcdir_filename(TESTFILE); /* Corrected test file name */
-        hid_t       dset     = -1;
-        file                 = H5Fopen(testfile, H5F_ACC_RDONLY, H5P_DEFAULT);
-        if (file >= 0) {
-            if ((dset = H5Dopen2(file, "/Dataset1", H5P_DEFAULT)) < 0)
-                TEST_ERROR
-            if (H5Dclose(dset) < 0)
-                TEST_ERROR
-            if (H5Fclose(file) < 0)
-                TEST_ERROR
+    if (h5_driver_is_default_vfd_compatible(H5P_DEFAULT, &driver_is_default_compatible) < 0)
+        TEST_ERROR;
+
+    if (driver_is_default_compatible) {
+        /* Check opening existing file non-default sizes of lengths and addresses */
+        TESTING("opening pre-created file with non-default sizes");
+        {
+            const char *testfile = H5_get_srcdir_filename(TESTFILE); /* Corrected test file name */
+            hid_t       dset     = -1;
+            file                 = H5Fopen(testfile, H5F_ACC_RDONLY, H5P_DEFAULT);
+            if (file >= 0) {
+                if ((dset = H5Dopen2(file, "/Dataset1", H5P_DEFAULT)) < 0)
+                    TEST_ERROR;
+                if (H5Dclose(dset) < 0)
+                    TEST_ERROR;
+                if (H5Fclose(file) < 0)
+                    TEST_ERROR;
+            }
+            else {
+                H5_FAILED();
+                HDprintf("***cannot open the pre-created non-default sizes test file (%s)\n", testfile);
+                goto error;
+            } /* end else */
         }
-        else {
-            H5_FAILED();
-            HDprintf("***cannot open the pre-created non-default sizes test file (%s)\n", testfile);
-            goto error;
-        } /* end else */
+        PASSED();
     }
-    PASSED();
 
     /* Verify symbol table messages are cached */
     if (h5_verify_cached_stabs(FILENAME, fapl) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /* Pop API context */
-    if (api_ctx_pushed && H5CX_pop() < 0)
-        FAIL_STACK_ERROR
+    if (api_ctx_pushed && H5CX_pop(FALSE) < 0)
+        FAIL_STACK_ERROR;
     api_ctx_pushed = FALSE;
 
     HDputs("All local heap tests passed.");
@@ -219,7 +224,7 @@ error:
     H5E_END_TRY;
 
     if (api_ctx_pushed)
-        H5CX_pop();
+        H5CX_pop(FALSE);
 
     return EXIT_FAILURE;
 }

@@ -9,7 +9,6 @@
  * COPYRIGHT
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -152,6 +151,6 @@ void
 nh5_env_nocleanup_c(int_f *status)
 {
     *status = (int_f)0;
-    if (HDgetenv("HDF5_NOCLEANUP"))
+    if (HDgetenv(HDF5_NOCLEANUP))
         *status = (int_f)1;
 } /* h5_env_nocleanup_c */

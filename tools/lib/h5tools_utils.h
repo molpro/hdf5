@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -34,64 +33,17 @@ H5TOOLS_DLLVAR int           g_nTasks;
 H5TOOLS_DLLVAR unsigned char g_Parallel;
 H5TOOLS_DLLVAR char          outBuff[];
 H5TOOLS_DLLVAR unsigned      outBuffOffset;
-H5TOOLS_DLLVAR FILE *overflow_file;
+H5TOOLS_DLLVAR FILE         *overflow_file;
 
 /* Maximum size used in a call to malloc for a dataset */
 H5TOOLS_DLLVAR hsize_t H5TOOLS_MALLOCSIZE;
 /* size of hyperslab buffer when a dataset is bigger than H5TOOLS_MALLOCSIZE */
 H5TOOLS_DLLVAR hsize_t H5TOOLS_BUFSIZE;
-/*
- * begin get_option section
- */
-H5TOOLS_DLLVAR int         opt_err; /* getoption prints errors if this is on    */
-H5TOOLS_DLLVAR int         opt_ind; /* token pointer                            */
-H5TOOLS_DLLVAR const char *opt_arg; /* flag argument (or value)                 */
-
-/*
- * get_option determines which options are specified on the command line and
- * returns a pointer to any arguments possibly associated with the option in
- * the ``opt_arg'' variable. get_option returns the shortname equivalent of
- * the option. The long options are specified in the following way:
- *
- * struct long_options foo[] = {
- *   { "filename", require_arg, 'f' },
- *   { "append", no_arg, 'a' },
- *   { "width", require_arg, 'w' },
- *   { NULL, 0, 0 }
- * };
- *
- * Long named options can have arguments specified as either:
- *
- *   ``--param=arg'' or ``--param arg''
- *
- * Short named options can have arguments specified as either:
- *
- *   ``-w80'' or ``-w 80''
- *
- * and can have more than one short named option specified at one time:
- *
- *   -aw80
- *
- * in which case those options which expect an argument need to come at the
- * end.
- */
-typedef struct long_options {
-    const char *name;     /* name of the long option              */
-    int         has_arg;  /* whether we should look for an arg    */
-    char        shortval; /* the shortname equivalent of long arg
-                           * this gets returned from get_option   */
-} long_options;
-
-H5TOOLS_DLL int get_option(int argc, const char *const *argv, const char *opt,
-                           const struct long_options *l_opt);
-/*
- * end get_option section
- */
 
 /*struct taken from the dumper. needed in table struct*/
 typedef struct obj_t {
     H5O_token_t obj_token;
-    char *      objname;
+    char       *objname;
     hbool_t     displayed; /* Flag to indicate that the object has been displayed */
     hbool_t     recorded;  /* Flag for named datatypes to indicate they were found in the group hierarchy */
 } obj_t;
@@ -117,11 +69,11 @@ H5TOOLS_DLLVAR unsigned h5tools_nCols; /*max number of columns for outputting  *
 /* Definitions of useful routines */
 H5TOOLS_DLL void   indentation(unsigned);
 H5TOOLS_DLL void   print_version(const char *progname);
-H5TOOLS_DLL void   parallel_print(const char *format, ...);
+H5TOOLS_DLL void   parallel_print(const char *format, ...) H5_ATTR_FORMAT(printf, 1, 2);
 H5TOOLS_DLL herr_t parse_tuple(const char *start, int sep, char **cpy_out, unsigned *nelems,
                                char ***ptrs_out);
-H5TOOLS_DLL void   error_msg(const char *fmt, ...);
-H5TOOLS_DLL void   warn_msg(const char *fmt, ...);
+H5TOOLS_DLL void   error_msg(const char *fmt, ...) H5_ATTR_FORMAT(printf, 1, 2);
+H5TOOLS_DLL void   warn_msg(const char *fmt, ...) H5_ATTR_FORMAT(printf, 1, 2);
 H5TOOLS_DLL void   help_ref_msg(FILE *output);
 H5TOOLS_DLL void   free_table(table_t *table);
 #ifdef H5DUMP_DEBUG
@@ -156,7 +108,7 @@ typedef struct {
 /* obtain link info from H5tools_get_symlink_info() */
 typedef struct {
     H5O_type_t trg_type;     /* OUT: target type */
-    char *     trg_path;     /* OUT: target obj path. This must be freed
+    char      *trg_path;     /* OUT: target obj path. This must be freed
                               *      when used with H5tools_get_symlink_info() */
     H5O_token_t   obj_token; /* OUT: target object token */
     unsigned long fileno;    /* OUT: File number that target object is located in */

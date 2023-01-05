@@ -16,12 +16,10 @@
 
 #include "hdf5.h"
 
-#ifdef H5_STDC_HEADERS
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#endif
 
 #ifdef H5_HAVE_UNISTD_H
 #include <sys/types.h>
@@ -52,7 +50,7 @@
 /* verify: if val is false (0), print mesg. */
 #define VRFY(val, mesg)                                                                                      \
     do {                                                                                                     \
-        if (!val) {                                                                                          \
+        if (!(val)) {                                                                                        \
             ERRMSG(mesg);                                                                                    \
             GOTOERROR(FAIL);                                                                                 \
         }                                                                                                    \
@@ -86,7 +84,7 @@ typedef union {
 } file_descr;
 
 /* local functions */
-static char * sio_create_filename(iotype iot, const char *base_name, char *fullname, size_t size,
+static char  *sio_create_filename(iotype iot, const char *base_name, char *fullname, size_t size,
                                   parameters *param);
 static herr_t do_write(results *res, file_descr *fd, parameters *parms, void *buffer);
 static herr_t do_read(results *res, file_descr *fd, parameters *parms, void *buffer);
@@ -109,7 +107,7 @@ static int     cont_dim;                         /* lowest dimension for contigu
 static size_t         cont_size;                 /* size of contiguous POSIX access */
 static hid_t          fapl;                      /* file access list */
 static unsigned char *buf_p;                     /* buffer pointer */
-static const char *   multi_letters = "msbrglo"; /* string for multi driver */
+static const char    *multi_letters = "msbrglo"; /* string for multi driver */
 
 /* HDF5 global variables */
 static hsize_t  h5count[MAX_DIMS];                 /*selection count               */
@@ -125,28 +123,29 @@ static hid_t    h5dxpl          = H5I_INVALID_HID; /* Dataset transfer property 
  * Purpose:         SIO Engine where IO are executed.
  * Return:          results
  * Programmer:      Christian Chilan, April, 2008
- * Modifications:
  */
 void
 do_sio(parameters param, results *res)
 {
-    char *     buffer = NULL;      /*data buffer pointer           */
+    char      *buffer = NULL;      /*data buffer pointer           */
     size_t     buf_size[MAX_DIMS]; /* general buffer size in bytes     */
     file_descr fd;                 /* file handles */
     iotype     iot;                /* API type */
     char       base_name[256];     /* test file base name */
     /* return codes */
-    herr_t ret_code = 0; /*return code                           */
+    herr_t ret_code = 0; /* return code */
 
-    char fname[FILENAME_MAX]; /* test file name */
-    int  i;
+    char *fname = NULL;
+    int   i;
+
     /* HDF5 variables */
-    herr_t hrc; /*HDF5 return code              */
-
-    /* Sanity check parameters */
+    herr_t hrc; /* HDF5 return code */
 
     /* IO type */
     iot = param.io_type;
+
+    if (NULL == (fname = HDcalloc(FILENAME_MAX, sizeof(char))))
+        GOTOERROR(FAIL);
 
     switch (iot) {
         case POSIXIO:
@@ -180,7 +179,7 @@ do_sio(parameters param, results *res)
 
         if ((param.dset_size[i] % param.buf_size[i]) != 0) {
             HDfprintf(stderr,
-                      "Dataset size[%d] (%" H5_PRINTF_LL_WIDTH "d) must be a multiple of the "
+                      "Dataset size[%d] (%lld) must be a multiple of the "
                       "transfer buffer size[%d] (%zu)\n",
                       param.rank, (long long)param.dset_size[i], param.rank, param.buf_size[i]);
             GOTOERROR(FAIL);
@@ -204,7 +203,7 @@ do_sio(parameters param, results *res)
     /* Open file for write */
 
     HDstrcpy(base_name, "#sio_tmp");
-    sio_create_filename(iot, base_name, fname, sizeof(fname), &param);
+    sio_create_filename(iot, base_name, fname, FILENAME_MAX, &param);
 
     if (sio_debug_level > 0)
         HDfprintf(output, "data filename=%s\n", fname);
@@ -269,8 +268,8 @@ done:
     }
 
     /* release generic resources */
-    if (buffer)
-        free(buffer);
+    HDfree(buffer);
+    HDfree(fname);
 
     res->ret_code = ret_code;
 }
@@ -289,7 +288,7 @@ static char *
 sio_create_filename(iotype iot, const char *base_name, char *fullname, size_t size, parameters *param)
 {
     const char *prefix, *suffix = "";
-    char *      ptr, last       = '\0';
+    char       *ptr, last       = '\0';
     size_t      i, j;
     vfdtype     vfd;
     vfd = param->vfd;
@@ -330,7 +329,7 @@ sio_create_filename(iotype iot, const char *base_name, char *fullname, size_t si
         /* If the prefix specifies the HDF5_PREFIX directory, then
          * default to using the "/tmp/$USER" or "/tmp/$LOGIN"
          * directory instead. */
-        register char *user, *login, *subdir;
+        char *user, *login, *subdir;
 
         user   = HDgetenv("USER");
         login  = HDgetenv("LOGIN");
@@ -523,7 +522,7 @@ do_write(results *res, file_descr *fd, parameters *parms, void *buffer)
                 } /* end if */
             }     /* end if */
 
-            HDsprintf(dname, "Dataset_%ld", (unsigned long)parms->num_bytes);
+            HDsnprintf(dname, sizeof(dname), "Dataset_%ld", (unsigned long)parms->num_bytes);
             h5ds_id =
                 H5Dcreate2(fd->h5fd, dname, ELMT_H5_TYPE, h5dset_space_id, H5P_DEFAULT, h5dcpl, H5P_DEFAULT);
 
@@ -768,7 +767,7 @@ done:
 static herr_t
 do_read(results *res, file_descr *fd, parameters *parms, void *buffer)
 {
-    char * buffer2  = NULL; /* Buffer for data verification */
+    char  *buffer2  = NULL; /* Buffer for data verification */
     int    ret_code = SUCCESS;
     char   dname[64];
     int    i;
@@ -852,7 +851,7 @@ do_read(results *res, file_descr *fd, parameters *parms, void *buffer)
             break;
 
         case HDF5:
-            HDsprintf(dname, "Dataset_%ld", (long)parms->num_bytes);
+            HDsnprintf(dname, sizeof(dname), "Dataset_%ld", (long)parms->num_bytes);
             h5ds_id = H5Dopen2(fd->h5fd, dname, H5P_DEFAULT);
             if (h5ds_id < 0) {
                 HDfprintf(stderr, "HDF5 Dataset open failed\n");
@@ -1127,7 +1126,6 @@ done:
  * Purpose:     Sets file driver.
  * Return:      SUCCESS or FAIL
  * Programmer:  Christian Chilan, April, 2008
- * Modifications:
  */
 
 hid_t
@@ -1166,9 +1164,11 @@ set_vfd(parameters *param)
         H5FD_mem_t  memb_map[H5FD_MEM_NTYPES];
         hid_t       memb_fapl[H5FD_MEM_NTYPES];
         const char *memb_name[H5FD_MEM_NTYPES];
-        char        sv[H5FD_MEM_NTYPES][1024];
         haddr_t     memb_addr[H5FD_MEM_NTYPES];
         H5FD_mem_t  mt;
+        struct {
+            char arr[H5FD_MEM_NTYPES][1024];
+        } *sv = NULL;
 
         HDmemset(memb_map, 0, sizeof memb_map);
         HDmemset(memb_fapl, 0, sizeof memb_fapl);
@@ -1176,16 +1176,22 @@ set_vfd(parameters *param)
         HDmemset(memb_addr, 0, sizeof memb_addr);
 
         HDassert(HDstrlen(multi_letters) == H5FD_MEM_NTYPES);
+
+        if (NULL == (sv = HDcalloc(1, sizeof(*sv))))
+            return -1;
         for (mt = H5FD_MEM_DEFAULT; mt < H5FD_MEM_NTYPES; mt++) {
             memb_fapl[mt] = H5P_DEFAULT;
-            HDsprintf(sv[mt], "%%s-%c.h5", multi_letters[mt]);
-            memb_name[mt] = sv[mt];
+            HDsnprintf(sv->arr[mt], 1024, "%%s-%c.h5", multi_letters[mt]);
+            memb_name[mt] = sv->arr[mt];
             memb_addr[mt] = (haddr_t)MAX(mt - 1, 0) * (HADDR_MAX / 10);
         }
 
         if (H5Pset_fapl_multi(my_fapl, memb_map, memb_fapl, memb_name, memb_addr, FALSE) < 0) {
+            HDfree(sv);
             return -1;
         }
+
+        HDfree(sv);
     }
     else if (vfd == family) {
         hsize_t fam_size = 1 * 1024 * 1024; /*100 MB*/
@@ -1264,17 +1270,21 @@ done:
  * Purpose:     Cleanup temporary file unless HDF5_NOCLEANUP is set.
  * Return:      void
  * Programmer:  Albert Cheng 2001/12/12
- * Modifications: Support for file drivers. Christian Chilan, April, 2008
  */
 static void
 do_cleanupfile(iotype iot, char *filename)
 {
-    char  temp[2048];
-    int   j;
-    hid_t driver;
+    char  *temp = NULL;
+    size_t temp_sz;
+    int    j;
+    hid_t  driver;
+
+    temp_sz = (4096 + sizeof("-?.h5")) * sizeof(char);
+    if (NULL == (temp = HDcalloc(1, temp_sz)))
+        goto done;
 
     if (clean_file_g == -1)
-        clean_file_g = (HDgetenv("HDF5_NOCLEANUP") == NULL) ? 1 : 0;
+        clean_file_g = (HDgetenv(HDF5_NOCLEANUP) == NULL) ? 1 : 0;
 
     if (clean_file_g) {
 
@@ -1288,7 +1298,9 @@ do_cleanupfile(iotype iot, char *filename)
 
                 if (driver == H5FD_FAMILY) {
                     for (j = 0; /*void*/; j++) {
-                        HDsnprintf(temp, sizeof temp, filename, j);
+                        H5_GCC_CLANG_DIAG_OFF("format-nonliteral")
+                        HDsnprintf(temp, temp_sz, filename, j);
+                        H5_GCC_CLANG_DIAG_ON("format-nonliteral")
 
                         if (HDaccess(temp, F_OK) < 0)
                             break;
@@ -1307,10 +1319,10 @@ do_cleanupfile(iotype iot, char *filename)
                 }
                 else if (driver == H5FD_MULTI) {
                     H5FD_mem_t mt;
-                    assert(HDstrlen(multi_letters) == H5FD_MEM_NTYPES);
+                    HDassert(HDstrlen(multi_letters) == H5FD_MEM_NTYPES);
 
                     for (mt = H5FD_MEM_DEFAULT; mt < H5FD_MEM_NTYPES; mt++) {
-                        HDsnprintf(temp, sizeof temp, "%s-%c.h5", filename, multi_letters[mt]);
+                        HDsnprintf(temp, temp_sz, "%s-%c.h5", filename, multi_letters[mt]);
                         HDremove(temp); /*don't care if it fails*/
                     }
                 }
@@ -1327,4 +1339,7 @@ do_cleanupfile(iotype iot, char *filename)
                 break;
         }
     }
+
+done:
+    HDfree(temp);
 }

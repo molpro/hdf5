@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -38,8 +37,8 @@ const char *FILENAME[] = {"errors", NULL};
 
 int **ipoints2      = NULL;
 int **icheck2       = NULL;
-int * ipoints2_data = NULL;
-int * icheck2_data  = NULL;
+int  *ipoints2_data = NULL;
+int  *icheck2_data  = NULL;
 
 hid_t ERR_CLS;
 hid_t ERR_CLS2;
@@ -99,7 +98,7 @@ test_error(hid_t file)
     hsize_t     dims[2];
     const char *FUNC_test_error = "test_error";
     H5E_auto2_t old_func;
-    void *      old_data = NULL;
+    void       *old_data = NULL;
 
     HDfprintf(stderr, "\nTesting error API based on data I/O\n");
 
@@ -181,14 +180,14 @@ init_error(void)
 {
     ssize_t    cls_size = (ssize_t)HDstrlen(ERR_CLS_NAME) + 1;
     ssize_t    msg_size = (ssize_t)HDstrlen(ERR_MIN_SUBROUTINE_MSG) + 1;
-    char *     cls_name = NULL;
-    char *     msg      = NULL;
+    char      *cls_name = NULL;
+    char      *msg      = NULL;
     H5E_type_t msg_type;
 
     if (NULL == (cls_name = (char *)HDmalloc(HDstrlen(ERR_CLS_NAME) + 1)))
-        TEST_ERROR
+        TEST_ERROR;
     if (NULL == (msg = (char *)HDmalloc(HDstrlen(ERR_MIN_SUBROUTINE_MSG) + 1)))
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((ERR_CLS = H5Eregister_class(ERR_CLS_NAME, PROG_NAME, PROG_VERS)) < 0)
         TEST_ERROR;
@@ -319,13 +318,13 @@ long_desc_cb(unsigned H5_ATTR_UNUSED n, const H5E_error2_t *err_desc, void *clie
  *      'full_desc' in the code below, but early (4.4.7, at least) gcc only
  *      allows diagnostic pragmas to be toggled outside of functions.
  */
-H5_GCC_DIAG_OFF("format-nonliteral")
+H5_GCC_CLANG_DIAG_OFF("format-nonliteral")
 static herr_t
 test_long_desc(void)
 {
     const char *format    = "Testing very long description string, %s";
-    char *      long_desc = NULL;
-    char *      full_desc = NULL;
+    char       *long_desc = NULL;
+    char       *full_desc = NULL;
     size_t      u;
     const char *test_FUNC = "test_long_desc";
 
@@ -375,7 +374,7 @@ error:
 
     return -1;
 } /* end test_long_desc() */
-H5_GCC_DIAG_ON("format-nonliteral")
+H5_GCC_CLANG_DIAG_ON("format-nonliteral")
 
 /*-------------------------------------------------------------------------
  * Function:    dump_error
@@ -419,7 +418,7 @@ error:
 static herr_t
 custom_print_cb(unsigned n, const H5E_error2_t *err_desc, void *client_data)
 {
-    FILE *    stream = (FILE *)client_data;
+    FILE     *stream = (FILE *)client_data;
     char      maj[MSG_SIZE];
     char      min[MSG_SIZE];
     char      cls[MSG_SIZE];
@@ -467,12 +466,12 @@ test_create(void)
 
     /* Create an empty error stack */
     if ((estack_id = H5Ecreate_stack()) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /* Check the number of errors on stack */
     err_num = H5Eget_num(estack_id);
     if (err_num != 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /* Push an error with a long description */
     if (H5Epush(estack_id, __FILE__, err_func, __LINE__, ERR_CLS, ERR_MAJ_TEST, ERR_MIN_SUBROUTINE, "%s",
@@ -482,20 +481,20 @@ test_create(void)
     /* Check the number of errors on stack */
     err_num = H5Eget_num(estack_id);
     if (err_num != 1)
-        TEST_ERROR
+        TEST_ERROR;
 
     /* Clear the error stack */
     if (H5Eclear2(estack_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /* Check the number of errors on stack */
     err_num = H5Eget_num(estack_id);
     if (err_num != 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /* Close error stack */
     if (H5Eclose_stack(estack_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     return 0;
 
@@ -530,30 +529,30 @@ test_copy(void)
     /* Check the number of errors on stack */
     err_num = H5Eget_num(H5E_DEFAULT);
     if (err_num != 1)
-        TEST_ERROR
+        TEST_ERROR;
 
     /* Copy error stack, which clears the original */
     if ((estack_id = H5Eget_current_stack()) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /* Check the number of errors on stack copy */
     err_num = H5Eget_num(estack_id);
     if (err_num != 1)
-        TEST_ERROR
+        TEST_ERROR;
 
     /* Check the number of errors on original stack */
     err_num = H5Eget_num(H5E_DEFAULT);
     if (err_num != 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /* Put the stack copy as the default.  It closes the stack copy, too. */
     if (H5Eset_current_stack(estack_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /* Check the number of errors on default stack */
     err_num = H5Eget_num(H5E_DEFAULT);
     if (err_num != 1)
-        TEST_ERROR
+        TEST_ERROR;
 
     /* Try to close error stack copy.  Should fail because
      * the current H5Eset_current_stack closes the stack to be set.
@@ -564,13 +563,130 @@ test_copy(void)
     }
     H5E_END_TRY
     if (ret >= 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     return 0;
 
 error:
     return -1;
 } /* end test_copy() */
+
+/*-------------------------------------------------------------------------
+ * Function:    test_append
+ *
+ * Purpose:     Test appending one error stack to another
+ *
+ * Return:      Success:    0
+ *              Failure:    -1
+ *
+ *-------------------------------------------------------------------------
+ */
+static herr_t
+test_append(void)
+{
+    const char *err_func = "test_append";      /* Function name for pushing error */
+    const char *err_msg1 = "Error message #1"; /* Error message #1 for pushing error */
+    const char *err_msg2 = "Error message #2"; /* Error message #2 for pushing error */
+    ssize_t     err_num;                       /* Number of errors on stack */
+    hid_t       estack_id1 = -1;               /* Error stack ID */
+    hid_t       estack_id2 = -1;               /* Error stack ID */
+    herr_t      ret;                           /* Generic return value */
+
+    /* Push an error */
+    if (H5Epush(H5E_DEFAULT, __FILE__, err_func, __LINE__, ERR_CLS, ERR_MAJ_TEST, ERR_MIN_SUBROUTINE, "%s",
+                err_msg1) < 0)
+        TEST_ERROR;
+
+    /* Copy error stack, which clears the original */
+    if ((estack_id1 = H5Eget_current_stack()) < 0)
+        TEST_ERROR;
+
+    /* Check the number of errors on stack #1 */
+    err_num = H5Eget_num(estack_id1);
+    if (err_num != 1)
+        TEST_ERROR;
+
+    /* Create another stack, from scratch */
+    if ((estack_id2 = H5Ecreate_stack()) < 0)
+        TEST_ERROR;
+
+    /* Check the number of errors on stack #2 */
+    err_num = H5Eget_num(estack_id2);
+    if (err_num != 0)
+        TEST_ERROR;
+
+    /* Push an error on stack #2 */
+    if (H5Epush(estack_id2, __FILE__, err_func, __LINE__, ERR_CLS, ERR_MAJ_IO, ERR_MIN_CREATE, "%s",
+                err_msg2) < 0)
+        TEST_ERROR;
+
+    /* Check the number of errors on stack #2 */
+    err_num = H5Eget_num(estack_id2);
+    if (err_num != 1)
+        TEST_ERROR;
+
+    /* Try to append bad error stack IDs */
+    H5E_BEGIN_TRY
+    {
+        ret = H5Eappend_stack(H5E_DEFAULT, H5E_DEFAULT, FALSE);
+    }
+    H5E_END_TRY
+    if (ret >= 0)
+        TEST_ERROR;
+    H5E_BEGIN_TRY
+    {
+        ret = H5Eappend_stack(estack_id1, H5E_DEFAULT, FALSE);
+    }
+    H5E_END_TRY
+    if (ret >= 0)
+        TEST_ERROR;
+    H5E_BEGIN_TRY
+    {
+        ret = H5Eappend_stack(H5E_DEFAULT, estack_id2, FALSE);
+    }
+    H5E_END_TRY
+    if (ret >= 0)
+        TEST_ERROR;
+
+    /* Append error stack #2 to error stack #1, without closing stack #2 */
+    if (H5Eappend_stack(estack_id1, estack_id2, FALSE) < 0)
+        TEST_ERROR;
+
+    /* Check the number of errors on stack #1 */
+    err_num = H5Eget_num(estack_id1);
+    if (err_num != 2)
+        TEST_ERROR;
+
+    /* Check the number of errors on stack #2 */
+    err_num = H5Eget_num(estack_id2);
+    if (err_num != 1)
+        TEST_ERROR;
+
+    /* Append error stack #2 to error stack #1, and close stack #2 */
+    if (H5Eappend_stack(estack_id1, estack_id2, TRUE) < 0)
+        TEST_ERROR;
+
+    /* Try to close error stack #2.  Should fail because H5Eappend_stack
+     * should have already closed it.
+     */
+    H5E_BEGIN_TRY
+    {
+        ret = H5Eclose_stack(estack_id2);
+    }
+    H5E_END_TRY
+    if (ret >= 0)
+        TEST_ERROR;
+
+    /* Check the number of errors on stack #1 */
+    err_num = H5Eget_num(estack_id1);
+    if (err_num != 3)
+        TEST_ERROR;
+
+    return 0;
+
+error:
+    return -1;
+} /* end test_append() */
 
 /*-------------------------------------------------------------------------
  * Function:    close_error
@@ -621,7 +737,7 @@ error:
  *-------------------------------------------------------------------------
  */
 static herr_t
-test_filter_error(const char *fname)
+test_filter_error(const char *fname, hid_t fapl)
 {
     const char *pathname = H5_get_srcdir_filename(fname); /* Corrected test file name */
     hid_t       file     = -1;
@@ -631,7 +747,7 @@ test_filter_error(const char *fname)
     HDfprintf(stderr, "\nTesting error message during data reading when filter isn't registered\n");
 
     /* Open the file */
-    if ((file = H5Fopen(pathname, H5F_ACC_RDONLY, H5P_DEFAULT)) < 0)
+    if ((file = H5Fopen(pathname, H5F_ACC_RDONLY, fapl)) < 0)
         TEST_ERROR;
 
     /* Open the regular dataset */
@@ -643,10 +759,10 @@ test_filter_error(const char *fname)
 
     /* Close/release resources */
     if (H5Dclose(dataset) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if (H5Fclose(file) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     return 0;
 
@@ -668,8 +784,14 @@ main(void)
     hid_t       fapl      = -1;
     hid_t       estack_id = -1;
     char        filename[1024];
+    const char *env_h5_drvr; /* File driver value from environment */
     const char *FUNC_main = "main";
     int         i;
+
+    /* Get the VFD to use */
+    env_h5_drvr = HDgetenv(HDF5_DRIVER);
+    if (env_h5_drvr == NULL)
+        env_h5_drvr = "nomatch";
 
     HDfprintf(stderr, "   This program tests the Error API.  There're supposed to be some error messages\n");
 
@@ -747,6 +869,10 @@ main(void)
     if (H5Fclose(file) < 0)
         TEST_ERROR;
 
+    /* Test appending error stacks */
+    if (test_append() < 0)
+        TEST_ERROR;
+
     /* Close error information */
     if (close_error() < 0)
         TEST_ERROR;
@@ -756,7 +882,15 @@ main(void)
      * the test file was pre-generated.
      */
     h5_fixname(DATAFILE, H5P_DEFAULT, filename, sizeof filename);
-    if (test_filter_error(filename) < 0)
+    if (!h5_using_default_driver(env_h5_drvr) && HDstrcmp(env_h5_drvr, "stdio")) {
+        /* If not using the library's default VFD or the stdio VFD, force
+         * the library's default VFD here. The test file was pre-generated
+         * and can cause issues with many VFDs.
+         */
+        if (H5Pset_driver(fapl, H5_DEFAULT_VFD, NULL) < 0)
+            TEST_ERROR;
+    }
+    if (test_filter_error(filename, fapl) < 0)
         TEST_ERROR;
 
     h5_clean_files(FILENAME, fapl);

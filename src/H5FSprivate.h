@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -100,7 +99,7 @@ typedef struct H5FS_section_class_t {
     const unsigned type;        /* Type of free space section */
     size_t         serial_size; /* Size of serialized form of section */
     unsigned       flags;       /* Class flags */
-    void *         cls_private; /* Class private information */
+    void          *cls_private; /* Class private information */
 
     /* Class methods */
     herr_t (*init_cls)(struct H5FS_section_class_t *,
@@ -185,9 +184,6 @@ H5FL_SEQ_EXTERN(H5FS_section_class_t);
 /***************************************/
 /* Library-private Function Prototypes */
 /***************************************/
-
-/* Package initialization routine */
-H5_DLL herr_t H5FS_init(void);
 
 /* Free space manager routines */
 H5_DLL H5FS_t *H5FS_create(H5F_t *f, haddr_t *fs_addr, const H5FS_create_t *fs_create, uint16_t nclasses,

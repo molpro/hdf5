@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -154,7 +153,7 @@ H5T_get_member_offset(const H5T_t *dt, unsigned membno)
 H5T_class_t
 H5Tget_member_class(hid_t type_id, unsigned membno)
 {
-    H5T_t *     dt;        /* Datatype to query */
+    H5T_t      *dt;        /* Datatype to query */
     H5T_class_t ret_value; /* Return value */
 
     FUNC_ENTER_API(H5T_NO_CLASS)
@@ -215,7 +214,7 @@ H5Tget_member_type(hid_t type_id, unsigned membno)
 
     /* Get an ID for the datatype */
     if ((ret_value = H5I_register(H5I_DATATYPE, memb_dt, TRUE)) < 0)
-        HGOTO_ERROR(H5E_DATATYPE, H5E_CANTREGISTER, H5I_INVALID_HID, "unable register datatype atom")
+        HGOTO_ERROR(H5E_DATATYPE, H5E_CANTREGISTER, H5I_INVALID_HID, "unable register datatype ID")
 
 done:
     if (ret_value < 0)
@@ -282,7 +281,7 @@ H5T__reopen_member_type(const H5T_t *dt, unsigned membno)
 {
     H5T_t *ret_value = NULL; /* Return value */
 
-    FUNC_ENTER_STATIC
+    FUNC_ENTER_PACKAGE
 
     /* Sanity checks */
     HDassert(dt);
@@ -521,7 +520,7 @@ H5T__pack(const H5T_t *dt)
 {
     herr_t ret_value = SUCCEED; /* Return value */
 
-    FUNC_ENTER_STATIC
+    FUNC_ENTER_PACKAGE
 
     HDassert(dt);
 
@@ -596,7 +595,7 @@ H5T__is_packed(const H5T_t *dt)
 {
     htri_t ret_value = TRUE; /* Return value */
 
-    FUNC_ENTER_STATIC_NOERR
+    FUNC_ENTER_PACKAGE_NOERR
 
     HDassert(dt);
 

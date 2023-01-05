@@ -1,5 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * Copyright by the Board of Trustees of the University of Illinois.         *
+ * Copyright by The HDF Group.                                               *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -7,6 +7,7 @@
  * the COPYING file, which can be found at the root of the source code       *
  * distribution tree, or in https://www.hdfgroup.org/licenses.               *
  * If you do not have access to either file, you may request a copy from     *
+ * help@hdfgroup.org.                                                        *
  * help@hdfgroup.org.                                                        *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -91,7 +92,7 @@ main(void)
     hid_t    fid            = -1;
     hid_t    fapl           = -1; /* File access property list */
     char     filename[1024];
-    H5F_t *  f = NULL; /* File for all tests */
+    H5F_t   *f = NULL; /* File for all tests */
 
     /* Test Setup */
     HDputs("Testing the metadata accumulator");
@@ -99,30 +100,30 @@ main(void)
     /* File access property list */
     h5_reset();
     if ((fapl = h5_fileaccess()) < 0)
-        FAIL_STACK_ERROR
+        FAIL_STACK_ERROR;
     h5_fixname(FILENAME[0], fapl, filename, sizeof filename);
 
     /* Create a test file */
     if ((fid = H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, fapl)) < 0)
-        FAIL_STACK_ERROR
+        FAIL_STACK_ERROR;
 
     /* Push API context */
     if (H5CX_push() < 0)
-        FAIL_STACK_ERROR
+        FAIL_STACK_ERROR;
     api_ctx_pushed = TRUE;
 
     /* Get H5F_t * to internal file structure */
     if (NULL == (f = (H5F_t *)H5VL_object(fid)))
-        FAIL_STACK_ERROR
+        FAIL_STACK_ERROR;
 
     /* We'll be writing lots of garbage data, so extend the
         file a ways. 10MB should do. */
     if (H5FD_set_eoa(f->shared->lf, H5FD_MEM_DEFAULT, (haddr_t)(1024 * 1024 * 10)) < 0)
-        FAIL_STACK_ERROR
+        FAIL_STACK_ERROR;
 
     /* Reset metadata accumulator for the file */
     if (accum_reset(f) < 0)
-        FAIL_STACK_ERROR
+        FAIL_STACK_ERROR;
 
     /* Test Functions */
     nerrors += test_write_read(f);
@@ -139,13 +140,13 @@ main(void)
     nerrors += test_random_write(f);
 
     /* Pop API context */
-    if (api_ctx_pushed && H5CX_pop() < 0)
-        FAIL_STACK_ERROR
+    if (api_ctx_pushed && H5CX_pop(FALSE) < 0)
+        FAIL_STACK_ERROR;
     api_ctx_pushed = FALSE;
 
     /* End of test code, close and delete file */
     if (H5Fclose(fid) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /* This test uses a different file */
     nerrors += test_swmr_write_big(TRUE);
@@ -160,7 +161,7 @@ main(void)
 
 error:
     if (api_ctx_pushed)
-        H5CX_pop();
+        H5CX_pop(FALSE);
 
     HDputs("*** TESTS FAILED ***");
     return 1;
@@ -1295,7 +1296,7 @@ test_accum_adjust(H5F_t *f)
     /* Flush the accumulator -- we want to test the case when
         accumulator contains clean data */
     if (accum_flush(f) < 0)
-        FAIL_STACK_ERROR
+        FAIL_STACK_ERROR;
 
     /* Write a small (1KB) block to the end of the accumulator */
     /* ==> Accumulator will need more buffer space */
@@ -1337,7 +1338,7 @@ test_accum_adjust(H5F_t *f)
 
     /* Flush the accumulator to clean it */
     if (accum_flush(f) < 0)
-        FAIL_STACK_ERROR
+        FAIL_STACK_ERROR;
 
     /* write to part of the accumulator so just the start of it is dirty */
     if (accum_write(0, 5, wbuf) < 0)
@@ -1382,7 +1383,7 @@ test_accum_adjust(H5F_t *f)
 
     /* Flush the accumulator to clean it */
     if (accum_flush(f) < 0)
-        FAIL_STACK_ERROR
+        FAIL_STACK_ERROR;
 
     /* write to part of the accumulator so it's dirty, but not entirely dirty */
     /* (just the begging few bytes will be clean) */
@@ -1942,8 +1943,8 @@ test_random_write(H5F_t *f)
 {
     uint8_t *wbuf, *rbuf; /* Buffers for reading & writing */
     unsigned seed = 0;    /* Random # seed */
-    size_t * off;         /* Offset of buffer segments to write */
-    size_t * len;         /* Size of buffer segments to write */
+    size_t  *off;         /* Offset of buffer segments to write */
+    size_t  *len;         /* Size of buffer segments to write */
     size_t   cur_off;     /* Current offset */
     size_t   nsegments;   /* Number of segments to write */
     size_t   swap;        /* Position to swap with */
@@ -2096,19 +2097,19 @@ test_swmr_write_big(hbool_t newest_format)
 
     hid_t    fid  = -1;   /* File ID */
     hid_t    fapl = -1;   /* File access property list */
-    H5F_t *  rf   = NULL; /* File pointer */
+    H5F_t   *rf   = NULL; /* File pointer */
     char     filename[1024];
     uint8_t *wbuf2 = NULL, *rbuf = NULL; /* Buffers for reading & writing */
     uint8_t  wbuf[1024];                 /* Buffer for reading & writing */
     unsigned u;                          /* Local index variable */
     hbool_t  process_success = FALSE;
-    char *   driver          = NULL;  /* VFD string (from env variable) */
+    char    *driver          = NULL;  /* VFD string (from env variable) */
     hbool_t  api_ctx_pushed  = FALSE; /* Whether API context pushed */
 
     if (newest_format)
-        TESTING("SWMR write of large metadata: with latest format")
+        TESTING("SWMR write of large metadata: with latest format");
     else
-        TESTING("SWMR write of large metadata: with non-latest-format")
+        TESTING("SWMR write of large metadata: with non-latest-format");
 
 #if !defined(H5_HAVE_UNISTD_H) && !defined(H5_HAVE_WIN32_API)
 
@@ -2121,7 +2122,7 @@ test_swmr_write_big(hbool_t newest_format)
     /* Skip this test if SWMR I/O is not supported for the VFD specified
      * by the environment variable.
      */
-    driver = HDgetenv("HDF5_DRIVER");
+    driver = HDgetenv(HDF5_DRIVER);
     if (!H5FD__supports_swmr_test(driver)) {
         SKIPPED();
         HDputs("    Test skipped due to VFD not supporting SWMR I/O.");
@@ -2130,43 +2131,43 @@ test_swmr_write_big(hbool_t newest_format)
 
     /* File access property list */
     if ((fapl = h5_fileaccess()) < 0)
-        FAIL_STACK_ERROR
+        FAIL_STACK_ERROR;
     h5_fixname(FILENAME[1], fapl, filename, sizeof filename);
 
     /* Both cases will result in v3 superblock and version 2 object header for SWMR */
     if (newest_format) { /* latest format */
         if (H5Pset_libver_bounds(fapl, H5F_LIBVER_LATEST, H5F_LIBVER_LATEST) < 0)
-            FAIL_STACK_ERROR
+            FAIL_STACK_ERROR;
 
         if ((fid = H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, fapl)) < 0)
-            FAIL_STACK_ERROR
+            FAIL_STACK_ERROR;
     }
     else { /* non-latest-format */
         if ((fid = H5Fcreate(filename, H5F_ACC_TRUNC | H5F_ACC_SWMR_WRITE, H5P_DEFAULT, fapl)) < 0)
-            FAIL_STACK_ERROR
+            FAIL_STACK_ERROR;
     } /* end if */
 
     /* Close the file */
     if (H5Fclose(fid) < 0)
-        FAIL_STACK_ERROR
+        FAIL_STACK_ERROR;
 
     /* Open the file with SWMR_WRITE */
     if ((fid = H5Fopen(filename, H5F_ACC_RDWR | H5F_ACC_SWMR_WRITE, fapl)) < 0)
-        FAIL_STACK_ERROR
+        FAIL_STACK_ERROR;
 
     /* Push API context */
     if (H5CX_push() < 0)
-        FAIL_STACK_ERROR
+        FAIL_STACK_ERROR;
     api_ctx_pushed = TRUE;
 
     /* Get H5F_t * to internal file structure */
     if (NULL == (rf = (H5F_t *)H5VL_object(fid)))
-        FAIL_STACK_ERROR
+        FAIL_STACK_ERROR;
 
     /* We'll be writing lots of garbage data, so extend the
         file a ways. 10MB should do. */
     if (H5FD_set_eoa(rf->shared->lf, H5FD_MEM_DEFAULT, (haddr_t)(1024 * 1024 * 10)) < 0)
-        FAIL_STACK_ERROR
+        FAIL_STACK_ERROR;
 
     if (H5Fflush(fid, H5F_SCOPE_GLOBAL) < 0)
         FAIL_STACK_ERROR;
@@ -2288,7 +2289,7 @@ test_swmr_write_big(hbool_t newest_format)
 
     /* Check if the process terminated correctly */
     if (!process_success)
-        FAIL_PUTS_ERROR("child process exited abnormally")
+        FAIL_PUTS_ERROR("child process exited abnormally");
 
     /* Flush the accumulator */
     if (accum_reset(rf) < 0)
@@ -2303,8 +2304,8 @@ test_swmr_write_big(hbool_t newest_format)
         FAIL_STACK_ERROR;
 
     /* Pop API context */
-    if (api_ctx_pushed && H5CX_pop() < 0)
-        FAIL_STACK_ERROR
+    if (api_ctx_pushed && H5CX_pop(FALSE) < 0)
+        FAIL_STACK_ERROR;
     api_ctx_pushed = FALSE;
 
     /* Release memory */
@@ -2321,7 +2322,7 @@ error:
     H5Fclose(fid);
 
     if (api_ctx_pushed)
-        H5CX_pop();
+        H5CX_pop(FALSE);
 
     H5Pclose(fapl);
 

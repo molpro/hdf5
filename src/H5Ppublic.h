@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -392,7 +391,7 @@ H5_DLLVAR hid_t H5P_CLS_LINK_ACCESS_ID_g;
 H5_DLLVAR hid_t H5P_CLS_VOL_INITIALIZE_ID_g;
 H5_DLLVAR hid_t H5P_CLS_REFERENCE_ACCESS_ID_g;
 
-/* Default roperty list IDs */
+/* Default property list IDs */
 /* (Internal to library, do not use!  Use macros above) */
 H5_DLLVAR hid_t H5P_LST_FILE_CREATE_ID_g;
 H5_DLLVAR hid_t H5P_LST_FILE_ACCESS_ID_g;
@@ -421,7 +420,7 @@ H5_DLLVAR hid_t H5P_LST_REFERENCE_ACCESS_ID_g;
 /* Generic property list routines */
 
 /**
- * \ingroup GPLO
+ * \ingroup PLCR
  *
  * \brief Terminates access to a property list
  *
@@ -439,7 +438,7 @@ H5_DLLVAR hid_t H5P_LST_REFERENCE_ACCESS_ID_g;
  */
 H5_DLL herr_t H5Pclose(hid_t plist_id);
 /**
- * \ingroup GPLOA
+ * \ingroup PLCRA
  *
  * \brief Closes an existing property list class
  *
@@ -456,7 +455,7 @@ H5_DLL herr_t H5Pclose(hid_t plist_id);
  */
 H5_DLL herr_t H5Pclose_class(hid_t plist_id);
 /**
- * \ingroup GPLO
+ * \ingroup PLCR
  *
  * \brief Copies an existing property list to create a new property list
  *
@@ -473,7 +472,7 @@ H5_DLL herr_t H5Pclose_class(hid_t plist_id);
  */
 H5_DLL hid_t H5Pcopy(hid_t plist_id);
 /**
- * \ingroup GPLOA
+ * \ingroup PLCRA
  *
  * \brief Copies a property from one list or class to another
  *
@@ -509,7 +508,7 @@ H5_DLL hid_t H5Pcopy(hid_t plist_id);
  */
 H5_DLL herr_t H5Pcopy_prop(hid_t dst_id, hid_t src_id, const char *name);
 /**
- * \ingroup GPLO
+ * \ingroup PLCR
  *
  * \brief Creates a new property list as an instance of a property list class
  *
@@ -633,7 +632,7 @@ H5_DLL herr_t H5Pcopy_prop(hid_t dst_id, hid_t src_id, const char *name);
  */
 H5_DLL hid_t H5Pcreate(hid_t cls_id);
 /**
- * \ingroup GPLOA
+ * \ingroup PLCRA
  *
  * \brief Creates a new property list class
  *
@@ -676,7 +675,7 @@ H5_DLL hid_t H5Pcreate_class(hid_t parent, const char *name, H5P_cls_create_func
                              H5P_cls_copy_func_t copy, void *copy_data, H5P_cls_close_func_t close,
                              void *close_data);
 /**
- * \ingroup GPLO
+ * \ingroup PLCR
  *
  * \brief Decodes property list received in a binary object buffer and
  *        returns a new property list identifier
@@ -705,7 +704,7 @@ H5_DLL hid_t H5Pcreate_class(hid_t parent, const char *name, H5P_cls_create_func
  */
 H5_DLL hid_t H5Pdecode(const void *buf);
 /**
- * \ingroup GPLO
+ * \ingroup PLCR
  *
  * \brief Encodes the property values in a property list into a binary
  *        buffer
@@ -759,7 +758,7 @@ H5_DLL hid_t H5Pdecode(const void *buf);
  */
 H5_DLL herr_t H5Pencode2(hid_t plist_id, void *buf, size_t *nalloc, hid_t fapl_id);
 /**
- * \ingroup GPLOA
+ * \ingroup PLCRA
  *
  * \brief Compares two property lists or classes for equality
  *
@@ -779,7 +778,7 @@ H5_DLL herr_t H5Pencode2(hid_t plist_id, void *buf, size_t *nalloc, hid_t fapl_i
  */
 H5_DLL htri_t H5Pequal(hid_t id1, hid_t id2);
 /**
- * \ingroup GPLOA
+ * \ingroup PLCRA
  *
  * \brief Queries whether a property name exists in a property list or
  *       class
@@ -797,7 +796,7 @@ H5_DLL htri_t H5Pequal(hid_t id1, hid_t id2);
  */
 H5_DLL htri_t H5Pexist(hid_t plist_id, const char *name);
 /**
- * \ingroup GPLOA
+ * \ingroup PLCRA
  *
  * \brief Queries the value of a property
  *
@@ -829,7 +828,7 @@ H5_DLL htri_t H5Pexist(hid_t plist_id, const char *name);
  */
 H5_DLL herr_t H5Pget(hid_t plist_id, const char *name, void *value);
 /**
- *\ingroup GPLO
+ * \ingroup PLCR
  *
  * \brief Returns the property list class identifier for a property list
  *
@@ -892,7 +891,7 @@ H5_DLL herr_t H5Pget(hid_t plist_id, const char *name, void *value);
  */
 H5_DLL hid_t H5Pget_class(hid_t plist_id);
 /**
- * \ingroup GPLOA
+ * \ingroup PLCRA
  *
  * \brief Retrieves the name of a class
  *
@@ -1036,7 +1035,7 @@ H5_DLL hid_t H5Pget_class(hid_t plist_id);
  */
 H5_DLL char *H5Pget_class_name(hid_t pclass_id);
 /**
- * \ingroup GPLOA
+ * \ingroup PLCRA
  *
  * \brief Retrieves the parent class of a property class
  *
@@ -1052,7 +1051,7 @@ H5_DLL char *H5Pget_class_name(hid_t pclass_id);
  */
 H5_DLL hid_t H5Pget_class_parent(hid_t pclass_id);
 /**
- * \ingroup GPLOA
+ * \ingroup PLCRA
  *
  * \brief  Queries the number of properties in a property list or class
  *
@@ -1075,7 +1074,7 @@ H5_DLL hid_t H5Pget_class_parent(hid_t pclass_id);
  */
 H5_DLL herr_t H5Pget_nprops(hid_t id, size_t *nprops);
 /**
- * \ingroup GPLOA
+ * \ingroup PLCRA
  *
  * \brief Queries the size of a property value in bytes
  *
@@ -1096,7 +1095,7 @@ H5_DLL herr_t H5Pget_nprops(hid_t id, size_t *nprops);
  */
 H5_DLL herr_t H5Pget_size(hid_t id, const char *name, size_t *size);
 /**
- * \ingroup GPLOA
+ * \ingroup PLCRA
  *
  * \brief Registers a temporary property with a property list
  *
@@ -1346,7 +1345,7 @@ H5_DLL herr_t H5Pinsert2(hid_t plist_id, const char *name, size_t size, void *va
                          H5P_prp_get_func_t get, H5P_prp_delete_func_t prp_del, H5P_prp_copy_func_t copy,
                          H5P_prp_compare_func_t compare, H5P_prp_close_func_t close);
 /**
- * \ingroup GPLOA
+ * \ingroup PLCRA
  *
  * \brief Determines whether a property list is a member of a class
  *
@@ -1366,7 +1365,7 @@ H5_DLL herr_t H5Pinsert2(hid_t plist_id, const char *name, size_t size, void *va
  */
 H5_DLL htri_t H5Pisa_class(hid_t plist_id, hid_t pclass_id);
 /**
- * \ingroup GPLOA
+ * \ingroup PLCRA
  *
  * \brief Iterates over properties in a property class or list
  *
@@ -1412,7 +1411,7 @@ H5_DLL htri_t H5Pisa_class(hid_t plist_id, hid_t pclass_id);
  */
 H5_DLL int H5Piterate(hid_t id, int *idx, H5P_iterate_t iter_func, void *iter_data);
 /**
- * \ingroup GPLOA
+ * \ingroup PLCRA
  *
  * \brief Registers a permanent property with a property list class
  *
@@ -1693,7 +1692,7 @@ H5_DLL herr_t H5Pregister2(hid_t cls_id, const char *name, size_t size, void *de
                            H5P_prp_delete_func_t prp_del, H5P_prp_copy_func_t copy,
                            H5P_prp_compare_func_t compare, H5P_prp_close_func_t close);
 /**
- * \ingroup GPLOA
+ * \ingroup PLCRA
  *
  * \brief Removes a property from a property list
  *
@@ -1719,7 +1718,7 @@ H5_DLL herr_t H5Pregister2(hid_t cls_id, const char *name, size_t size, void *de
  */
 H5_DLL herr_t H5Premove(hid_t plist_id, const char *name);
 /**
- * \ingroup GPLOA
+ * \ingroup PLCRA
  *
  * \brief Sets a property list value
  *
@@ -1751,7 +1750,7 @@ H5_DLL herr_t H5Premove(hid_t plist_id, const char *name);
  */
 H5_DLL herr_t H5Pset(hid_t plist_id, const char *name, const void *value);
 /**
- * \ingroup GPLOA
+ * \ingroup PLCRA
  *
  * \brief Removes a property from a property list class
  *
@@ -1769,8 +1768,6 @@ H5_DLL herr_t H5Pset(hid_t plist_id, const char *name, const void *value);
  *
  */
 H5_DLL herr_t H5Punregister(hid_t pclass_id, const char *name);
-
-/* Object creation property list (OCPL) routines */
 
 /**
  * \ingroup DCPL
@@ -1791,6 +1788,9 @@ H5_DLL herr_t H5Punregister(hid_t pclass_id, const char *name);
  *
  */
 H5_DLL htri_t H5Pall_filters_avail(hid_t plist_id);
+
+/* Object creation property list (OCPL) routines */
+
 /**
  * \ingroup OCPL
  *
@@ -3442,6 +3442,34 @@ H5_DLL const void *H5Pget_driver_info(hid_t plist_id);
 /**
  * \ingroup FAPL
  *
+ * \brief Retrieves a string representation of the configuration for
+ *        the driver set on the given FAPL. The returned string can
+ *        be used to configure the same driver in an identical way.
+ *
+ * \fapl_id
+ * \param[out] config_buf Driver configuration string output buffer
+ * \param[in]  buf_size Size of driver configuration string output buffer
+ *
+ * \return Returns the length of the driver configuration string on
+ *         success (not including the NUL terminator). Returns negative
+ *         on failure.
+ *
+ * \details H5Pget_driver_config_str() retrieves a string representation
+ *          of the configuration for the driver set on the given FAPL. The
+ *          returned string can be used to configure the same driver in
+ *          an identical way.
+ *
+ *          If \p config_buf is NULL, the length of the driver configuration
+ *          string is simply returned. The caller can then allocate a buffer
+ *          of the appropriate size and call this routine again.
+ *
+ * \version 1.12.1 Function publicized in this release.
+ *
+ */
+H5_DLL ssize_t H5Pget_driver_config_str(hid_t fapl_id, char *config_buf, size_t buf_size);
+/**
+ * \ingroup FAPL
+ *
  * \brief Retrieves the size of the external link open file cache
  *
  * \fapl_id{plist_id}
@@ -3723,7 +3751,7 @@ H5_DLL herr_t H5Pget_libver_bounds(hid_t plist_id, H5F_libver_t *low, H5F_libver
  * \since 1.8.0
  *
  */
-H5_DLL herr_t H5Pget_mdc_config(hid_t plist_id, H5AC_cache_config_t *config_ptr);
+H5_DLL herr_t H5Pget_mdc_config(hid_t plist_id, H5AC_cache_config_t *config_ptr); /* out */
 /**
  * \ingroup FAPL
  *
@@ -4275,6 +4303,57 @@ H5_DLL herr_t H5Pset_core_write_tracking(hid_t fapl_id, hbool_t is_enabled, size
  *
  */
 H5_DLL herr_t H5Pset_driver(hid_t plist_id, hid_t driver_id, const void *driver_info);
+/**
+ * \ingroup FAPL
+ *
+ * \brief Sets a file driver according to a given driver name
+ *
+ * \plist_id
+ * \param[in] driver_name   The new driver name
+ * \param[in] driver_config Optional string containing driver properties
+ *
+ * \return \herr_t
+ *
+ * \details H5Pset_driver_by_name() sets the file driver, by the name
+ *          driver_name, for a file access or data transfer property list,
+ *          \p plist_id, and supplies an optional string containing the
+ *          driver-specific properties, \p driver_config. The driver
+ *          properties string will be copied into the property list.
+ *
+ *          If the driver specified by \p driver_name is not currently
+ *          registered, an attempt will be made to load the driver as a
+ *          plugin.
+ *
+ * \version 1.12.1 Function publicized in this release.
+ *
+ */
+H5_DLL herr_t H5Pset_driver_by_name(hid_t plist_id, const char *driver_name, const char *driver_config);
+/**
+ * \ingroup FAPL
+ *
+ * \brief Sets a file driver according to a given driver value (ID).
+ *
+ * \plist_id
+ * \param[in] driver_value  The new driver value (ID)
+ * \param[in] driver_config Optional string containing driver properties
+ *
+ * \return \herr_t
+ *
+ * \details H5Pset_driver_by_value() sets the file driver, by the value
+ *          driver_value, for a file access or data transfer property list,
+ *          \p plist_id, and supplies an optional string containing the
+ *          driver-specific properties, \p driver_config. The driver
+ *          properties string will be copied into the property list.
+ *
+ *          If the driver specified by \p driver_value is not currently
+ *          registered, an attempt will be made to load the driver as a
+ *          plugin.
+ *
+ * \version 1.12.1 Function publicized in this release.
+ *
+ */
+H5_DLL herr_t H5Pset_driver_by_value(hid_t plist_id, H5FD_class_value_t driver_value,
+                                     const char *driver_config);
 /**
  * \ingroup FAPL
  *
@@ -5227,6 +5306,34 @@ H5_DLL herr_t H5Pset_small_data_block_size(hid_t fapl_id, hsize_t size);
  */
 H5_DLL herr_t H5Pset_vol(hid_t plist_id, hid_t new_vol_id, const void *new_vol_info);
 
+/**
+ * \ingroup FAPL
+ *
+ * \brief Query the capability flags for the VOL connector that will be used
+ *              with this file access property list (FAPL).
+ *
+ * \fapl_id{plist_id}
+ * \param[out]  cap_flags  Flags that indicate the VOL connector capabilities
+ *
+ * \return \herr_t
+ *
+ * \details H5Pget_vol_cap_flags() queries the current VOL connector information
+ *              for a FAPL to retrieve the capability flags for the VOL
+ *              connector stack, as will be used by a file open or create
+ *              operation that uses this FAPL.
+ *
+ * \note This routine supports the use of the HDF5_VOL_CONNECTOR environment
+ *       variable to override the VOL connector set programmatically for the
+ *       FAPL (with H5Pset_vol).
+ *
+ * \note The H5VL_CAP_FLAG_ASYNC flag can be checked to see if asynchronous
+ *              operations are supported by the VOL connector stack.
+ *
+ * \since 1.14.0
+ *
+ */
+H5_DLL herr_t H5Pget_vol_cap_flags(hid_t plist_id, uint64_t *cap_flags);
+
 #ifdef H5_HAVE_PARALLEL
 /**
  * \ingroup GAPL
@@ -5673,6 +5780,9 @@ H5_DLL herr_t H5Pget_dset_no_attrs_hint(hid_t dcpl_id, hbool_t *minimize);
  *          external file name is not returned. If \p offset or \p size
  *          are null pointers then the corresponding information is not
  *          returned.
+ *
+ * \note On Windows, off_t is typically a 32-bit signed long value, which
+ *       limits the valid offset that can be returned to 2 GiB.
  *
  * \version 1.6.4 \p idx parameter type changed to unsigned.
  * \since 1.0.0
@@ -8052,10 +8162,47 @@ H5_DLL herr_t H5Pget_mpio_actual_io_mode(hid_t plist_id, H5D_mpio_actual_io_mode
 H5_DLL herr_t H5Pget_mpio_no_collective_cause(hid_t plist_id, uint32_t *local_no_collective_cause,
                                               uint32_t *global_no_collective_cause);
 #endif /* H5_HAVE_PARALLEL */
-
-/* Link creation property list (LCPL) routines */
 /**
- * \ingroup ALCAPL
+ *
+ * \ingroup DXPL
+ *
+ * \brief Sets a hyperslab file selection for a dataset I/O operation
+ *
+ * \param[in] plist_id Property list identifier
+ * \param[in] rank     Number of dimensions of selection
+ * \param[in] op       Operation to perform on current selection
+ * \param[in] start    Offset of start of hyperslab
+ * \param[in] stride   Hyperslab stride
+ * \param[in] count    Number of blocks included in hyperslab
+ * \param[in] block    Size of block in hyperslab
+ *
+ * \return \herr_t
+ *
+ * \details H5Pset_dataset_io_hyperslab_selection() is designed to be used
+ *          in conjunction with using #H5S_PLIST for the file dataspace
+ *          ID when making a call to H5Dread() or H5Dwrite().  When used
+ *          with #H5S_PLIST, the selection created by one or more calls to
+ *          this routine is used for determining which dataset elements to
+ *          access.
+ *
+ *          \p rank is the dimensionality of the selection and determines
+ *          the size of the \p start, \p stride, \p count, and \p block arrays.
+ *          \p rank must be between 1 and #H5S_MAX_RANK, inclusive.
+ *
+ *          The \p op, \p start, \p stride, \p count, and \p block parameters
+ *          behave identically to their behavior for H5Sselect_hyperslab(),
+ *          please see the documentation for that routine for details about
+ *          their use.
+ *
+ * \since 1.14.0
+ *
+ */
+H5_DLL herr_t H5Pset_dataset_io_hyperslab_selection(hid_t plist_id, unsigned rank, H5S_seloper_t op,
+                                                    const hsize_t start[], const hsize_t stride[],
+                                                    const hsize_t count[], const hsize_t block[]);
+
+/**
+ * \ingroup LCPL
  *
  * \brief Determines whether property is set to enable creating missing
  *        intermediate groups
@@ -8086,7 +8233,7 @@ H5_DLL herr_t H5Pget_mpio_no_collective_cause(hid_t plist_id, uint32_t *local_no
  */
 H5_DLL herr_t H5Pget_create_intermediate_group(hid_t plist_id, unsigned *crt_intmd /*out*/);
 /**
- * \ingroup ALCAPL
+ * \ingroup LCPL
  *
  * \brief Specifies in property list whether to create missing
  *        intermediate groups
@@ -8468,9 +8615,8 @@ H5_DLL herr_t H5Pget_map_iterate_hints(hid_t mapl_id, size_t *key_prefetch_size 
                                        size_t *key_alloc_size /*out*/);
 #endif /*  H5_HAVE_MAP_API */
 
-/* String creation property list (STRCPL) routines */
 /**
- * \ingroup ALCAPL
+ * \ingroup ACPL
  *
  * \brief  Retrieves the character encoding used to create a link or
  *         attribute name
@@ -8499,7 +8645,7 @@ H5_DLL herr_t H5Pget_map_iterate_hints(hid_t mapl_id, size_t *key_prefetch_size 
  */
 H5_DLL herr_t H5Pget_char_encoding(hid_t plist_id, H5T_cset_t *encoding /*out*/);
 /**
- * \ingroup ALCAPL
+ * \ingroup ACPL
  *
  * \brief Sets the character encoding used to encode link and attribute
  *        names
@@ -8540,7 +8686,6 @@ H5_DLL herr_t H5Pget_char_encoding(hid_t plist_id, H5T_cset_t *encoding /*out*/)
  */
 H5_DLL herr_t H5Pset_char_encoding(hid_t plist_id, H5T_cset_t encoding);
 
-/* Link access property list (LAPL) routines */
 /**
  * \ingroup LAPL
  *
@@ -8899,7 +9044,7 @@ H5_DLL herr_t H5Pset_nlinks(hid_t plist_id, size_t nlinks);
 
 /* Object copy property list (OCPYPL) routines */
 /**
- * \ingroup OCPPL
+ * \ingroup OCPYPL
  *
  * \brief Adds a path to the list of paths that will be searched in the
  *        destination file for a matching committed datatype
@@ -9014,7 +9159,7 @@ H5_DLL herr_t H5Pset_nlinks(hid_t plist_id, size_t nlinks);
  */
 H5_DLL herr_t H5Padd_merge_committed_dtype_path(hid_t plist_id, const char *path);
 /**
- * \ingroup OCPPL
+ * \ingroup OCPYPL
  *
  * \brief Clears the list of paths stored in the object copy property list
  *
@@ -9065,7 +9210,7 @@ H5_DLL herr_t H5Padd_merge_committed_dtype_path(hid_t plist_id, const char *path
  */
 H5_DLL herr_t H5Pfree_merge_committed_dtype_paths(hid_t plist_id);
 /**
- * \ingroup OCPPL
+ * \ingroup OCPYPL
  *
  * \brief Retrieves the properties to be used when an object is copied
  *
@@ -9090,7 +9235,7 @@ H5_DLL herr_t H5Pfree_merge_committed_dtype_paths(hid_t plist_id);
  */
 H5_DLL herr_t H5Pget_copy_object(hid_t plist_id, unsigned *copy_options /*out*/);
 /**
- * \ingroup OCPPL
+ * \ingroup OCPYPL
  *
  * \brief Retrieves the callback function from the specified object copy
  *        property list
@@ -9128,7 +9273,7 @@ H5_DLL herr_t H5Pget_copy_object(hid_t plist_id, unsigned *copy_options /*out*/)
  */
 H5_DLL herr_t H5Pget_mcdt_search_cb(hid_t plist_id, H5O_mcdt_search_cb_t *func, void **op_data);
 /**
- * \ingroup OCPPL
+ * \ingroup OCPYPL
  *
  * \brief Sets properties to be used when an object is copied
  *
@@ -9221,7 +9366,7 @@ H5_DLL herr_t H5Pget_mcdt_search_cb(hid_t plist_id, H5O_mcdt_search_cb_t *func, 
  */
 H5_DLL herr_t H5Pset_copy_object(hid_t plist_id, unsigned copy_options);
 /**
- * \ingroup OCPPL
+ * \ingroup OCPYPL
  *
  * \brief Sets the callback function that H5Ocopy() will invoke before
  *        searching the entire destination file for a matching committed
@@ -9319,7 +9464,7 @@ H5_DLL herr_t H5Pset_mcdt_search_cb(hid_t plist_id, H5O_mcdt_search_cb_t func, v
 
 /* Typedefs */
 /**
- * \ingroup GPLOA
+ * \ingroup PLCRA
  *
  * \brief Registers a permanent property with a property list class
  *
@@ -9449,7 +9594,7 @@ H5_DLL herr_t H5Pregister1(hid_t cls_id, const char *name, size_t size, void *de
                            H5P_prp_get_func_t prp_get, H5P_prp_delete_func_t prp_del,
                            H5P_prp_copy_func_t prp_copy, H5P_prp_close_func_t prp_close);
 /**
- * \ingroup GPLOA
+ * \ingroup PLCRA
  *
  * \brief Registers a temporary property with a property list
  *
@@ -9561,7 +9706,7 @@ H5_DLL herr_t H5Pinsert1(hid_t plist_id, const char *name, size_t size, void *va
                          H5P_prp_delete_func_t prp_delete, H5P_prp_copy_func_t prp_copy,
                          H5P_prp_close_func_t prp_close);
 /**
- * \ingroup GPLO
+ * \ingroup PLCRA
  *
  * \brief Encodes the property values in a property list into a binary
  *        buffer

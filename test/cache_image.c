@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -507,7 +506,7 @@ open_hdf5_file(hbool_t create_file, hbool_t mdci_sbem_expected, hbool_t read_onl
                hbool_t config_fsm, hbool_t set_eoc, const char *hdf_file_name, unsigned cache_image_flags,
                hid_t *file_id_ptr, H5F_t **file_ptr_ptr, H5C_t **cache_ptr_ptr)
 {
-    const char *              fcn_name      = "open_hdf5_file()";
+    const char               *fcn_name      = "open_hdf5_file()";
     hbool_t                   show_progress = FALSE;
     hbool_t                   verbose       = FALSE;
     int                       cp            = 0;
@@ -515,8 +514,8 @@ open_hdf5_file(hbool_t create_file, hbool_t mdci_sbem_expected, hbool_t read_onl
     hid_t                     fcpl_id       = -1;
     hid_t                     file_id       = -1;
     herr_t                    result;
-    H5F_t *                   file_ptr  = NULL;
-    H5C_t *                   cache_ptr = NULL;
+    H5F_t                    *file_ptr  = NULL;
+    H5C_t                    *cache_ptr = NULL;
     H5C_cache_image_ctl_t     image_ctl;
     H5AC_cache_image_config_t cache_image_config = {H5AC__CURR_CACHE_IMAGE_CONFIG_VERSION, TRUE, FALSE,
                                                     H5AC__CACHE_IMAGE__ENTRY_AGEOUT__NONE};
@@ -870,7 +869,7 @@ open_hdf5_file(hbool_t create_file, hbool_t mdci_sbem_expected, hbool_t read_onl
 static void
 attempt_swmr_open_hdf5_file(const hbool_t create_file, const hbool_t set_mdci_fapl, const char *hdf_file_name)
 {
-    const char *              fcn_name      = "attempt_swmr_open_hdf5_file()";
+    const char               *fcn_name      = "attempt_swmr_open_hdf5_file()";
     hbool_t                   show_progress = FALSE;
     int                       cp            = 0;
     hid_t                     fapl_id       = -1;
@@ -1274,8 +1273,8 @@ check_cache_image_ctl_flow_1(hbool_t single_file_vfd)
     char        filename[512];
     hbool_t     show_progress = FALSE;
     hid_t       file_id       = -1;
-    H5F_t *     file_ptr      = NULL;
-    H5C_t *     cache_ptr     = NULL;
+    H5F_t      *file_ptr      = NULL;
+    H5C_t      *cache_ptr     = NULL;
     int         cp            = 0;
 
     TESTING("metadata cache image control flow test 1");
@@ -1473,7 +1472,7 @@ check_cache_image_ctl_flow_1(hbool_t single_file_vfd)
     }
 
     if (!pass)
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
 
     return !pass;
 
@@ -1551,8 +1550,8 @@ check_cache_image_ctl_flow_2(hbool_t single_file_vfd)
     char        filename[512];
     hbool_t     show_progress = FALSE;
     hid_t       file_id       = -1;
-    H5F_t *     file_ptr      = NULL;
-    H5C_t *     cache_ptr     = NULL;
+    H5F_t      *file_ptr      = NULL;
+    H5C_t      *cache_ptr     = NULL;
     int         cp            = 0;
 
     TESTING("metadata cache image control flow test 2");
@@ -1719,7 +1718,7 @@ check_cache_image_ctl_flow_2(hbool_t single_file_vfd)
     }
 
     if (!pass)
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
 
     return !pass;
 
@@ -1815,8 +1814,8 @@ check_cache_image_ctl_flow_3(hbool_t single_file_vfd)
     char        filename[512];
     hbool_t     show_progress = FALSE;
     hid_t       file_id       = -1;
-    H5F_t *     file_ptr      = NULL;
-    H5C_t *     cache_ptr     = NULL;
+    H5F_t      *file_ptr      = NULL;
+    H5C_t      *cache_ptr     = NULL;
     int         cp            = 0;
 
     TESTING("metadata cache image control flow test 3");
@@ -2093,7 +2092,7 @@ check_cache_image_ctl_flow_3(hbool_t single_file_vfd)
     }
 
     if (!pass)
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
 
     return !pass;
 
@@ -2181,8 +2180,8 @@ check_cache_image_ctl_flow_4(hbool_t single_file_vfd)
     char        filename[512];
     hbool_t     show_progress = FALSE;
     hid_t       file_id       = -1;
-    H5F_t *     file_ptr      = NULL;
-    H5C_t *     cache_ptr     = NULL;
+    H5F_t      *file_ptr      = NULL;
+    H5C_t      *cache_ptr     = NULL;
     int         cp            = 0;
 
     TESTING("metadata cache image control flow test 4");
@@ -2429,7 +2428,7 @@ check_cache_image_ctl_flow_4(hbool_t single_file_vfd)
     }
 
     if (!pass)
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
 
     return !pass;
 
@@ -2510,8 +2509,8 @@ check_cache_image_ctl_flow_5(hbool_t single_file_vfd)
     char        filename[512];
     hbool_t     show_progress = FALSE;
     hid_t       file_id       = -1;
-    H5F_t *     file_ptr      = NULL;
-    H5C_t *     cache_ptr     = NULL;
+    H5F_t      *file_ptr      = NULL;
+    H5C_t      *cache_ptr     = NULL;
     int         cp            = 0;
 
     TESTING("metadata cache image control flow test 5");
@@ -2718,7 +2717,7 @@ check_cache_image_ctl_flow_5(hbool_t single_file_vfd)
     }
 
     if (!pass)
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
 
     return !pass;
 
@@ -2791,8 +2790,8 @@ check_cache_image_ctl_flow_6(hbool_t single_file_vfd)
     char        filename[512];
     hbool_t     show_progress = FALSE;
     hid_t       file_id       = -1;
-    H5F_t *     file_ptr      = NULL;
-    H5C_t *     cache_ptr     = NULL;
+    H5F_t      *file_ptr      = NULL;
+    H5C_t      *cache_ptr     = NULL;
     int         cp            = 0;
 
     TESTING("metadata cache image control flow test 6");
@@ -2969,7 +2968,7 @@ check_cache_image_ctl_flow_6(hbool_t single_file_vfd)
     }
 
     if (!pass)
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
 
     return !pass;
 
@@ -3077,8 +3076,8 @@ cache_image_smoke_check_1(hbool_t single_file_vfd)
     char        filename[512];
     hbool_t     show_progress = FALSE;
     hid_t       file_id       = -1;
-    H5F_t *     file_ptr      = NULL;
-    H5C_t *     cache_ptr     = NULL;
+    H5F_t      *file_ptr      = NULL;
+    H5C_t      *cache_ptr     = NULL;
     int         cp            = 0;
 
     TESTING("metadata cache image smoke check 1");
@@ -3418,7 +3417,7 @@ cache_image_smoke_check_1(hbool_t single_file_vfd)
     }
 
     if (!pass)
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
 
     return !pass;
 
@@ -3488,8 +3487,8 @@ cache_image_smoke_check_2(hbool_t single_file_vfd)
     char        filename[512];
     hbool_t     show_progress = FALSE;
     hid_t       file_id       = -1;
-    H5F_t *     file_ptr      = NULL;
-    H5C_t *     cache_ptr     = NULL;
+    H5F_t      *file_ptr      = NULL;
+    H5C_t      *cache_ptr     = NULL;
     int         cp            = 0;
 
     TESTING("metadata cache image smoke check 2");
@@ -3694,7 +3693,7 @@ cache_image_smoke_check_2(hbool_t single_file_vfd)
     }
 
     if (!pass)
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
 
     return !pass;
 
@@ -3786,8 +3785,8 @@ cache_image_smoke_check_3(hbool_t single_file_vfd)
     char        filename[512];
     hbool_t     show_progress = FALSE;
     hid_t       file_id       = -1;
-    H5F_t *     file_ptr      = NULL;
-    H5C_t *     cache_ptr     = NULL;
+    H5F_t      *file_ptr      = NULL;
+    H5C_t      *cache_ptr     = NULL;
     int         cp            = 0;
 
     TESTING("metadata cache image smoke check 3");
@@ -4082,7 +4081,7 @@ cache_image_smoke_check_3(hbool_t single_file_vfd)
     }
 
     if (!pass)
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
 
     return !pass;
 
@@ -4163,8 +4162,8 @@ cache_image_smoke_check_4(hbool_t single_file_vfd)
     char        filename[512];
     hbool_t     show_progress = FALSE;
     hid_t       file_id       = -1;
-    H5F_t *     file_ptr      = NULL;
-    H5C_t *     cache_ptr     = NULL;
+    H5F_t      *file_ptr      = NULL;
+    H5C_t      *cache_ptr     = NULL;
     int         cp            = 0;
     int         min_dset      = 0;
     int         max_dset      = 0;
@@ -4461,7 +4460,7 @@ cache_image_smoke_check_4(hbool_t single_file_vfd)
     }
 
     if (!pass)
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
 
     return !pass;
 } /* cache_image_smoke_check_4() */
@@ -4558,8 +4557,8 @@ cache_image_smoke_check_5(hbool_t single_file_vfd)
     hbool_t     show_progress = FALSE;
     hid_t       file_id       = -1;
     hid_t       proc_gid      = -1;
-    H5F_t *     file_ptr      = NULL;
-    H5C_t *     cache_ptr     = NULL;
+    H5F_t      *file_ptr      = NULL;
+    H5C_t      *cache_ptr     = NULL;
     int         cp            = 0;
     int         i;
     int         min_group = 0;
@@ -4965,7 +4964,7 @@ cache_image_smoke_check_5(hbool_t single_file_vfd)
     }
 
     if (!pass)
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
 
     return !pass;
 
@@ -5054,12 +5053,12 @@ cache_image_smoke_check_5(hbool_t single_file_vfd)
 static unsigned
 cache_image_smoke_check_6(hbool_t single_file_vfd)
 {
-    const char *   fcn_name = "cache_image_smoke_check_6()";
+    const char    *fcn_name = "cache_image_smoke_check_6()";
     char           filename[512];
     hbool_t        show_progress = FALSE;
     hid_t          file_id       = -1;
-    H5F_t *        file_ptr      = NULL;
-    H5C_t *        cache_ptr     = NULL;
+    H5F_t         *file_ptr      = NULL;
+    H5C_t         *cache_ptr     = NULL;
     h5_stat_size_t file_size;
     int            cp       = 0;
     int            min_dset = 0;
@@ -5382,7 +5381,7 @@ cache_image_smoke_check_6(hbool_t single_file_vfd)
     }
 
     if (!pass)
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
 
     return !pass;
 
@@ -5453,8 +5452,8 @@ cache_image_api_error_check_1(hbool_t single_file_vfd)
     char        filename[512];
     hbool_t     show_progress = FALSE;
     hid_t       file_id       = -1;
-    H5F_t *     file_ptr      = NULL;
-    H5C_t *     cache_ptr     = NULL;
+    H5F_t      *file_ptr      = NULL;
+    H5C_t      *cache_ptr     = NULL;
     int         cp            = 0;
 
     TESTING("metadata cache image api error check 1");
@@ -5738,7 +5737,7 @@ cache_image_api_error_check_1(hbool_t single_file_vfd)
     }
 
     if (!pass)
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
 
     return !pass;
 
@@ -5821,8 +5820,8 @@ cache_image_api_error_check_2(hbool_t single_file_vfd)
     char        filename[512];
     hbool_t     show_progress = FALSE;
     hid_t       file_id       = -1;
-    H5F_t *     file_ptr      = NULL;
-    H5C_t *     cache_ptr     = NULL;
+    H5F_t      *file_ptr      = NULL;
+    H5C_t      *cache_ptr     = NULL;
     int         cp            = 0;
 
     TESTING("metadata cache image api error check 2");
@@ -6166,7 +6165,7 @@ cache_image_api_error_check_2(hbool_t single_file_vfd)
     }
 
     if (!pass)
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
 
     return !pass;
 
@@ -6222,8 +6221,8 @@ cache_image_api_error_check_3(hbool_t single_file_vfd)
     char        filename[512];
     hbool_t     show_progress = FALSE;
     hid_t       file_id       = -1;
-    H5F_t *     file_ptr      = NULL;
-    H5C_t *     cache_ptr     = NULL;
+    H5F_t      *file_ptr      = NULL;
+    H5C_t      *cache_ptr     = NULL;
     int         cp            = 0;
 
     TESTING("metadata cache image api error check 3");
@@ -6421,7 +6420,7 @@ cache_image_api_error_check_3(hbool_t single_file_vfd)
     }
 
     if (!pass)
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
 
     return !pass;
 
@@ -6499,13 +6498,13 @@ cache_image_api_error_check_3(hbool_t single_file_vfd)
 static unsigned
 cache_image_api_error_check_4(hbool_t single_file_vfd)
 {
-    const char *              fcn_name = "cache_image_api_error_check_4()";
+    const char               *fcn_name = "cache_image_api_error_check_4()";
     char                      filename[512];
     hbool_t                   show_progress = FALSE;
     hid_t                     fapl_id       = -1;
     hid_t                     file_id       = -1;
-    H5F_t *                   file_ptr      = NULL;
-    H5C_t *                   cache_ptr     = NULL;
+    H5F_t                    *file_ptr      = NULL;
+    H5C_t                    *cache_ptr     = NULL;
     int                       cp            = 0;
     H5AC_cache_image_config_t cache_image_config;
 
@@ -6978,7 +6977,7 @@ cache_image_api_error_check_4(hbool_t single_file_vfd)
     }
 
     if (!pass)
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
 
     return !pass;
 
@@ -7071,12 +7070,12 @@ cache_image_api_error_check_4(hbool_t single_file_vfd)
 static unsigned
 get_free_sections_test(hbool_t single_file_vfd)
 {
-    const char *   fcn_name = "get_free_sections_test()";
+    const char    *fcn_name = "get_free_sections_test()";
     char           filename[512];
     hbool_t        show_progress = FALSE;
     hid_t          file_id       = -1;
-    H5F_t *        file_ptr      = NULL;
-    H5C_t *        cache_ptr     = NULL;
+    H5F_t         *file_ptr      = NULL;
+    H5C_t         *cache_ptr     = NULL;
     h5_stat_size_t file_size;
     int            cp = 0;
 
@@ -7436,7 +7435,7 @@ get_free_sections_test(hbool_t single_file_vfd)
     }
 
     if (!pass)
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
 
     return !pass;
 
@@ -7510,7 +7509,7 @@ get_free_sections_test(hbool_t single_file_vfd)
  *-------------------------------------------------------------------------
  */
 static unsigned
-evict_on_close_test(hbool_t single_file_vfd)
+evict_on_close_test(hbool_t H5_ATTR_PARALLEL_UNUSED single_file_vfd)
 {
 #ifndef H5_HAVE_PARALLEL
     const char *fcn_name = "evict_on_close_test()";
@@ -7518,8 +7517,8 @@ evict_on_close_test(hbool_t single_file_vfd)
     hbool_t     show_progress = FALSE;
     hbool_t     verbose       = FALSE;
     hid_t       file_id       = -1;
-    H5F_t *     file_ptr      = NULL;
-    H5C_t *     cache_ptr     = NULL;
+    H5F_t      *file_ptr      = NULL;
+    H5C_t      *cache_ptr     = NULL;
     int         cp            = 0;
 #endif /* H5_HAVE_PARALLEL */
 
@@ -7809,7 +7808,7 @@ evict_on_close_test(hbool_t single_file_vfd)
     }
 
     if (!pass)
-        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", FUNC, failure_mssg);
+        HDfprintf(stdout, "%s: failure_mssg = \"%s\".\n", __func__, failure_mssg);
 
     return !pass;
 #endif /* H5_HAVE_PARALLEL */
@@ -7839,7 +7838,7 @@ main(void)
     int         express_test;
 
     /* Get the VFD to use */
-    env_h5_drvr = HDgetenv("HDF5_DRIVER");
+    env_h5_drvr = HDgetenv(HDF5_DRIVER);
     if (env_h5_drvr == NULL)
         env_h5_drvr = "nomatch";
 
@@ -7853,8 +7852,7 @@ main(void)
     HDprintf("=========================================\n");
 
     /* Check for VFD which stores data in multiple files */
-    single_file_vfd = (hbool_t)(HDstrcmp(env_h5_drvr, "split") != 0 && HDstrcmp(env_h5_drvr, "multi") != 0 &&
-                                HDstrcmp(env_h5_drvr, "family") != 0);
+    single_file_vfd = !h5_driver_uses_multiple_files(env_h5_drvr, H5_EXCLUDE_NON_MULTIPART_DRIVERS);
 
     nerrs += check_cache_image_ctl_flow_1(single_file_vfd);
     nerrs += check_cache_image_ctl_flow_2(single_file_vfd);

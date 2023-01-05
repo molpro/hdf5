@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
@@ -191,9 +190,9 @@ test_simple_io(H5File &file)
 
     SUBTEST("Simple I/O");
 
-    int points[100][200];
-    int check[100][200];
-    int i, j, n;
+    auto points = new int[100][200];
+    auto check  = new int[100][200]();
+    int  i, j, n;
 
     // Initialize the dataset
     for (i = n = 0; i < 100; i++) {
@@ -228,13 +227,16 @@ test_simple_io(H5File &file)
         // Check that the values read are the same as the values written
         for (i = 0; i < 100; i++)
             for (j = 0; j < 200; j++) {
-                int status = check_values(i, j, points[i][j], check[i][j]);
+                int status =
+                    check_values(static_cast<hsize_t>(i), static_cast<hsize_t>(j), points[i][j], check[i][j]);
                 if (status == -1)
                     throw Exception("DataSet::read");
             }
 
         // clean up and return with success
         delete[] tconv_buf;
+        delete[] points;
+        delete[] check;
         PASSED();
         return 0;
     } // end try
@@ -246,6 +248,8 @@ test_simple_io(H5File &file)
 
         // clean up and return with failure
         delete[] tconv_buf;
+        delete[] points;
+        delete[] check;
         return -1;
     }
 } // test_simple_io
@@ -439,8 +443,8 @@ test_compression(H5File &file)
     const char *not_supported;
     not_supported = "    Deflate compression is not enabled.";
 #endif /* H5_HAVE_FILTER_DEFLATE */
-    int     points[100][200];
-    int     check[100][200];
+    auto    points = new int[100][200];
+    auto    check  = new int[100][200];
     hsize_t i, j, n;
 
     // Initialize the dataset
@@ -450,7 +454,7 @@ test_compression(H5File &file)
         }
     }
 
-    char *   tconv_buf = new char[1000];
+    char    *tconv_buf = new char[1000];
     DataSet *dataset   = NULL;
     try {
         const hsize_t size[2] = {100, 200};
@@ -675,6 +679,8 @@ test_compression(H5File &file)
          */
         delete dataset;
         delete[] tconv_buf;
+        delete[] points;
+        delete[] check;
         return 0;
     } // end try
 
@@ -686,6 +692,8 @@ test_compression(H5File &file)
         // clean up and return with failure
         delete dataset;
         delete[] tconv_buf;
+        delete[] points;
+        delete[] check;
         return -1;
     }
 } // test_compression
@@ -1193,7 +1201,7 @@ test_chunk_cache(const FileAccPropList &fapl)
 
         // Retrieve and verify the raw data chunk cache parameters
         nslots_4 = nbytes_4 = 0;
-        w0_4                = 0.0F;
+        w0_4                = 0.0;
         dapl2.getChunkCache(nslots_4, nbytes_4, w0_4);
         verify_val(nslots_2, nslots_4, "DSetCreatPropList::getChunkCache", __LINE__, __FILE__);
         verify_val(nbytes_2, nbytes_4, "DSetCreatPropList::getChunkCache", __LINE__, __FILE__);
@@ -1437,4 +1445,5 @@ extern "C" void
 cleanup_dsets()
 {
     HDremove(FILE1.c_str());
+    HDremove(FILE_ACCPLIST.c_str());
 } // cleanup_dsets
