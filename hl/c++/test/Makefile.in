@@ -141,8 +141,8 @@ am__EXEEXT_1 = ptableTest$(EXEEXT)
 am_ptableTest_OBJECTS = ptableTest.$(OBJEXT)
 ptableTest_OBJECTS = $(am_ptableTest_OBJECTS)
 ptableTest_LDADD = $(LDADD)
-ptableTest_DEPENDENCIES = $(LIBH5CPP_HL) $(LIBH5_HL) $(LIBH5CPP) \
-	$(LIBHDF5)
+ptableTest_DEPENDENCIES = $(LIBH5CPP_HL) $(LIBH5_HL) $(LIBH5TEST) \
+	$(LIBH5CPP) $(LIBHDF5)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -810,7 +810,7 @@ CHECK_CLEANFILES = *.chkexe *.chklog
 TEST_PROG = ptableTest
 
 # The tests depend on the hdf5, hdf5 C++, and hdf5_hl libraries
-LDADD = $(LIBH5CPP_HL) $(LIBH5_HL) $(LIBH5CPP) $(LIBHDF5)
+LDADD = $(LIBH5CPP_HL) $(LIBH5_HL) $(LIBH5TEST) $(LIBH5CPP) $(LIBHDF5)
 ptableTest_SOURCES = ptableTest.cpp
 
 # Tell conclude.am that these are C++ tests.

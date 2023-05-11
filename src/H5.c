@@ -70,8 +70,8 @@ static int H5__mpi_delete_cb(MPI_Comm comm, int keyval, void *attr_val, int *fla
 /*****************************/
 
 /* Library incompatible release versions, develop releases are incompatible by design */
-const unsigned VERS_RELEASE_EXCEPTIONS[]    = {0, 1, 2, 3, 4};
-const unsigned VERS_RELEASE_EXCEPTIONS_SIZE = 5;
+const unsigned VERS_RELEASE_EXCEPTIONS[]    = {0};
+const unsigned VERS_RELEASE_EXCEPTIONS_SIZE = 0;
 
 /* statically initialize block for pthread_once call used in initializing */
 /* the first global mutex                                                 */
@@ -81,8 +81,6 @@ H5_api_t H5_g;
 hbool_t H5_libinit_g = FALSE; /* Library hasn't been initialized */
 hbool_t H5_libterm_g = FALSE; /* Library isn't being shutdown */
 #endif
-
-hbool_t H5_use_selection_io_g = FALSE;
 
 char           H5_lib_vers_info_g[] = H5_VERS_INFO;
 static hbool_t H5_dont_atexit_g     = FALSE;
@@ -141,8 +139,7 @@ herr_t
 H5_init_library(void)
 {
     size_t i;
-    char  *env_use_select_io = NULL;
-    herr_t ret_value         = SUCCEED;
+    herr_t ret_value = SUCCEED;
 
     FUNC_ENTER_NOAPI(FAIL)
 
@@ -273,14 +270,6 @@ H5_init_library(void)
         }
     }
     /* clang-format on */
-
-    /* Check for HDF5_USE_SELECTION_IO env variable */
-    env_use_select_io = HDgetenv("HDF5_USE_SELECTION_IO");
-    if (NULL != env_use_select_io && HDstrcmp(env_use_select_io, "") && HDstrcmp(env_use_select_io, "0") &&
-        HDstrcmp(env_use_select_io, "no") && HDstrcmp(env_use_select_io, "No") &&
-        HDstrcmp(env_use_select_io, "NO") && HDstrcmp(env_use_select_io, "false") &&
-        HDstrcmp(env_use_select_io, "False") && HDstrcmp(env_use_select_io, "FALSE"))
-        H5_use_selection_io_g = TRUE;
 
     /* Debugging? */
     H5__debug_mask("-all");

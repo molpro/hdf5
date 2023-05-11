@@ -124,13 +124,14 @@ check_PROGRAMS = $(am__EXEEXT_1) error_test$(EXEEXT) \
 @HAVE_SHARED_CONDITIONAL_TRUE@am__append_4 = filter_plugin vfd_plugin vol_plugin
 @MIRROR_VFD_CONDITIONAL_TRUE@am__append_5 = mirror_vfd
 @BUILD_ALL_CONDITIONAL_TRUE@noinst_PROGRAMS = $(am__EXEEXT_4)
+@MIRROR_VFD_CONDITIONAL_TRUE@am__append_6 = test_mirror.sh
 TESTS = $(am__EXEEXT_1) $(TEST_SCRIPT)
 
 # log VFD currently has file space allocation bugs
 # VFD_LIST += log
-@DIRECT_VFD_CONDITIONAL_TRUE@am__append_6 = direct
-@ROS3_VFD_CONDITIONAL_TRUE@am__append_7 = ros3
-@HDFS_VFD_CONDITIONAL_TRUE@am__append_8 = hdfs
+@DIRECT_VFD_CONDITIONAL_TRUE@am__append_7 = direct
+@ROS3_VFD_CONDITIONAL_TRUE@am__append_8 = ros3
+@HDFS_VFD_CONDITIONAL_TRUE@am__append_9 = hdfs
 subdir = test
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/aclocal_fc.m4 \
@@ -255,8 +256,9 @@ am__EXEEXT_1 = testhdf5$(EXEEXT) cache$(EXEEXT) cache_api$(EXEEXT) \
 	efc$(EXEEXT) objcopy$(EXEEXT) objcopy_ref$(EXEEXT) \
 	links$(EXEEXT) unlink$(EXEEXT) twriteorder$(EXEEXT) \
 	big$(EXEEXT) mtime$(EXEEXT) fillval$(EXEEXT) mount$(EXEEXT) \
-	flush1$(EXEEXT) flush2$(EXEEXT) app_ref$(EXEEXT) enum$(EXEEXT) \
-	set_extent$(EXEEXT) ttsafe$(EXEEXT) enc_dec_plist$(EXEEXT) \
+	select_io_dset$(EXEEXT) flush1$(EXEEXT) flush2$(EXEEXT) \
+	app_ref$(EXEEXT) enum$(EXEEXT) set_extent$(EXEEXT) \
+	ttsafe$(EXEEXT) enc_dec_plist$(EXEEXT) \
 	enc_dec_plist_cross_platform$(EXEEXT) getname$(EXEEXT) \
 	vfd$(EXEEXT) ros3$(EXEEXT) s3comms$(EXEEXT) hdfs$(EXEEXT) \
 	ntypes$(EXEEXT) dangle$(EXEEXT) dtransform$(EXEEXT) \
@@ -641,6 +643,10 @@ s3comms_SOURCES = s3comms.c
 s3comms_OBJECTS = s3comms.$(OBJEXT)
 s3comms_LDADD = $(LDADD)
 s3comms_DEPENDENCIES = libh5test.la $(LIBHDF5)
+select_io_dset_SOURCES = select_io_dset.c
+select_io_dset_OBJECTS = select_io_dset.$(OBJEXT)
+select_io_dset_LDADD = $(LDADD)
+select_io_dset_DEPENDENCIES = libh5test.la $(LIBHDF5)
 set_extent_SOURCES = set_extent.c
 set_extent_OBJECTS = set_extent.$(OBJEXT)
 set_extent_LDADD = $(LDADD)
@@ -857,13 +863,14 @@ SOURCES = $(libfilter_plugin1_dsets_la_SOURCES) \
 	hyperslab.c istore.c lheap.c links.c links_env.c mdset.c mf.c \
 	$(mirror_vfd_SOURCES) mount.c mtime.c ntypes.c objcopy.c \
 	objcopy_ref.c ohdr.c onion.c page_buffer.c reserved.c ros3.c \
-	s3comms.c set_extent.c space_overflow.c stab.c swmr.c \
-	swmr_addrem_writer.c swmr_generator.c swmr_reader.c \
-	swmr_remove_reader.c swmr_remove_writer.c swmr_sparse_reader.c \
-	swmr_sparse_writer.c swmr_start_write.c swmr_writer.c \
-	tcheck_version.c $(testhdf5_SOURCES) testmeta.c thread_id.c \
-	timer.c $(ttsafe_SOURCES) twriteorder.c unlink.c unregister.c \
-	$(use_append_chunk_SOURCES) $(use_append_chunk_mirror_SOURCES) \
+	s3comms.c select_io_dset.c set_extent.c space_overflow.c \
+	stab.c swmr.c swmr_addrem_writer.c swmr_generator.c \
+	swmr_reader.c swmr_remove_reader.c swmr_remove_writer.c \
+	swmr_sparse_reader.c swmr_sparse_writer.c swmr_start_write.c \
+	swmr_writer.c tcheck_version.c $(testhdf5_SOURCES) testmeta.c \
+	thread_id.c timer.c $(ttsafe_SOURCES) twriteorder.c unlink.c \
+	unregister.c $(use_append_chunk_SOURCES) \
+	$(use_append_chunk_mirror_SOURCES) \
 	$(use_append_mchunks_SOURCES) \
 	$(use_disable_mdc_flushes_SOURCES) vds.c vds_env.c \
 	vds_swmr_gen.c vds_swmr_reader.c vds_swmr_writer.c vfd.c \
@@ -895,13 +902,14 @@ DIST_SOURCES = $(am__libfilter_plugin1_dsets_la_SOURCES_DIST) \
 	hyperslab.c istore.c lheap.c links.c links_env.c mdset.c mf.c \
 	$(mirror_vfd_SOURCES) mount.c mtime.c ntypes.c objcopy.c \
 	objcopy_ref.c ohdr.c onion.c page_buffer.c reserved.c ros3.c \
-	s3comms.c set_extent.c space_overflow.c stab.c swmr.c \
-	swmr_addrem_writer.c swmr_generator.c swmr_reader.c \
-	swmr_remove_reader.c swmr_remove_writer.c swmr_sparse_reader.c \
-	swmr_sparse_writer.c swmr_start_write.c swmr_writer.c \
-	tcheck_version.c $(testhdf5_SOURCES) testmeta.c thread_id.c \
-	timer.c $(ttsafe_SOURCES) twriteorder.c unlink.c unregister.c \
-	$(use_append_chunk_SOURCES) $(use_append_chunk_mirror_SOURCES) \
+	s3comms.c select_io_dset.c set_extent.c space_overflow.c \
+	stab.c swmr.c swmr_addrem_writer.c swmr_generator.c \
+	swmr_reader.c swmr_remove_reader.c swmr_remove_writer.c \
+	swmr_sparse_reader.c swmr_sparse_writer.c swmr_start_write.c \
+	swmr_writer.c tcheck_version.c $(testhdf5_SOURCES) testmeta.c \
+	thread_id.c timer.c $(ttsafe_SOURCES) twriteorder.c unlink.c \
+	unregister.c $(use_append_chunk_SOURCES) \
+	$(use_append_chunk_mirror_SOURCES) \
 	$(use_append_mchunks_SOURCES) \
 	$(use_disable_mdc_flushes_SOURCES) vds.c vds_env.c \
 	vds_swmr_gen.c vds_swmr_reader.c vds_swmr_writer.c vfd.c \
@@ -1633,7 +1641,7 @@ TEST_PROG = testhdf5 \
            accum hyperslab istore bittests dt_arith page_buffer \
            dtypes dsets chunk_info cmpd_dset mdset cmpd_dtransform filter_fail extend direct_chunk \
            external efc objcopy objcopy_ref links unlink twriteorder big mtime \
-           fillval mount \
+           fillval mount select_io_dset\
            flush1 flush2 app_ref enum set_extent ttsafe enc_dec_plist \
            enc_dec_plist_cross_platform getname vfd ros3 s3comms hdfs ntypes \
            dangle dtransform reserved cross_read freespace mf vds file_image \
@@ -1695,10 +1703,11 @@ use_append_mchunks_SOURCES = use_append_mchunks.c use_common.c
 use_disable_mdc_flushes_SOURCES = use_disable_mdc_flushes.c
 
 # Temporary files.
-DISTCLEANFILES = testerror.sh testlibinfo.sh testcheck_version.sh testlinks_env.sh test_filter_plugin.sh \
-    testexternal_env.sh testswmr.sh testvds_env.sh testvdsswmr.sh test_usecases.sh testflushrefresh.sh \
-    testabort_fail.sh test_vol_plugin.sh test_mirror.sh
-
+DISTCLEANFILES = test_abort_fail.sh test_check_version.sh \
+	test_error.sh test_external_env.sh test_flush_refresh.sh \
+	test_libinfo.sh test_links_env.sh test_plugin.sh test_swmr.sh \
+	test_use_cases.sh test_vds_env.sh test_vds_swmr.sh \
+	$(am__append_6)
 
 # Automake needs to be taught how to build lib, progs and tests targets.
 # These will be filled in automatically for the most part (e.g.,
@@ -1721,7 +1730,7 @@ TEST_PROG_PARA_CHKEXE = $(TEST_PROG_PARA:=.chkexe_)
 TEST_SCRIPT_CHKSH = $(TEST_SCRIPT:=.chkexe_)
 TEST_SCRIPT_PARA_CHKSH = $(TEST_SCRIPT_PARA:=.chkexe_)
 VFD_LIST = sec2 stdio core core_paged split multi family splitter \
-	$(am__append_6) $(am__append_7) $(am__append_8)
+	$(am__append_7) $(am__append_8) $(am__append_9)
 
 # Test with just the native connector, with a single pass-through connector
 # and with a doubly-stacked pass-through.
@@ -2204,6 +2213,10 @@ s3comms$(EXEEXT): $(s3comms_OBJECTS) $(s3comms_DEPENDENCIES) $(EXTRA_s3comms_DEP
 	@rm -f s3comms$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(s3comms_OBJECTS) $(s3comms_LDADD) $(LIBS)
 
+select_io_dset$(EXEEXT): $(select_io_dset_OBJECTS) $(select_io_dset_DEPENDENCIES) $(EXTRA_select_io_dset_DEPENDENCIES) 
+	@rm -f select_io_dset$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(select_io_dset_OBJECTS) $(select_io_dset_LDADD) $(LIBS)
+
 set_extent$(EXEEXT): $(set_extent_OBJECTS) $(set_extent_DEPENDENCIES) $(EXTRA_set_extent_DEPENDENCIES) 
 	@rm -f set_extent$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(set_extent_OBJECTS) $(set_extent_LDADD) $(LIBS)
@@ -2450,6 +2463,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reserved.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ros3.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/s3comms.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/select_io_dset.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/set_extent.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/space_overflow.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stab.Po@am__quote@
@@ -3006,6 +3020,13 @@ fillval.log: fillval$(EXEEXT)
 mount.log: mount$(EXEEXT)
 	@p='mount$(EXEEXT)'; \
 	b='mount'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+select_io_dset.log: select_io_dset$(EXEEXT)
+	@p='select_io_dset$(EXEEXT)'; \
+	b='select_io_dset'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \

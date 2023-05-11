@@ -148,17 +148,23 @@ CONFIG_HEADER = $(top_builddir)/src/H5config.h \
 	$(top_builddir)/fortran/src/H5config_f.inc
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__EXEEXT_1 = parallel_test$(EXEEXT) subfiling_test$(EXEEXT)
+am__EXEEXT_1 = parallel_test$(EXEEXT) subfiling_test$(EXEEXT) \
+	async_test$(EXEEXT)
+am_async_test_OBJECTS = async.$(OBJEXT)
+async_test_OBJECTS = $(am_async_test_OBJECTS)
+async_test_LDADD = $(LDADD)
+async_test_DEPENDENCIES = $(LIBH5FTEST) $(LIBH5TEST) $(LIBH5F) \
+	$(LIBHDF5)
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 = 
 am_parallel_test_OBJECTS = ptest.$(OBJEXT) hyper.$(OBJEXT) \
 	mdset.$(OBJEXT) multidsetrw.$(OBJEXT)
 parallel_test_OBJECTS = $(am_parallel_test_OBJECTS)
 parallel_test_LDADD = $(LDADD)
 parallel_test_DEPENDENCIES = $(LIBH5FTEST) $(LIBH5TEST) $(LIBH5F) \
 	$(LIBHDF5)
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
-am__v_lt_1 = 
 am_subfiling_test_OBJECTS = subfiling.$(OBJEXT)
 subfiling_test_OBJECTS = $(am_subfiling_test_OBJECTS)
 subfiling_test_LDADD = $(LDADD)
@@ -189,8 +195,10 @@ AM_V_FCLD = $(am__v_FCLD_@AM_V@)
 am__v_FCLD_ = $(am__v_FCLD_@AM_DEFAULT_V@)
 am__v_FCLD_0 = @echo "  FCLD    " $@;
 am__v_FCLD_1 = 
-SOURCES = $(parallel_test_SOURCES) $(subfiling_test_SOURCES)
-DIST_SOURCES = $(parallel_test_SOURCES) $(subfiling_test_SOURCES)
+SOURCES = $(async_test_SOURCES) $(parallel_test_SOURCES) \
+	$(subfiling_test_SOURCES)
+DIST_SOURCES = $(async_test_SOURCES) $(parallel_test_SOURCES) \
+	$(subfiling_test_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -815,11 +823,12 @@ TRACE = perl $(top_srcdir)/bin/trace
 CHECK_CLEANFILES = *.chkexe *.chklog parf[12].h5 subf.h5*
 
 # These are our main targets
-TEST_PROG_PARA = parallel_test subfiling_test
+TEST_PROG_PARA = parallel_test subfiling_test async_test
 
 # Test source files
 parallel_test_SOURCES = ptest.F90 hyper.F90 mdset.F90 multidsetrw.F90
 subfiling_test_SOURCES = subfiling.F90
+async_test_SOURCES = async.F90
 
 # The tests depend on several libraries.
 LDADD = $(LIBH5FTEST) $(LIBH5TEST) $(LIBH5F) $(LIBHDF5)
@@ -903,6 +912,10 @@ clean-checkPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
+
+async_test$(EXEEXT): $(async_test_OBJECTS) $(async_test_DEPENDENCIES) $(EXTRA_async_test_DEPENDENCIES) 
+	@rm -f async_test$(EXEEXT)
+	$(AM_V_FCLD)$(FCLINK) $(async_test_OBJECTS) $(async_test_LDADD) $(LIBS)
 
 parallel_test$(EXEEXT): $(parallel_test_OBJECTS) $(parallel_test_DEPENDENCIES) $(EXTRA_parallel_test_DEPENDENCIES) 
 	@rm -f parallel_test$(EXEEXT)

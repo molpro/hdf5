@@ -1374,7 +1374,7 @@ SUBROUTINE t_enum(total_error)
   INTEGER(SIZE_T)  , PARAMETER :: NAME_BUF_SIZE = 16
 
 ! Enumerated type
-  INTEGER, PARAMETER :: SOLID=0, LIQUID=1, GAS=2, PLASMA=3
+  INTEGER, PARAMETER :: SOLID=0, PLASMA=3
 
   INTEGER(HID_T) :: file, filetype, memtype, space, dset ! Handles
 
@@ -2916,13 +2916,6 @@ END SUBROUTINE setup_buffer
 !
 ! Programmer:  M. Scot Breitenfeld
 !              Decemeber 7, 2010
-!
-! Modifications: Moved this subroutine from the 1.8 test file and
-! modified it to use F2003 features.
-! This routine requires 4 byte reals, so we use F2003 features to
-! ensure the requirement is satisfied in a portable way.
-! The need for this arises when a user specifies the default real is 8 bytes.
-! MSB 7/31/12
 !
 !-------------------------------------------------------------------------
 !

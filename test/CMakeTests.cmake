@@ -591,7 +591,6 @@ set_tests_properties (H5TEST-tcheck_version-minor PROPERTIES
 add_test (NAME H5TEST-tcheck_version-release COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:tcheck_version> "-tr")
 set_tests_properties (H5TEST-tcheck_version-release PROPERTIES
     WORKING_DIRECTORY ${HDF5_TEST_BINARY_DIR}/H5TEST
-    WILL_FAIL "true"
 )
 
 ##############################################################################
@@ -925,7 +924,7 @@ endif ()
 ##############################################################################
 ##############################################################################
 
-if (HDF5_BUILD_GENERATORS AND NOT ONLY_SHARED_LIBS)
+if (HDF5_BUILD_GENERATORS AND BUILD_STATIC_LIBS)
   macro (ADD_H5_GENERATOR genfile)
     add_executable (${genfile} ${HDF5_TEST_SOURCE_DIR}/${genfile}.c)
     target_include_directories (${genfile} PRIVATE "${HDF5_SRC_INCLUDE_DIRS};${HDF5_SRC_BINARY_DIR};$<$<BOOL:${HDF5_ENABLE_PARALLEL}>:${MPI_C_INCLUDE_DIRS}>")

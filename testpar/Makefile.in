@@ -144,9 +144,9 @@ CONFIG_CLEAN_VPATH_FILES =
 am__EXEEXT_2 = t_mpi$(EXEEXT) t_bigio$(EXEEXT) testphdf5$(EXEEXT) \
 	t_cache$(EXEEXT) t_cache_image$(EXEEXT) t_pread$(EXEEXT) \
 	t_pshutdown$(EXEEXT) t_prestart$(EXEEXT) t_init_term$(EXEEXT) \
-	t_pmulti_dset$(EXEEXT) t_shapesame$(EXEEXT) \
-	t_filters_parallel$(EXEEXT) t_2Gio$(EXEEXT) t_vfd$(EXEEXT) \
-	$(am__EXEEXT_1)
+	t_pmulti_dset$(EXEEXT) t_select_io_dset$(EXEEXT) \
+	t_shapesame$(EXEEXT) t_filters_parallel$(EXEEXT) \
+	t_2Gio$(EXEEXT) t_vfd$(EXEEXT) $(am__EXEEXT_1)
 t_2Gio_SOURCES = t_2Gio.c
 t_2Gio_OBJECTS = t_2Gio.$(OBJEXT)
 t_2Gio_LDADD = $(LDADD)
@@ -203,6 +203,10 @@ t_pshutdown_SOURCES = t_pshutdown.c
 t_pshutdown_OBJECTS = t_pshutdown.$(OBJEXT)
 t_pshutdown_LDADD = $(LDADD)
 t_pshutdown_DEPENDENCIES = $(LIBH5TEST) $(LIBHDF5)
+t_select_io_dset_SOURCES = t_select_io_dset.c
+t_select_io_dset_OBJECTS = t_select_io_dset.$(OBJEXT)
+t_select_io_dset_LDADD = $(LDADD)
+t_select_io_dset_DEPENDENCIES = $(LIBH5TEST) $(LIBHDF5)
 t_shapesame_SOURCES = t_shapesame.c
 t_shapesame_OBJECTS = t_shapesame.$(OBJEXT)
 t_shapesame_LDADD = $(LDADD)
@@ -219,8 +223,8 @@ am_testphdf5_OBJECTS = testphdf5.$(OBJEXT) t_dset.$(OBJEXT) \
 	t_file.$(OBJEXT) t_file_image.$(OBJEXT) t_mdset.$(OBJEXT) \
 	t_ph5basic.$(OBJEXT) t_coll_chunk.$(OBJEXT) \
 	t_span_tree.$(OBJEXT) t_chunk_alloc.$(OBJEXT) \
-	t_filter_read.$(OBJEXT) t_prop.$(OBJEXT) \
-	t_coll_md_read.$(OBJEXT) t_oflush.$(OBJEXT)
+	t_filter_read.$(OBJEXT) t_prop.$(OBJEXT) t_coll_md.$(OBJEXT) \
+	t_oflush.$(OBJEXT)
 testphdf5_OBJECTS = $(am_testphdf5_OBJECTS)
 testphdf5_LDADD = $(LDADD)
 testphdf5_DEPENDENCIES = $(LIBH5TEST) $(LIBHDF5)
@@ -261,13 +265,13 @@ am__v_CCLD_1 =
 SOURCES = t_2Gio.c t_bigio.c t_cache.c t_cache_image.c \
 	t_filters_parallel.c t_init_term.c t_mpi.c t_pflush1.c \
 	t_pflush2.c t_pmulti_dset.c t_pread.c t_prestart.c \
-	t_pshutdown.c t_shapesame.c t_subfiling_vfd.c t_vfd.c \
-	$(testphdf5_SOURCES)
+	t_pshutdown.c t_select_io_dset.c t_shapesame.c \
+	t_subfiling_vfd.c t_vfd.c $(testphdf5_SOURCES)
 DIST_SOURCES = t_2Gio.c t_bigio.c t_cache.c t_cache_image.c \
 	t_filters_parallel.c t_init_term.c t_mpi.c t_pflush1.c \
 	t_pflush2.c t_pmulti_dset.c t_pread.c t_prestart.c \
-	t_pshutdown.c t_shapesame.c t_subfiling_vfd.c t_vfd.c \
-	$(testphdf5_SOURCES)
+	t_pshutdown.c t_select_io_dset.c t_shapesame.c \
+	t_subfiling_vfd.c t_vfd.c $(testphdf5_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -905,11 +909,12 @@ check_SCRIPTS = $(TEST_SCRIPT_PARA)
 # Test programs.  These are our main targets.
 #
 TEST_PROG_PARA = t_mpi t_bigio testphdf5 t_cache t_cache_image t_pread \
-	t_pshutdown t_prestart t_init_term t_pmulti_dset t_shapesame \
-	t_filters_parallel t_2Gio t_vfd $(am__append_2)
+	t_pshutdown t_prestart t_init_term t_pmulti_dset \
+	t_select_io_dset t_shapesame t_filters_parallel t_2Gio t_vfd \
+	$(am__append_2)
 testphdf5_SOURCES = testphdf5.c t_dset.c t_file.c t_file_image.c t_mdset.c \
 	t_ph5basic.c t_coll_chunk.c t_span_tree.c t_chunk_alloc.c t_filter_read.c \
-	t_prop.c t_coll_md_read.c t_oflush.c
+	t_prop.c t_coll_md.c t_oflush.c
 
 
 # The tests all depend on the hdf5 library and the test library
@@ -1044,6 +1049,10 @@ t_pshutdown$(EXEEXT): $(t_pshutdown_OBJECTS) $(t_pshutdown_DEPENDENCIES) $(EXTRA
 	@rm -f t_pshutdown$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(t_pshutdown_OBJECTS) $(t_pshutdown_LDADD) $(LIBS)
 
+t_select_io_dset$(EXEEXT): $(t_select_io_dset_OBJECTS) $(t_select_io_dset_DEPENDENCIES) $(EXTRA_t_select_io_dset_DEPENDENCIES) 
+	@rm -f t_select_io_dset$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(t_select_io_dset_OBJECTS) $(t_select_io_dset_LDADD) $(LIBS)
+
 t_shapesame$(EXEEXT): $(t_shapesame_OBJECTS) $(t_shapesame_DEPENDENCIES) $(EXTRA_t_shapesame_DEPENDENCIES) 
 	@rm -f t_shapesame$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(t_shapesame_OBJECTS) $(t_shapesame_LDADD) $(LIBS)
@@ -1072,7 +1081,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/t_cache_image.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/t_chunk_alloc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/t_coll_chunk.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/t_coll_md_read.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/t_coll_md.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/t_dset.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/t_file.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/t_file_image.Po@am__quote@
@@ -1090,6 +1099,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/t_prestart.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/t_prop.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/t_pshutdown.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/t_select_io_dset.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/t_shapesame.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/t_span_tree.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/t_subfiling_vfd.Po@am__quote@

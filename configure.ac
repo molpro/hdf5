@@ -22,7 +22,7 @@ AC_PREREQ([2.69])
 ## NOTE: Do not forget to change the version number here when we do a
 ## release!!!
 ##
-AC_INIT([HDF5], [1.14.0], [help@hdfgroup.org])
+AC_INIT([HDF5], [1.14.1], [help@hdfgroup.org])
 
 AC_CONFIG_SRCDIR([src/H5.c])
 AC_CONFIG_HEADERS([src/H5config.h])
@@ -1155,7 +1155,7 @@ AC_SUBST([HDF5_TOOLS])
 ## Default is to build tests and tools
 HDF5_TOOLS=yes
 
-AC_MSG_CHECKING([if building tools is disabled])
+AC_MSG_CHECKING([if building tools is enabled])
 
 AC_ARG_ENABLE([tools],
               [AS_HELP_STRING([--enable-tools],
@@ -2332,7 +2332,7 @@ AC_ARG_ENABLE([optimization],
                                details.
                                Alternatively, optimization options can
                                be specified directly by specifying them as a
-                               string value. These custom optimzation flags will
+                               string value. These custom optimization flags will
                                completely replace all other optimization flags.
                                [default depends on build mode: debug=debug,
                                 production=high, clean=none]
@@ -3012,8 +3012,7 @@ SUBFILING_VFD=no
 HAVE_MERCURY="no"
 
 ## Always include subfiling directory so public header files are available
-CPPFLAGS="$CPPFLAGS -I$ac_abs_confdir/src/H5FDsubfiling"
-AM_CPPFLAGS="$AM_CPPFLAGS -I$ac_abs_confdir/src/H5FDsubfiling"
+H5_CPPFLAGS="$H5_CPPFLAGS -I$ac_abs_confdir/src/H5FDsubfiling"
 
 AC_MSG_CHECKING([if the subfiling I/O virtual file driver (VFD) is enabled])
 
@@ -3061,8 +3060,7 @@ if test "X$SUBFILING_VFD" = "Xyes"; then
     mercury_dir="$ac_abs_confdir/src/H5FDsubfiling/mercury"
     mercury_inc="$mercury_dir/src/util"
 
-    CPPFLAGS="$CPPFLAGS -I$mercury_inc"
-    AM_CPPFLAGS="$AM_CPPFLAGS -I$mercury_inc"
+    H5_CPPFLAGS="$H5_CPPFLAGS -I$mercury_inc"
 
     HAVE_STDATOMIC_H="yes"
     AC_CHECK_HEADERS([stdatomic.h],,[HAVE_STDATOMIC_H="no"])
@@ -3749,11 +3747,13 @@ esac
 AC_SUBST([DEFAULT_API_VERSION])
 AC_MSG_CHECKING([which version of public symbols to use by default])
 AC_ARG_WITH([default-api-version],
-            [AS_HELP_STRING([--with-default-api-version=(v16|v18|v110|v112|v114)],
+            [AS_HELP_STRING([--with-default-api-version=(default|v16|v18|v110|v112|v114)],
                             [Specify default release version of public symbols
                              [default=v114]])],,
             [withval=v114])
 
+## Allowing "default" allows the GitHub CI to check that we didn't forget
+## to change the defaults when creating a new major version
 if test "X$withval" = "Xv16"; then
     AC_MSG_RESULT([v16])
     DEFAULT_API_VERSION=v16
@@ -3774,7 +3774,7 @@ elif test "X$withval" = "Xv112"; then
     DEFAULT_API_VERSION=v112
     AC_DEFINE([USE_112_API_DEFAULT], [1],
               [Define using v1.12 public API symbols by default])
-elif test "X$withval" = "Xv114"; then
+elif test "X$withval" = "Xv114" -o "X$withval" = "Xdefault"; then
     AC_MSG_RESULT([v114])
     DEFAULT_API_VERSION=v114
     AC_DEFINE([USE_114_API_DEFAULT], [1],
