@@ -87,6 +87,9 @@
 /* Define to 1 if you have the `clock_gettime' function. */
 #undef HAVE_CLOCK_GETTIME
 
+/* Define if has CLOCK_MONOTONIC_COARSE */
+#undef HAVE_CLOCK_MONOTONIC_COARSE
+
 /* Define if the function stack tracing code is to be compiled in */
 #undef HAVE_CODESTACK
 
@@ -197,17 +200,14 @@
 /* Define to 1 if you have the `z' library (-lz). */
 #undef HAVE_LIBZ
 
-/* Define to 1 if you have the `lstat' function. */
-#undef HAVE_LSTAT
-
 /* Define if the map API (H5M) should be compiled */
 #undef HAVE_MAP_API
 
-/* Define to 1 if you have the <memory.h> header file. */
-#undef HAVE_MEMORY_H
-
 /* Define to 1 if you have the <mfu.h> header file. */
 #undef HAVE_MFU_H
+
+/* Define if using MinGW */
+#undef HAVE_MINGW
 
 /* Define whether the Mirror virtual file driver (VFD) will be compiled */
 #undef HAVE_MIRROR_VFD
@@ -242,8 +242,14 @@
 /* Define if both pread and pwrite exist. */
 #undef HAVE_PREADWRITE
 
+/* Define if has pthread_condattr_setclock() */
+#undef HAVE_PTHREAD_CONDATTR_SETCLOCK
+
 /* Define to 1 if you have the <pthread.h> header file. */
 #undef HAVE_PTHREAD_H
+
+/* Define if has PTHREAD_MUTEX_ADAPTIVE_NP */
+#undef HAVE_PTHREAD_MUTEX_ADAPTIVE_NP
 
 /* Define to 1 if you have the <pwd.h> header file. */
 #undef HAVE_PWD_H
@@ -261,21 +267,6 @@
    compiled */
 #undef HAVE_ROS3_VFD
 
-/* Define to 1 if you have the `setsysinfo' function. */
-#undef HAVE_SETSYSINFO
-
-/* Define to 1 if you have the `siglongjmp' function. */
-#undef HAVE_SIGLONGJMP
-
-/* Define to 1 if you have the `sigprocmask' function. */
-#undef HAVE_SIGPROCMASK
-
-/* Define to 1 if you have the `sigsetjmp' function. */
-#undef HAVE_SIGSETJMP
-
-/* Define to 1 if you have the `srandom' function. */
-#undef HAVE_SRANDOM
-
 /* Define if struct stat has the st_blocks field */
 #undef HAVE_STAT_ST_BLOCKS
 
@@ -284,6 +275,9 @@
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdio.h> header file. */
+#undef HAVE_STDIO_H
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
@@ -362,6 +356,12 @@
 
 /* Define to 1 if you have the `waitpid' function. */
 #undef HAVE_WAITPID
+
+/* Define if on the Windows platform using the Win32 API */
+#undef HAVE_WIN32_API
+
+/* Define if this is a Windows machine */
+#undef HAVE_WINDOWS
 
 /* Define if your system has window style path name. */
 #undef HAVE_WINDOW_PATH
@@ -553,7 +553,9 @@
 /* The size of `__float128', as computed by sizeof. */
 #undef SIZEOF___FLOAT128
 
-/* Define to 1 if you have the ANSI C header files. */
+/* Define to 1 if all of the C90 standard headers exist (not just the ones
+   required in a freestanding environment). This macro is provided for
+   backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
 
 /* Define if strict file format checks are enabled */

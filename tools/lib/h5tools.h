@@ -11,9 +11,6 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*
- * Programmer:  Robb Matzke
- *              Thursday, July 23, 1998
- *
  * Purpose:     Support functions for the various tools.
  */
 #ifndef H5TOOLS_H
@@ -33,13 +30,13 @@
 /* Stream macros */
 #define FLUSHSTREAM(S)                                                                                       \
     if (S != NULL)                                                                                           \
-    HDfflush(S)
+    fflush(S)
 #define PRINTSTREAM(S, F, ...)                                                                               \
     if (S != NULL)                                                                                           \
-    HDfprintf(S, F, __VA_ARGS__)
+    fprintf(S, F, __VA_ARGS__)
 #define PRINTVALSTREAM(S, V)                                                                                 \
     if (S != NULL)                                                                                           \
-    HDfprintf(S, V)
+    fprintf(S, V)
 #define PUTSTREAM(X, S)                                                                                      \
     do {                                                                                                     \
         if (S != NULL)                                                                                       \
@@ -652,6 +649,7 @@ H5TOOLS_DLLVAR int enable_error_stack; /* re-enable error stack; disable=0 enabl
 #define H5_TOOLS_DATASET   "DATASET"
 #define H5_TOOLS_DATATYPE  "DATATYPE"
 #define H5_TOOLS_ATTRIBUTE "ATTRIBUTE"
+#define H5_TOOLS_MAP       "MAP"
 #define H5_TOOLS_UNKNOWN   "UNKNOWN"
 
 /* Definitions of useful routines */

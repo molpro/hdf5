@@ -40,6 +40,8 @@ message (STATUS "COMMAND: ${TEST_EMULATOR} ${TEST_PROGRAM} ${TEST_ARGS}")
 if (TEST_LIBRARY_DIRECTORY)
   if (WIN32)
     set (ENV{PATH} "$ENV{PATH};${TEST_LIBRARY_DIRECTORY}")
+  elseif (APPLE)
+    set (ENV{DYLD_LIBRARY_PATH} "$ENV{DYLD_LIBRARY_PATH}:${TEST_LIBRARY_DIRECTORY}")
   else ()
     set (ENV{LD_LIBRARY_PATH} "$ENV{LD_LIBRARY_PATH}:${TEST_LIBRARY_DIRECTORY}")
   endif ()
@@ -212,14 +214,6 @@ if (NOT TEST_SKIP_COMPARE)
     file (READ ${TEST_FOLDER}/${TEST_REFERENCE} TEST_STREAM)
     list (LENGTH TEST_STREAM test_len)
     if (test_len GREATER 0)
-    #  if (WIN32) # no longer needed for CMake > 3.15
-    #    configure_file(${TEST_FOLDER}/${TEST_REFERENCE} ${TEST_FOLDER}/${TEST_REFERENCE}.tmp NEWLINE_STYLE CRLF)
-    #    if (EXISTS "${TEST_FOLDER}/${TEST_REFERENCE}.tmp")
-    #      file(RENAME ${TEST_FOLDER}/${TEST_REFERENCE}.tmp ${TEST_FOLDER}/${TEST_REFERENCE})
-    #    endif ()
-    #    #file (READ ${TEST_FOLDER}/${TEST_REFERENCE} TEST_STREAM)
-    #    #file (WRITE ${TEST_FOLDER}/${TEST_REFERENCE} "${TEST_STREAM}")
-    #  endif ()
 
       if (NOT TEST_SORT_COMPARE)
         # now compare the output with the reference
@@ -287,14 +281,6 @@ if (NOT TEST_SKIP_COMPARE)
     file (READ ${TEST_FOLDER}/${TEST_ERRREF} TEST_STREAM)
     list (LENGTH TEST_STREAM test_len)
     if (test_len GREATER 0)
-    #  if (WIN32) # no longer needed for CMake > 3.15
-    #    configure_file(${TEST_FOLDER}/${TEST_ERRREF} ${TEST_FOLDER}/${TEST_ERRREF}.tmp NEWLINE_STYLE CRLF)
-    #    if (EXISTS "${TEST_FOLDER}/${TEST_ERRREF}.tmp")
-    #      file(RENAME ${TEST_FOLDER}/${TEST_ERRREF}.tmp ${TEST_FOLDER}/${TEST_ERRREF})
-    #    endif ()
-    #    #file (READ ${TEST_FOLDER}/${TEST_ERRREF} TEST_STREAM)
-    #    #file (WRITE ${TEST_FOLDER}/${TEST_ERRREF} "${TEST_STREAM}")
-    #  endif ()
 
       # now compare the error output with the error reference
       execute_process (

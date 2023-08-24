@@ -83,7 +83,7 @@
 /**
  * For tweaks, bug-fixes, or development
  */
-#define H5_VERS_RELEASE 1
+#define H5_VERS_RELEASE 2
 /**
  * For pre-releases like \c snap0. Empty string for official releases.
  */
@@ -91,7 +91,7 @@
 /**
  * Full version string
  */
-#define H5_VERS_INFO "HDF5 library version: 1.14.1"
+#define H5_VERS_INFO "HDF5 library version: 1.14.2"
 
 #define H5check() H5check_version(H5_VERS_MAJOR, H5_VERS_MINOR, H5_VERS_RELEASE)
 
@@ -684,7 +684,7 @@ H5_DLL herr_t H5is_library_threadsafe(hbool_t *is_ts);
  *
  *          H5Tget_member_name() provides an example of memory allocation on
  *          behalf of the caller: The function returns a buffer containing the
- *          name of a compound datatype member. It is the caller’s
+ *          name of a compound datatype member. It is the caller's
  *          responsibility to eventually free that buffer with H5free_memory().
  *
  * \attention It is especially important to use this function to free memory
@@ -710,7 +710,7 @@ H5_DLL herr_t H5is_library_threadsafe(hbool_t *is_ts);
 H5_DLL herr_t H5free_memory(void *mem);
 /**
  * \ingroup H5
- * \brief Frees memory allocated by the HDF5 library
+ * \brief Allocates memory that will be freed later internally.
  *
  * \param[in] size The size in bytes of the buffer to be allocated
  * \param[in] clear Flag whether the new buffer is to be initialized with 0

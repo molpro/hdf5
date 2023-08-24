@@ -43,7 +43,8 @@ libhdf5_la_SOURCES= H5.c H5checksum.c H5dbg.c H5lib_settings.c H5system.c \
         H5B.c H5Bcache.c H5Bdbg.c \
         H5B2.c H5B2cache.c H5B2dbg.c H5B2hdr.c H5B2int.c H5B2internal.c \
         H5B2leaf.c H5B2stat.c H5B2test.c \
-        H5C.c H5Cdbg.c H5Cepoch.c H5Cimage.c H5Clog.c H5Clog_json.c H5Clog_trace.c \
+        H5C.c H5Cdbg.c H5Centry.c H5Cepoch.c H5Cimage.c H5Cint.c \
+        H5Clog.c H5Clog_json.c H5Clog_trace.c \
         H5Cprefetched.c H5Cquery.c H5Ctag.c H5Ctest.c \
         H5CS.c \
         H5CX.c \
@@ -174,13 +175,10 @@ if SUBFILING_VFD_CONDITIONAL
 
 # Temporarily use internal Mercury until usage of Mercury is refactored
 if HAVE_MERCURY_CONDITIONAL
-    include_HEADERS += H5FDsubfiling/mercury/src/util/mercury_thread.h \
-    H5FDsubfiling/mercury/src/util/mercury_thread_mutex.h H5FDsubfiling/mercury/src/util/mercury_thread_pool.h
-
-    libhdf5_la_SOURCES += H5FDsubfiling/mercury/src/util/mercury_dlog.c \
-    H5FDsubfiling/mercury/src/util/mercury_log.c H5FDsubfiling/mercury/src/util/mercury_thread.c \
-    H5FDsubfiling/mercury/src/util/mercury_thread_condition.c H5FDsubfiling/mercury/src/util/mercury_thread_pool.c \
-    H5FDsubfiling/mercury/src/util/mercury_thread_mutex.c H5FDsubfiling/mercury/src/util/mercury_util.c
+    libhdf5_la_SOURCES += H5FDsubfiling/mercury/src/util/mercury_thread.c \
+    H5FDsubfiling/mercury/src/util/mercury_thread_condition.c \
+    H5FDsubfiling/mercury/src/util/mercury_thread_pool.c \
+    H5FDsubfiling/mercury/src/util/mercury_thread_mutex.c
 endif
 
 endif
