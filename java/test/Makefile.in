@@ -513,6 +513,7 @@ HAVE_LIBHDFS = @HAVE_LIBHDFS@
 HAVE_MERCURY = @HAVE_MERCURY@
 HAVE_PTHREAD = @HAVE_PTHREAD@
 HDF5_DOXYGEN = @HDF5_DOXYGEN@
+HDF5_DOXY_WARNINGS = @HDF5_DOXY_WARNINGS@
 HDF5_HL = @HDF5_HL@
 HDF5_HL_GIF_TOOLS = @HDF5_HL_GIF_TOOLS@
 HDF5_HL_TOOLS = @HDF5_HL_TOOLS@
@@ -805,7 +806,9 @@ noinst_JAVA = \
 noinst_DATA = $(jarfile)
 check_SCRIPTS = junit.sh
 TEST_SCRIPT = $(check_SCRIPTS)
-CLEANFILES = classnoinst.stamp $(jarfile) $(JAVAROOT)/$(pkgpath)/*.class junit.sh
+CLEANFILES = classnoinst.stamp $(jarfile) $(JAVAROOT)/$(pkgpath)/*.class junit.sh \
+    *.h5 testExport*.txt
+
 
 # Automake needs to be taught how to build lib, progs and tests targets.
 # These will be filled in automatically for the most part (e.g.,

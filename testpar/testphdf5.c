@@ -234,9 +234,11 @@ parse_options(int argc, char **argv)
                 nerrors++;
                 return (1);
             }
-        printf("Test filenames are:\n");
-        for (i = 0; i < n; i++)
-            printf("    %s\n", filenames[i]);
+        if (mpi_rank == 0) {
+            printf("Test filenames are:\n");
+            for (i = 0; i < n; i++)
+                printf("    %s\n", filenames[i]);
+        }
     }
 
     return (0);
@@ -248,7 +250,7 @@ parse_options(int argc, char **argv)
 hid_t
 create_faccess_plist(MPI_Comm comm, MPI_Info info, int l_facc_type)
 {
-    hid_t  ret_pl = -1;
+    hid_t  ret_pl = H5I_INVALID_HID;
     herr_t ret;      /* generic return value */
     int    mpi_rank; /* mpi variables */
 
@@ -265,9 +267,9 @@ create_faccess_plist(MPI_Comm comm, MPI_Info info, int l_facc_type)
         /* set Parallel access with communicator */
         ret = H5Pset_fapl_mpio(ret_pl, comm, info);
         VRFY((ret >= 0), "H5Pset_fapl_mpio succeeded");
-        ret = H5Pset_all_coll_metadata_ops(ret_pl, TRUE);
+        ret = H5Pset_all_coll_metadata_ops(ret_pl, true);
         VRFY((ret >= 0), "H5Pset_all_coll_metadata_ops succeeded");
-        ret = H5Pset_coll_metadata_write(ret_pl, TRUE);
+        ret = H5Pset_coll_metadata_write(ret_pl, true);
         VRFY((ret >= 0), "H5Pset_coll_metadata_write succeeded");
         return (ret_pl);
     }
@@ -314,6 +316,8 @@ main(int argc, char **argv)
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
+    mpi_rank_framework_g = mpi_rank;
+
     dim0 = ROW_FACTOR * mpi_size;
     dim1 = COL_FACTOR * mpi_size;
 
@@ -359,6 +363,12 @@ main(int argc, char **argv)
 
     AddTest("delete", test_delete, NULL, "MPI-IO VFD file delete", PARATESTFILE);
 
+    AddTest("invlibverassert", test_invalid_libver_bounds_file_close_assert, NULL,
+            "Invalid libver bounds assertion failure", PARATESTFILE);
+
+    AddTest("evictparassert", test_evict_on_close_parallel_unsupp, NULL, "Evict on close in parallel failure",
+            PARATESTFILE);
+
     AddTest("idsetw", dataset_writeInd, NULL, "dataset independent write", PARATESTFILE);
     AddTest("idsetr", dataset_readInd, NULL, "dataset independent read", PARATESTFILE);
 
@@ -373,6 +383,8 @@ main(int argc, char **argv)
     AddTest("selnone", none_selection_chunk, NULL, "chunked dataset with none-selection", PARATESTFILE);
     AddTest("calloc", test_chunk_alloc, NULL, "parallel extend Chunked allocation on serial file",
             PARATESTFILE);
+    AddTest("chkallocser2par", test_chunk_alloc_incr_ser_to_par, NULL,
+            "chunk allocation from serial to parallel file access", PARATESTFILE);
     AddTest("fltread", test_filter_read, NULL, "parallel read of dataset written serially with filters",
             PARATESTFILE);
 
@@ -482,6 +494,14 @@ main(int argc, char **argv)
     AddTest((mpi_size < 2) ? "-fiodc" : "fiodc", file_image_daisy_chain_test, NULL,
             "file image ops daisy chain", NULL);
 
+    /* Atomicity operations are not supported for OpenMPI versions < major
+     * version 5 and will sporadically fail.
+     */
+#if defined(OPEN_MPI) && defined(OMPI_MAJOR_VERSION) && (OMPI_MAJOR_VERSION < 5)
+    if (MAINPROCESS)
+        printf("OpenMPI major version is < 5. Atomicity tests will be skipped due to support for atomicity "
+               "operations not being implemented.\n");
+#else
     if ((mpi_size < 2) && MAINPROCESS) {
         printf("Atomicity tests need at least 2 processes to participate\n");
         printf("8 is more recommended.. Atomicity tests will be skipped \n");
@@ -492,6 +512,7 @@ main(int argc, char **argv)
     else if (mpi_size >= 2 && facc_type == FACC_MPIO) {
         AddTest("atomicity", dataset_atomicity, NULL, "dataset atomic updates", PARATESTFILE);
     }
+#endif
 
     AddTest("denseattr", test_dense_attr, NULL, "Store Dense Attributes", PARATESTFILE);
 
@@ -503,6 +524,8 @@ main(int argc, char **argv)
             "Collective MD read with link chunk I/O (H5D__sort_chunk)", PARATESTFILE);
     AddTest("GH_coll_MD_wr", test_collective_global_heap_write, NULL,
             "Collective MD write of global heap data", PARATESTFILE);
+    AddTest("COLLIO_INDMDWR", test_coll_io_ind_md_write, NULL,
+            "Collective I/O with Independent metadata writes", PARATESTFILE);
 
     /* Display testing information */
     TestInfo(argv[0]);

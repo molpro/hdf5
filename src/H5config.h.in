@@ -141,9 +141,6 @@
 /* Define to 1 if you have the `gethostname' function. */
 #undef HAVE_GETHOSTNAME
 
-/* Define to 1 if you have the `getpwuid' function. */
-#undef HAVE_GETPWUID
-
 /* Define to 1 if you have the `getrusage' function. */
 #undef HAVE_GETRUSAGE
 

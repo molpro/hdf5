@@ -584,6 +584,7 @@ HAVE_LIBHDFS = @HAVE_LIBHDFS@
 HAVE_MERCURY = @HAVE_MERCURY@
 HAVE_PTHREAD = @HAVE_PTHREAD@
 HDF5_DOXYGEN = @HDF5_DOXYGEN@
+HDF5_DOXY_WARNINGS = @HDF5_DOXY_WARNINGS@
 HDF5_HL = @HDF5_HL@
 HDF5_HL_GIF_TOOLS = @HDF5_HL_GIF_TOOLS@
 HDF5_HL_TOOLS = @HDF5_HL_TOOLS@
@@ -820,7 +821,8 @@ TRACE = perl $(top_srcdir)/bin/trace
 # .chklog files are output from those tests.
 
 # Temporary files
-CHECK_CLEANFILES = *.chkexe *.chklog parf[12].h5 subf.h5*
+CHECK_CLEANFILES = *.chkexe *.chklog parf[12].h5 h5*_tests.h5 subf.h5* \
+	test_async_apis.mod
 
 # These are our main targets
 TEST_PROG_PARA = parallel_test subfiling_test async_test

@@ -30,7 +30,6 @@
 
 
 
-
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -105,7 +104,6 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-noinst_PROGRAMS = H5detect$(EXEEXT) H5make_libsettings$(EXEEXT)
 
 # Only compile parallel sources if necessary
 @BUILD_PARALLEL_CONDITIONAL_TRUE@am__append_1 = H5mpi.c H5ACmpio.c H5Cmpio.c H5Dmpio.c H5Fmpi.c H5FDmpi.c H5FDmpio.c H5Smpio.c
@@ -170,9 +168,8 @@ DIST_COMMON = $(srcdir)/Makefile.am $(include_HEADERS) \
 	$(am__DIST_COMMON)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = H5config.h $(top_builddir)/fortran/src/H5config_f.inc
-CONFIG_CLEAN_FILES = libhdf5.settings
+CONFIG_CLEAN_FILES = libhdf5.settings H5build_settings.c
 CONFIG_CLEAN_VPATH_FILES =
-PROGRAMS = $(noinst_PROGRAMS)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -204,24 +201,24 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(settingsdir)" \
 	"$(DESTDIR)$(includedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libhdf5_la_LIBADD =
-am__libhdf5_la_SOURCES_DIST = H5.c H5checksum.c H5dbg.c \
-	H5lib_settings.c H5system.c H5timer.c H5trace.c H5A.c \
-	H5Abtree2.c H5Adense.c H5Adeprec.c H5Aint.c H5Atest.c H5AC.c \
-	H5ACdbg.c H5ACproxy_entry.c H5B.c H5Bcache.c H5Bdbg.c H5B2.c \
-	H5B2cache.c H5B2dbg.c H5B2hdr.c H5B2int.c H5B2internal.c \
-	H5B2leaf.c H5B2stat.c H5B2test.c H5C.c H5Cdbg.c H5Centry.c \
-	H5Cepoch.c H5Cimage.c H5Cint.c H5Clog.c H5Clog_json.c \
-	H5Clog_trace.c H5Cprefetched.c H5Cquery.c H5Ctag.c H5Ctest.c \
-	H5CS.c H5CX.c H5D.c H5Dbtree.c H5Dbtree2.c H5Dchunk.c \
-	H5Dcompact.c H5Dcontig.c H5Ddbg.c H5Ddeprec.c H5Dearray.c \
-	H5Defl.c H5Dfarray.c H5Dfill.c H5Dint.c H5Dio.c H5Dlayout.c \
-	H5Dnone.c H5Doh.c H5Dscatgath.c H5Dselect.c H5Dsingle.c \
-	H5Dtest.c H5Dvirtual.c H5E.c H5Edeprec.c H5Eint.c H5EA.c \
-	H5EAcache.c H5EAdbg.c H5EAdblkpage.c H5EAdblock.c H5EAhdr.c \
-	H5EAiblock.c H5EAint.c H5EAsblock.c H5EAstat.c H5EAtest.c \
-	H5ES.c H5ESevent.c H5ESint.c H5ESlist.c H5F.c H5Faccum.c \
-	H5Fcwfs.c H5Fdbg.c H5Fdeprec.c H5Fefc.c H5Ffake.c H5Fint.c \
-	H5Fio.c H5Fmount.c H5Fquery.c H5Fsfile.c H5Fspace.c H5Fsuper.c \
+am__libhdf5_la_SOURCES_DIST = H5.c H5build_settings.c H5checksum.c \
+	H5dbg.c H5system.c H5timer.c H5trace.c H5A.c H5Abtree2.c \
+	H5Adense.c H5Adeprec.c H5Aint.c H5Atest.c H5AC.c H5ACdbg.c \
+	H5ACproxy_entry.c H5B.c H5Bcache.c H5Bdbg.c H5B2.c H5B2cache.c \
+	H5B2dbg.c H5B2hdr.c H5B2int.c H5B2internal.c H5B2leaf.c \
+	H5B2stat.c H5B2test.c H5C.c H5Cdbg.c H5Centry.c H5Cepoch.c \
+	H5Cimage.c H5Cint.c H5Clog.c H5Clog_json.c H5Clog_trace.c \
+	H5Cprefetched.c H5Cquery.c H5Ctag.c H5Ctest.c H5CS.c H5CX.c \
+	H5D.c H5Dbtree.c H5Dbtree2.c H5Dchunk.c H5Dcompact.c \
+	H5Dcontig.c H5Ddbg.c H5Ddeprec.c H5Dearray.c H5Defl.c \
+	H5Dfarray.c H5Dfill.c H5Dint.c H5Dio.c H5Dlayout.c H5Dnone.c \
+	H5Doh.c H5Dscatgath.c H5Dselect.c H5Dsingle.c H5Dtest.c \
+	H5Dvirtual.c H5E.c H5Edeprec.c H5Eint.c H5EA.c H5EAcache.c \
+	H5EAdbg.c H5EAdblkpage.c H5EAdblock.c H5EAhdr.c H5EAiblock.c \
+	H5EAint.c H5EAsblock.c H5EAstat.c H5EAtest.c H5ES.c \
+	H5ESevent.c H5ESint.c H5ESlist.c H5F.c H5Faccum.c H5Fcwfs.c \
+	H5Fdbg.c H5Fdeprec.c H5Fefc.c H5Ffake.c H5Fint.c H5Fio.c \
+	H5Fmount.c H5Fquery.c H5Fsfile.c H5Fspace.c H5Fsuper.c \
 	H5Fsuper_cache.c H5Ftest.c H5FA.c H5FAcache.c H5FAdbg.c \
 	H5FAdblock.c H5FAdblkpage.c H5FAhdr.c H5FAint.c H5FAstat.c \
 	H5FAtest.c H5FD.c H5FDcore.c H5FDfamily.c H5FDint.c H5FDlog.c \
@@ -257,7 +254,7 @@ am__libhdf5_la_SOURCES_DIST = H5.c H5checksum.c H5dbg.c \
 	H5SMcache.c H5SMmessage.c H5SMtest.c H5T.c H5Tarray.c H5Tbit.c \
 	H5Tcommit.c H5Tcompound.c H5Tconv.c H5Tcset.c H5Tdbg.c \
 	H5Tdeprec.c H5Tenum.c H5Tfields.c H5Tfixed.c H5Tfloat.c \
-	H5Tinit.c H5Tnative.c H5Toffset.c H5Toh.c H5Topaque.c \
+	H5Tinit_float.c H5Tnative.c H5Toffset.c H5Toh.c H5Topaque.c \
 	H5Torder.c H5Tref.c H5Tpad.c H5Tprecis.c H5Tstrpad.c \
 	H5Tvisit.c H5Tvlen.c H5TS.c H5VL.c H5VLcallback.c \
 	H5VLdyn_ops.c H5VLint.c H5VLnative.c H5VLnative_attr.c \
@@ -296,8 +293,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @HAVE_MERCURY_CONDITIONAL_TRUE@@SUBFILING_VFD_CONDITIONAL_TRUE@	H5FDsubfiling/mercury/src/util/mercury_thread_condition.lo \
 @HAVE_MERCURY_CONDITIONAL_TRUE@@SUBFILING_VFD_CONDITIONAL_TRUE@	H5FDsubfiling/mercury/src/util/mercury_thread_pool.lo \
 @HAVE_MERCURY_CONDITIONAL_TRUE@@SUBFILING_VFD_CONDITIONAL_TRUE@	H5FDsubfiling/mercury/src/util/mercury_thread_mutex.lo
-am_libhdf5_la_OBJECTS = H5.lo H5checksum.lo H5dbg.lo H5lib_settings.lo \
-	H5system.lo H5timer.lo H5trace.lo H5A.lo H5Abtree2.lo \
+am_libhdf5_la_OBJECTS = H5.lo H5build_settings.lo H5checksum.lo \
+	H5dbg.lo H5system.lo H5timer.lo H5trace.lo H5A.lo H5Abtree2.lo \
 	H5Adense.lo H5Adeprec.lo H5Aint.lo H5Atest.lo H5AC.lo \
 	H5ACdbg.lo H5ACproxy_entry.lo H5B.lo H5Bcache.lo H5Bdbg.lo \
 	H5B2.lo H5B2cache.lo H5B2dbg.lo H5B2hdr.lo H5B2int.lo \
@@ -354,19 +351,20 @@ am_libhdf5_la_OBJECTS = H5.lo H5checksum.lo H5dbg.lo H5lib_settings.lo \
 	H5SMcache.lo H5SMmessage.lo H5SMtest.lo H5T.lo H5Tarray.lo \
 	H5Tbit.lo H5Tcommit.lo H5Tcompound.lo H5Tconv.lo H5Tcset.lo \
 	H5Tdbg.lo H5Tdeprec.lo H5Tenum.lo H5Tfields.lo H5Tfixed.lo \
-	H5Tfloat.lo H5Tinit.lo H5Tnative.lo H5Toffset.lo H5Toh.lo \
-	H5Topaque.lo H5Torder.lo H5Tref.lo H5Tpad.lo H5Tprecis.lo \
-	H5Tstrpad.lo H5Tvisit.lo H5Tvlen.lo H5TS.lo H5VL.lo \
-	H5VLcallback.lo H5VLdyn_ops.lo H5VLint.lo H5VLnative.lo \
-	H5VLnative_attr.lo H5VLnative_blob.lo H5VLnative_dataset.lo \
-	H5VLnative_datatype.lo H5VLnative_file.lo H5VLnative_group.lo \
-	H5VLnative_link.lo H5VLnative_introspect.lo \
-	H5VLnative_object.lo H5VLnative_token.lo H5VLpassthru.lo \
-	H5VLtest.lo H5VM.lo H5WB.lo H5Z.lo H5Zdeflate.lo \
-	H5Zfletcher32.lo H5Znbit.lo H5Zshuffle.lo H5Zscaleoffset.lo \
-	H5Zszip.lo H5Ztrans.lo $(am__objects_1) $(am__objects_2) \
-	$(am__objects_3) $(am__objects_4) $(am__objects_5) \
-	$(am__objects_6) $(am__objects_7)
+	H5Tfloat.lo H5Tinit_float.lo H5Tnative.lo H5Toffset.lo \
+	H5Toh.lo H5Topaque.lo H5Torder.lo H5Tref.lo H5Tpad.lo \
+	H5Tprecis.lo H5Tstrpad.lo H5Tvisit.lo H5Tvlen.lo H5TS.lo \
+	H5VL.lo H5VLcallback.lo H5VLdyn_ops.lo H5VLint.lo \
+	H5VLnative.lo H5VLnative_attr.lo H5VLnative_blob.lo \
+	H5VLnative_dataset.lo H5VLnative_datatype.lo \
+	H5VLnative_file.lo H5VLnative_group.lo H5VLnative_link.lo \
+	H5VLnative_introspect.lo H5VLnative_object.lo \
+	H5VLnative_token.lo H5VLpassthru.lo H5VLtest.lo H5VM.lo \
+	H5WB.lo H5Z.lo H5Zdeflate.lo H5Zfletcher32.lo H5Znbit.lo \
+	H5Zshuffle.lo H5Zscaleoffset.lo H5Zszip.lo H5Ztrans.lo \
+	$(am__objects_1) $(am__objects_2) $(am__objects_3) \
+	$(am__objects_4) $(am__objects_5) $(am__objects_6) \
+	$(am__objects_7)
 libhdf5_la_OBJECTS = $(am_libhdf5_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -375,12 +373,6 @@ am__v_lt_1 =
 libhdf5_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(libhdf5_la_LDFLAGS) $(LDFLAGS) -o $@
-H5detect_SOURCES = H5detect.c
-H5detect_OBJECTS = H5detect.$(OBJEXT)
-H5detect_LDADD = $(LDADD)
-H5make_libsettings_SOURCES = H5make_libsettings.c
-H5make_libsettings_OBJECTS = H5make_libsettings.$(OBJEXT)
-H5make_libsettings_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -542,7 +534,7 @@ am__depfiles_remade = ./$(DEPDIR)/H5.Plo ./$(DEPDIR)/H5A.Plo \
 	./$(DEPDIR)/H5Tcset.Plo ./$(DEPDIR)/H5Tdbg.Plo \
 	./$(DEPDIR)/H5Tdeprec.Plo ./$(DEPDIR)/H5Tenum.Plo \
 	./$(DEPDIR)/H5Tfields.Plo ./$(DEPDIR)/H5Tfixed.Plo \
-	./$(DEPDIR)/H5Tfloat.Plo ./$(DEPDIR)/H5Tinit.Plo \
+	./$(DEPDIR)/H5Tfloat.Plo ./$(DEPDIR)/H5Tinit_float.Plo \
 	./$(DEPDIR)/H5Tnative.Plo ./$(DEPDIR)/H5Toffset.Plo \
 	./$(DEPDIR)/H5Toh.Plo ./$(DEPDIR)/H5Topaque.Plo \
 	./$(DEPDIR)/H5Torder.Plo ./$(DEPDIR)/H5Tpad.Plo \
@@ -566,12 +558,11 @@ am__depfiles_remade = ./$(DEPDIR)/H5.Plo ./$(DEPDIR)/H5A.Plo \
 	./$(DEPDIR)/H5Zdeflate.Plo ./$(DEPDIR)/H5Zfletcher32.Plo \
 	./$(DEPDIR)/H5Znbit.Plo ./$(DEPDIR)/H5Zscaleoffset.Plo \
 	./$(DEPDIR)/H5Zshuffle.Plo ./$(DEPDIR)/H5Zszip.Plo \
-	./$(DEPDIR)/H5Ztrans.Plo ./$(DEPDIR)/H5checksum.Plo \
-	./$(DEPDIR)/H5dbg.Plo ./$(DEPDIR)/H5detect.Po \
-	./$(DEPDIR)/H5lib_settings.Plo \
-	./$(DEPDIR)/H5make_libsettings.Po ./$(DEPDIR)/H5mpi.Plo \
-	./$(DEPDIR)/H5system.Plo ./$(DEPDIR)/H5timer.Plo \
-	./$(DEPDIR)/H5trace.Plo H5FDsubfiling/$(DEPDIR)/H5FDioc.Plo \
+	./$(DEPDIR)/H5Ztrans.Plo ./$(DEPDIR)/H5build_settings.Plo \
+	./$(DEPDIR)/H5checksum.Plo ./$(DEPDIR)/H5dbg.Plo \
+	./$(DEPDIR)/H5mpi.Plo ./$(DEPDIR)/H5system.Plo \
+	./$(DEPDIR)/H5timer.Plo ./$(DEPDIR)/H5trace.Plo \
+	H5FDsubfiling/$(DEPDIR)/H5FDioc.Plo \
 	H5FDsubfiling/$(DEPDIR)/H5FDioc_int.Plo \
 	H5FDsubfiling/$(DEPDIR)/H5FDioc_threads.Plo \
 	H5FDsubfiling/$(DEPDIR)/H5FDsubfile_int.Plo \
@@ -600,9 +591,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libhdf5_la_SOURCES) H5detect.c H5make_libsettings.c
-DIST_SOURCES = $(am__libhdf5_la_SOURCES_DIST) H5detect.c \
-	H5make_libsettings.c
+SOURCES = $(libhdf5_la_SOURCES)
+DIST_SOURCES = $(am__libhdf5_la_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -960,6 +950,7 @@ HAVE_LIBHDFS = @HAVE_LIBHDFS@
 HAVE_MERCURY = @HAVE_MERCURY@
 HAVE_PTHREAD = @HAVE_PTHREAD@
 HDF5_DOXYGEN = @HDF5_DOXYGEN@
+HDF5_DOXY_WARNINGS = @HDF5_DOXY_WARNINGS@
 HDF5_HL = @HDF5_HL@
 HDF5_HL_GIF_TOOLS = @HDF5_HL_GIF_TOOLS@
 HDF5_HL_TOOLS = @HDF5_HL_TOOLS@
@@ -1200,29 +1191,29 @@ CHECK_CLEANFILES = *.chkexe *.chklog
 # See libtool versioning documentation online.
 # After making changes, run bin/reconfigure to update other configure related
 # files like Makefile.in.
-LT_VERS_INTERFACE = 312
-LT_VERS_AGE = 2
+LT_VERS_INTERFACE = 313
+LT_VERS_AGE = 3
 LT_VERS_REVISION = 0
 LT_CXX_VERS_INTERFACE = 310
-LT_CXX_VERS_REVISION = 2
+LT_CXX_VERS_REVISION = 3
 LT_CXX_VERS_AGE = 0
-LT_F_VERS_INTERFACE = 311
-LT_F_VERS_REVISION = 1
-LT_F_VERS_AGE = 1
+LT_F_VERS_INTERFACE = 312
+LT_F_VERS_REVISION = 0
+LT_F_VERS_AGE = 2
 LT_HL_VERS_INTERFACE = 310
-LT_HL_VERS_REVISION = 2
+LT_HL_VERS_REVISION = 3
 LT_HL_VERS_AGE = 0
 LT_HL_CXX_VERS_INTERFACE = 310
-LT_HL_CXX_VERS_REVISION = 2
+LT_HL_CXX_VERS_REVISION = 3
 LT_HL_CXX_VERS_AGE = 0
 LT_HL_F_VERS_INTERFACE = 310
-LT_HL_F_VERS_REVISION = 2
+LT_HL_F_VERS_REVISION = 3
 LT_HL_F_VERS_AGE = 0
 LT_JAVA_VERS_INTERFACE = 310
-LT_JAVA_VERS_REVISION = 2
+LT_JAVA_VERS_REVISION = 3
 LT_JAVA_VERS_AGE = 0
 LT_TOOLS_VERS_INTERFACE = 310
-LT_TOOLS_VERS_REVISION = 2
+LT_TOOLS_VERS_REVISION = 3
 LT_TOOLS_VERS_AGE = 0
 
 # Our main target, the HDF5 library
@@ -1231,13 +1222,11 @@ lib_LTLIBRARIES = libhdf5.la
 # Add libtool numbers to the HDF5 library (from config/lt_vers.am)
 libhdf5_la_LDFLAGS = -version-info $(LT_VERS_INTERFACE):$(LT_VERS_REVISION):$(LT_VERS_AGE) $(AM_LDFLAGS)
 
-# H5Tinit.c and H5lib_settings.c are generated files and should be cleaned.
-MOSTLYCLEANFILES = H5Tinit.c H5lib_settings.c $(DX_CLEANFILES)
-# H5pubconf.h is generated by configure, and should be cleaned.
-DISTCLEANFILES = H5pubconf.h
+# These files are generated by configure, and should be cleaned
+DISTCLEANFILES = H5pubconf.h H5build_settings.c
 
 # library sources
-libhdf5_la_SOURCES = H5.c H5checksum.c H5dbg.c H5lib_settings.c \
+libhdf5_la_SOURCES = H5.c H5build_settings.c H5checksum.c H5dbg.c \
 	H5system.c H5timer.c H5trace.c H5A.c H5Abtree2.c H5Adense.c \
 	H5Adeprec.c H5Aint.c H5Atest.c H5AC.c H5ACdbg.c \
 	H5ACproxy_entry.c H5B.c H5Bcache.c H5Bdbg.c H5B2.c H5B2cache.c \
@@ -1290,7 +1279,7 @@ libhdf5_la_SOURCES = H5.c H5checksum.c H5dbg.c H5lib_settings.c \
 	H5SMcache.c H5SMmessage.c H5SMtest.c H5T.c H5Tarray.c H5Tbit.c \
 	H5Tcommit.c H5Tcompound.c H5Tconv.c H5Tcset.c H5Tdbg.c \
 	H5Tdeprec.c H5Tenum.c H5Tfields.c H5Tfixed.c H5Tfloat.c \
-	H5Tinit.c H5Tnative.c H5Toffset.c H5Toh.c H5Topaque.c \
+	H5Tinit_float.c H5Tnative.c H5Toffset.c H5Toh.c H5Topaque.c \
 	H5Torder.c H5Tref.c H5Tpad.c H5Tprecis.c H5Tstrpad.c \
 	H5Tvisit.c H5Tvlen.c H5TS.c H5VL.c H5VLcallback.c \
 	H5VLdyn_ops.c H5VLint.c H5VLnative.c H5VLnative_attr.c \
@@ -1408,15 +1397,8 @@ distclean-hdr:
 	-rm -f H5config.h stamp-h1
 libhdf5.settings: $(top_builddir)/config.status $(srcdir)/libhdf5.settings.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
-
-clean-noinstPROGRAMS:
-	@list='$(noinst_PROGRAMS)'; test -n "$$list" || exit 0; \
-	echo " rm -f" $$list; \
-	rm -f $$list || exit $$?; \
-	test -n "$(EXEEXT)" || exit 0; \
-	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
-	echo " rm -f" $$list; \
-	rm -f $$list
+H5build_settings.c: $(top_builddir)/config.status 
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 install-libLTLIBRARIES: $(lib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
@@ -1491,14 +1473,6 @@ H5FDsubfiling/mercury/src/util/mercury_thread_mutex.lo:  \
 
 libhdf5.la: $(libhdf5_la_OBJECTS) $(libhdf5_la_DEPENDENCIES) $(EXTRA_libhdf5_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libhdf5_la_LINK) -rpath $(libdir) $(libhdf5_la_OBJECTS) $(libhdf5_la_LIBADD) $(LIBS)
-
-H5detect$(EXEEXT): $(H5detect_OBJECTS) $(H5detect_DEPENDENCIES) $(EXTRA_H5detect_DEPENDENCIES) 
-	@rm -f H5detect$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(H5detect_OBJECTS) $(H5detect_LDADD) $(LIBS)
-
-H5make_libsettings$(EXEEXT): $(H5make_libsettings_OBJECTS) $(H5make_libsettings_DEPENDENCIES) $(EXTRA_H5make_libsettings_DEPENDENCIES) 
-	@rm -f H5make_libsettings$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(H5make_libsettings_OBJECTS) $(H5make_libsettings_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -1803,7 +1777,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/H5Tfields.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/H5Tfixed.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/H5Tfloat.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/H5Tinit.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/H5Tinit_float.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/H5Tnative.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/H5Toffset.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/H5Toh.Plo@am__quote@ # am--include-marker
@@ -1843,11 +1817,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/H5Zshuffle.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/H5Zszip.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/H5Ztrans.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/H5build_settings.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/H5checksum.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/H5dbg.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/H5detect.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/H5lib_settings.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/H5make_libsettings.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/H5mpi.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/H5system.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/H5timer.Plo@am__quote@ # am--include-marker
@@ -2176,8 +2148,8 @@ distdir-am: $(DISTFILES)
 check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
 check: check-am
-all-am: Makefile $(PROGRAMS) $(LTLIBRARIES) $(DATA) $(HEADERS) \
-		H5config.h all-local
+all-am: Makefile $(LTLIBRARIES) $(DATA) $(HEADERS) H5config.h \
+		all-local
 installdirs:
 	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(settingsdir)" "$(DESTDIR)$(includedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
@@ -2202,7 +2174,6 @@ install-strip:
 	    "INSTALL_PROGRAM_ENV=STRIPPROG='$(STRIP)'" install; \
 	fi
 mostlyclean-generic:
-	-test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
 	-test -z "$(TEST_LOGS)" || rm -f $(TEST_LOGS)
 	-test -z "$(TEST_LOGS:.log=.trs)" || rm -f $(TEST_LOGS:.log=.trs)
 	-test -z "$(TEST_SUITE_LOG)" || rm -f $(TEST_SUITE_LOG)
@@ -2224,7 +2195,7 @@ maintainer-clean-generic:
 clean: clean-am
 
 clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
-	clean-noinstPROGRAMS mostlyclean-am
+	mostlyclean-am
 
 distclean: distclean-am
 		-rm -f ./$(DEPDIR)/H5.Plo
@@ -2520,7 +2491,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/H5Tfields.Plo
 	-rm -f ./$(DEPDIR)/H5Tfixed.Plo
 	-rm -f ./$(DEPDIR)/H5Tfloat.Plo
-	-rm -f ./$(DEPDIR)/H5Tinit.Plo
+	-rm -f ./$(DEPDIR)/H5Tinit_float.Plo
 	-rm -f ./$(DEPDIR)/H5Tnative.Plo
 	-rm -f ./$(DEPDIR)/H5Toffset.Plo
 	-rm -f ./$(DEPDIR)/H5Toh.Plo
@@ -2560,11 +2531,9 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/H5Zshuffle.Plo
 	-rm -f ./$(DEPDIR)/H5Zszip.Plo
 	-rm -f ./$(DEPDIR)/H5Ztrans.Plo
+	-rm -f ./$(DEPDIR)/H5build_settings.Plo
 	-rm -f ./$(DEPDIR)/H5checksum.Plo
 	-rm -f ./$(DEPDIR)/H5dbg.Plo
-	-rm -f ./$(DEPDIR)/H5detect.Po
-	-rm -f ./$(DEPDIR)/H5lib_settings.Plo
-	-rm -f ./$(DEPDIR)/H5make_libsettings.Po
 	-rm -f ./$(DEPDIR)/H5mpi.Plo
 	-rm -f ./$(DEPDIR)/H5system.Plo
 	-rm -f ./$(DEPDIR)/H5timer.Plo
@@ -2917,7 +2886,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/H5Tfields.Plo
 	-rm -f ./$(DEPDIR)/H5Tfixed.Plo
 	-rm -f ./$(DEPDIR)/H5Tfloat.Plo
-	-rm -f ./$(DEPDIR)/H5Tinit.Plo
+	-rm -f ./$(DEPDIR)/H5Tinit_float.Plo
 	-rm -f ./$(DEPDIR)/H5Tnative.Plo
 	-rm -f ./$(DEPDIR)/H5Toffset.Plo
 	-rm -f ./$(DEPDIR)/H5Toh.Plo
@@ -2957,11 +2926,9 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/H5Zshuffle.Plo
 	-rm -f ./$(DEPDIR)/H5Zszip.Plo
 	-rm -f ./$(DEPDIR)/H5Ztrans.Plo
+	-rm -f ./$(DEPDIR)/H5build_settings.Plo
 	-rm -f ./$(DEPDIR)/H5checksum.Plo
 	-rm -f ./$(DEPDIR)/H5dbg.Plo
-	-rm -f ./$(DEPDIR)/H5detect.Po
-	-rm -f ./$(DEPDIR)/H5lib_settings.Plo
-	-rm -f ./$(DEPDIR)/H5make_libsettings.Po
 	-rm -f ./$(DEPDIR)/H5mpi.Plo
 	-rm -f ./$(DEPDIR)/H5system.Plo
 	-rm -f ./$(DEPDIR)/H5timer.Plo
@@ -2999,12 +2966,12 @@ uninstall-am: uninstall-includeHEADERS uninstall-libLTLIBRARIES \
 
 .PHONY: CTAGS GTAGS TAGS all all-am all-local am--depfiles check \
 	check-TESTS check-am clean clean-generic clean-libLTLIBRARIES \
-	clean-libtool clean-noinstPROGRAMS cscopelist-am ctags \
-	ctags-am distclean distclean-compile distclean-generic \
-	distclean-hdr distclean-libtool distclean-tags distdir dvi \
-	dvi-am html html-am info info-am install install-am \
-	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
+	clean-libtool cscopelist-am ctags ctags-am distclean \
+	distclean-compile distclean-generic distclean-hdr \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am \
 	install-includeHEADERS install-info install-info-am \
 	install-libLTLIBRARIES install-man install-pdf install-pdf-am \
 	install-ps install-ps-am install-settingsDATA install-strip \
@@ -3029,32 +2996,6 @@ uninstall-am: uninstall-includeHEADERS uninstall-libLTLIBRARIES \
 
 help:
 	@$(top_srcdir)/bin/makehelp
-
-# Number format detection
-# The LD_LIBRARY_PATH setting is a kludge.
-# Things should have been all set during H5detect making.
-# Remove the generated .c file if errors occur unless HDF5_Make_Ignore
-# is set to ignore the error.
-H5Tinit.c: H5detect$(EXEEXT)
-	@if $(AM_V_P); then set -x; else echo "  GEN      H5Tinit.c"; fi;       \
-	LD_LIBRARY_PATH="$$LD_LIBRARY_PATH`echo $(LDFLAGS) |                    \
-	    sed -e 's/-L/:/g' -e 's/ //g'`"                                     \
-	$(RUNSERIAL) ./H5detect$(EXEEXT)  $@  ||                               	\
-	    (test $$HDF5_Make_Ignore && echo "*** Error ignored") ||            \
-	    ($(RM) $@ ; exit 1)
-
-# Build configuration header file generation
-# The LD_LIBRARY_PATH setting is a kludge.
-# Things should have been all set during H5make_libsettings making.
-# Remove the generated .c file if errors occur unless HDF5_Make_Ignore
-# is set to ignore the error.
-H5lib_settings.c: H5make_libsettings$(EXEEXT) libhdf5.settings
-	@if $(AM_V_P); then set -x; else echo "  GEN      H5lib_settings.c"; fi;    \
-	LD_LIBRARY_PATH="$$LD_LIBRARY_PATH`echo $(LDFLAGS) |                        \
-	    sed -e 's/-L/:/g' -e 's/ //g'`"                                         \
-	$(RUNSERIAL) ./H5make_libsettings$(EXEEXT)  $@  ||                          \
-	    (test $$HDF5_Make_Ignore && echo "*** Error ignored") ||                \
-	    ($(RM) $@ ; exit 1)
 
 # Error header generation
 #

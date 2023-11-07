@@ -389,7 +389,7 @@ am__set_b = \
     *) \
       b='$*';; \
   esac
-DIST_SUBDIRS = lib src test
+DIST_SUBDIRS = lib src libtest test
 am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/bin/test-driver \
 	$(top_srcdir)/config/commence.am \
 	$(top_srcdir)/config/conclude.am
@@ -570,6 +570,7 @@ HAVE_LIBHDFS = @HAVE_LIBHDFS@
 HAVE_MERCURY = @HAVE_MERCURY@
 HAVE_PTHREAD = @HAVE_PTHREAD@
 HDF5_DOXYGEN = @HDF5_DOXYGEN@
+HDF5_DOXY_WARNINGS = @HDF5_DOXY_WARNINGS@
 HDF5_HL = @HDF5_HL@
 HDF5_HL_GIF_TOOLS = @HDF5_HL_GIF_TOOLS@
 HDF5_HL_TOOLS = @HDF5_HL_TOOLS@
@@ -806,7 +807,7 @@ TRACE = perl $(top_srcdir)/bin/trace
 # .chklog files are output from those tests.
 CHECK_CLEANFILES = *.chkexe *.chklog
 @BUILD_TESTS_CONDITIONAL_FALSE@TESTSERIAL_DIR = 
-@BUILD_TESTS_CONDITIONAL_TRUE@TESTSERIAL_DIR = test
+@BUILD_TESTS_CONDITIONAL_TRUE@TESTSERIAL_DIR = libtest test
 CONFIG = ordered
 
 # All subdirectories

@@ -146,7 +146,8 @@ PROGRAMS = $(bin_PROGRAMS)
 h5tools_test_utils_SOURCES = h5tools_test_utils.c
 h5tools_test_utils_OBJECTS = h5tools_test_utils.$(OBJEXT)
 h5tools_test_utils_LDADD = $(LDADD)
-h5tools_test_utils_DEPENDENCIES = $(LIBH5TOOLS) $(LIBHDF5)
+h5tools_test_utils_DEPENDENCIES = $(LIBH5TOOLS) $(LIBH5TEST) \
+	$(LIBHDF5)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -427,9 +428,9 @@ AMTAR = @AMTAR@
 # This applies to FCFLAGS, CXXFLAGS, CPPFLAGS, and LDFLAGS as well.
 AM_CFLAGS = @AM_CFLAGS@ @H5_CFLAGS@
 
-# Include src and tools/lib directories
+# Include src, test, and tools/lib directories
 AM_CPPFLAGS = @AM_CPPFLAGS@ @H5_CPPFLAGS@ -I$(top_srcdir)/src \
-	-I$(top_srcdir)/tools/lib
+	-I$(top_srcdir)/test -I$(top_srcdir)/tools/lib
 AM_CXXFLAGS = @AM_CXXFLAGS@ @H5_CXXFLAGS@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AM_FCFLAGS = @AM_FCFLAGS@ @H5_FCFLAGS@
@@ -570,6 +571,7 @@ HAVE_LIBHDFS = @HAVE_LIBHDFS@
 HAVE_MERCURY = @HAVE_MERCURY@
 HAVE_PTHREAD = @HAVE_PTHREAD@
 HDF5_DOXYGEN = @HDF5_DOXYGEN@
+HDF5_DOXY_WARNINGS = @HDF5_DOXY_WARNINGS@
 HDF5_HL = @HDF5_HL@
 HDF5_HL_GIF_TOOLS = @HDF5_HL_GIF_TOOLS@
 HDF5_HL_TOOLS = @HDF5_HL_TOOLS@
@@ -806,8 +808,8 @@ TRACE = perl $(top_srcdir)/bin/trace
 # .chklog files are output from those tests.
 CHECK_CLEANFILES = *.chkexe *.chklog
 
-# All programs depend on the hdf5 and h5tools libraries
-LDADD = $(LIBH5TOOLS) $(LIBHDF5)
+# All programs depend on the hdf5, hdf5 test, and h5tools libraries
+LDADD = $(LIBH5TOOLS) $(LIBH5TEST) $(LIBHDF5)
 
 # Automake needs to be taught how to build lib, progs and tests targets.
 # These will be filled in automatically for the most part (e.g.,

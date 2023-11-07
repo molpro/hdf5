@@ -7,8 +7,8 @@
       "description": "Basic build using Ninja generator",
       "generator": "Ninja",
       "hidden": true,
-      "binaryDir": "${sourceParentDir}/build/${presetName}",
-      "installDir": "${sourceParentDir}/install/${presetName}"
+      "binaryDir": "${sourceParentDir}/build114/${presetName}",
+      "installDir": "${sourceParentDir}/install114/${presetName}"
     },
    {
       "name": "ci-x64",
@@ -100,7 +100,7 @@
       "name": "ci-Fortran-Clang",
       "hidden": true,
       "cacheVariables": {
-        "CMAKE_Fortran_COMPILER": "gfortran"
+        "CMAKE_Fortran_COMPILER":  {"type": "FILEPATH", "value": "gfortran"}
       },
       "condition": {
         "type": "matches",

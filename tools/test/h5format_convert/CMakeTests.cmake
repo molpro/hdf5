@@ -79,15 +79,15 @@
   add_custom_target(h5fc-files ALL COMMENT "Copying files needed by h5fc tests")
 
   foreach (ddl_file ${HDF5_REFERENCE_FILES})
-    HDFTEST_COPY_FILE("${HDF5_TOOLS_TEST_H5FC_SOURCE_DIR}/testfiles/${ddl_file}" "${PROJECT_BINARY_DIR}/testfiles/${ddl_file}" "h5fc_files")
+    HDFTEST_COPY_FILE("${PROJECT_SOURCE_DIR}/expected/${ddl_file}" "${PROJECT_BINARY_DIR}/testfiles/${ddl_file}" "h5fc_files")
   endforeach ()
 
   foreach (h5_file ${HDF5_REFERENCE_ERR_FILES})
-    HDFTEST_COPY_FILE("${HDF5_TOOLS_TEST_H5FC_SOURCE_DIR}/testfiles/${h5_file}" "${PROJECT_BINARY_DIR}/testfiles/${h5_file}" "h5fc_files")
+    HDFTEST_COPY_FILE("${PROJECT_SOURCE_DIR}/expected/${h5_file}" "${PROJECT_BINARY_DIR}/testfiles/${h5_file}" "h5fc_files")
   endforeach ()
 
   foreach (h5_file ${HDF5_REFERENCE_TEST_FILES})
-    HDFTEST_COPY_FILE("${HDF5_TOOLS_TEST_H5FC_SOURCE_DIR}/testfiles/${h5_file}" "${PROJECT_BINARY_DIR}/testfiles/${h5_file}" "h5fc_files")
+    HDFTEST_COPY_FILE("${PROJECT_SOURCE_DIR}/testfiles/${h5_file}" "${PROJECT_BINARY_DIR}/testfiles/${h5_file}" "h5fc_files")
   endforeach ()
   add_custom_target(h5fc_files ALL COMMENT "Copying files needed by h5fc tests" DEPENDS ${h5fc_files_list})
 
@@ -378,11 +378,11 @@
           COMMAND "${CMAKE_COMMAND}"
               -D "TEST_EMULATOR=${CMAKE_CROSSCOMPILING_EMULATOR}"
               -D "TEST_PROGRAM=$<TARGET_FILE:h5dump${tgt_file_ext}>"
-              -D "TEST_ARGS:STRING=-BH;./testfiles/${testname}-tmp.h5"
-              -D "TEST_FOLDER=${PROJECT_BINARY_DIR}"
-              -D "TEST_OUTPUT=testfiles/${testname}_chk.out"
+              -D "TEST_ARGS:STRING=-BH;${testname}-tmp.h5"
+              -D "TEST_FOLDER=${PROJECT_BINARY_DIR}/testfiles"
+              -D "TEST_OUTPUT=${testname}_chk.out"
               -D "TEST_EXPECT=0"
-              -D "TEST_REFERENCE=testfiles/${testname}.ddl"
+              -D "TEST_REFERENCE=${testname}.ddl"
               -P "${HDF_RESOURCES_DIR}/runTest.cmake"
       )
       set_tests_properties (H5FC_H5DUMP_CHECK-${testname}-dump PROPERTIES

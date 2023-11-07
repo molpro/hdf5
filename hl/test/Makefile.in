@@ -630,6 +630,7 @@ HAVE_LIBHDFS = @HAVE_LIBHDFS@
 HAVE_MERCURY = @HAVE_MERCURY@
 HAVE_PTHREAD = @HAVE_PTHREAD@
 HDF5_DOXYGEN = @HDF5_DOXYGEN@
+HDF5_DOXY_WARNINGS = @HDF5_DOXY_WARNINGS@
 HDF5_HL = @HDF5_HL@
 HDF5_HL_GIF_TOOLS = @HDF5_HL_GIF_TOOLS@
 HDF5_HL_TOOLS = @HDF5_HL_TOOLS@
@@ -873,7 +874,7 @@ CHECK_CLEANFILES = *.chkexe *.chklog combine_tables[1-2].h5 \
 	test_packet_table_vlen.h5 testfl_packet_table_vlen.h5 \
 	test_append.h5 h5do_compat.h5
 
-# The tests depend on the hdf5, hdf5 test,  and hdf5_hl libraries
+# The tests depend on the hdf5, hdf5 test, and hdf5_hl libraries
 LDADD = $(LIBH5_HL) $(LIBH5TEST) $(LIBHDF5)
 
 # Test programs.  These are our main targets.  They should be listed in the

@@ -181,7 +181,7 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 libhdf5hl_fortran_la_DEPENDENCIES = $(LIBH5_HL) $(LIBH5F)
 am_libhdf5hl_fortran_la_OBJECTS = H5DSfc.lo H5LTfc.lo H5IMfc.lo \
 	H5IMcc.lo H5TBfc.lo H5DSff.lo H5LTff.lo H5TBff.lo H5IMff.lo \
-	H5LTff_gen.lo H5TBff_gen.lo
+	H5DOff.lo H5LTff_gen.lo H5TBff_gen.lo
 libhdf5hl_fortran_la_OBJECTS = $(am_libhdf5hl_fortran_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -603,6 +603,7 @@ HAVE_LIBHDFS = @HAVE_LIBHDFS@
 HAVE_MERCURY = @HAVE_MERCURY@
 HAVE_PTHREAD = @HAVE_PTHREAD@
 HDF5_DOXYGEN = @HDF5_DOXYGEN@
+HDF5_DOXY_WARNINGS = @HDF5_DOXY_WARNINGS@
 HDF5_HL = @HDF5_HL@
 HDF5_HL_GIF_TOOLS = @HDF5_HL_GIF_TOOLS@
 HDF5_HL_TOOLS = @HDF5_HL_TOOLS@
@@ -843,29 +844,29 @@ CHECK_CLEANFILES = *.chkexe *.chklog
 # See libtool versioning documentation online.
 # After making changes, run bin/reconfigure to update other configure related
 # files like Makefile.in.
-LT_VERS_INTERFACE = 312
-LT_VERS_AGE = 2
+LT_VERS_INTERFACE = 313
+LT_VERS_AGE = 3
 LT_VERS_REVISION = 0
 LT_CXX_VERS_INTERFACE = 310
-LT_CXX_VERS_REVISION = 2
+LT_CXX_VERS_REVISION = 3
 LT_CXX_VERS_AGE = 0
-LT_F_VERS_INTERFACE = 311
-LT_F_VERS_REVISION = 1
-LT_F_VERS_AGE = 1
+LT_F_VERS_INTERFACE = 312
+LT_F_VERS_REVISION = 0
+LT_F_VERS_AGE = 2
 LT_HL_VERS_INTERFACE = 310
-LT_HL_VERS_REVISION = 2
+LT_HL_VERS_REVISION = 3
 LT_HL_VERS_AGE = 0
 LT_HL_CXX_VERS_INTERFACE = 310
-LT_HL_CXX_VERS_REVISION = 2
+LT_HL_CXX_VERS_REVISION = 3
 LT_HL_CXX_VERS_AGE = 0
 LT_HL_F_VERS_INTERFACE = 310
-LT_HL_F_VERS_REVISION = 2
+LT_HL_F_VERS_REVISION = 3
 LT_HL_F_VERS_AGE = 0
 LT_JAVA_VERS_INTERFACE = 310
-LT_JAVA_VERS_REVISION = 2
+LT_JAVA_VERS_REVISION = 3
 LT_JAVA_VERS_AGE = 0
 LT_TOOLS_VERS_INTERFACE = 310
-LT_TOOLS_VERS_REVISION = 2
+LT_TOOLS_VERS_REVISION = 3
 LT_TOOLS_VERS_AGE = 0
 
 # Our main target, the high-level fortran library
@@ -881,7 +882,7 @@ libhdf5hl_fortran_la_LDFLAGS = -version-info $(LT_HL_F_VERS_INTERFACE):$(LT_HL_F
 
 # List sources to include in the HDF5 HL Fortran library.
 libhdf5hl_fortran_la_SOURCES = H5DSfc.c H5LTfc.c H5IMfc.c H5IMcc.c H5TBfc.c \
-	H5DSff.F90 H5LTff.F90 H5TBff.F90 H5IMff.F90 H5LTff_gen.F90 H5TBff_gen.F90
+	H5DSff.F90 H5LTff.F90 H5TBff.F90 H5IMff.F90 H5DOff.F90 H5LTff_gen.F90 H5TBff_gen.F90
 
 
 # HDF5 HL Fortran library depends on HDF5 Library.
@@ -1504,6 +1505,7 @@ H5DSff.lo:          $(srcdir)/H5DSff.F90
 H5LTff.lo:          $(srcdir)/H5LTff.F90
 H5IMff.lo:          $(srcdir)/H5IMff.F90
 H5TBff.lo:          $(srcdir)/H5TBff.F90
+H5DOff.lo:          $(srcdir)/H5DOff.F90
 H5LTff_gen.lo:      H5LTff.lo H5LTff_gen.F90
 H5TBff_gen.lo:      H5TBff.lo H5LTff_gen.F90 H5TBff_gen.F90
 

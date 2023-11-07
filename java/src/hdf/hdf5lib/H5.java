@@ -231,7 +231,7 @@ import org.slf4j.LoggerFactory;
  * which prints out the HDF5 error stack, as described in the HDF5 C API <i><b>@ref H5Eprint()</b>.</i> This
  * may be used by Java exception handlers to print out the HDF5 error stack. <hr>
  *
- * @version HDF5 1.14.2 <BR>
+ * @version HDF5 1.14.3 <BR>
  *          <b>See also: </b>
  *          @ref HDFARRAY hdf.hdf5lib.HDFArray<br />
  *          @ref HDF5CONST hdf.hdf5lib.HDF5Constants<br />
@@ -273,7 +273,7 @@ public class H5 implements java.io.Serializable {
      * </ul>
      * Make sure to update the versions number when a different library is used.
      */
-    public final static int LIB_VERSION[] = {1, 14, 2};
+    public final static int LIB_VERSION[] = {1, 14, 3};
 
     /**
      * @ingroup JH5
@@ -8607,7 +8607,7 @@ public class H5 implements java.io.Serializable {
      * @ingroup JH5P
      *
      * H5Premove_filter deletes a filter from the dataset creation property list;
-     *                  deletes all filters if filter is H5Z_FILTER_NONE
+     *                  deletes all filters if filter is H5Z_FILTER_ALL
      *
      * @param obj_id
      *            IN: Property list identifier.
@@ -9434,10 +9434,10 @@ public class H5 implements java.io.Serializable {
     /**
      * @ingroup JH5P
      *
-     * H5Pset_sieve_buf_size Sets the maximum size of the data seive buffer used for file
+     * H5Pset_sieve_buf_size Sets the maximum size of the data sieve buffer used for file
      *      drivers which are capable of using data sieving.  The data sieve
      *      buffer is used when performing I/O on datasets in the file.  Using a
-     *      buffer which is large anough to hold several pieces of the dataset
+     *      buffer which is large enough to hold several pieces of the dataset
      *      being read in for hyperslab selections boosts performance by quite a
      *      bit.
      * <p>
@@ -9448,7 +9448,7 @@ public class H5 implements java.io.Serializable {
      * @param fapl_id
      *            IN: Identifier of property list to modify.
      * @param size
-     *            IN: maximum size of the data seive buffer.
+     *            IN: maximum size of the data sieve buffer.
      *
      * @exception HDF5LibraryException
      *            Error from the HDF5 Library.

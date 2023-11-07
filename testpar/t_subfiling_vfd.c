@@ -40,6 +40,8 @@
 #define PATH_MAX 4096
 #endif
 
+#define DEFAULT_DEFLATE_LEVEL 9
+
 #define ARRAY_SIZE(a) sizeof(a) / sizeof(a[0])
 
 #define CHECK_PASSED()                                                                                       \
@@ -82,12 +84,15 @@ static char *config_dir = NULL;
 int nerrors      = 0;
 int curr_nerrors = 0;
 
+bool enable_compression = false;
+
 /* Function pointer typedef for test functions */
 typedef void (*test_func)(void);
 
 /* Utility functions */
-static hid_t create_subfiling_ioc_fapl(MPI_Comm comm, MPI_Info info, hbool_t custom_config,
+static hid_t create_subfiling_ioc_fapl(MPI_Comm comm, MPI_Info info, bool custom_config,
                                        H5FD_subfiling_params_t *custom_cfg, int32_t thread_pool_size);
+static hid_t create_dcpl_id(int rank, const hsize_t dims[], hid_t dxpl_id);
 
 /* Test functions */
 static void test_create_and_close(void);
@@ -125,7 +130,7 @@ static test_func tests[] = {
  * ---------------------------------------------------------------------------
  */
 static hid_t
-create_subfiling_ioc_fapl(MPI_Comm comm, MPI_Info info, hbool_t custom_config,
+create_subfiling_ioc_fapl(MPI_Comm comm, MPI_Info info, bool custom_config,
                           H5FD_subfiling_params_t *custom_cfg, int32_t thread_pool_size)
 {
     H5FD_subfiling_config_t subfiling_conf;
@@ -182,7 +187,47 @@ error:
 
     return H5I_INVALID_HID;
 }
+/* ---------------------------------------------------------------------------
+ * Function:    create_dcpl_id
+ *
+ * Purpose:     Creates dataset creation property list identifier with
+ *              chunking and compression, and enforces the
+ *              required collective IO.
+ *
+ * Return:      Success: HID Dataset creation property list identifier,
+ *                       a non-negative value.
+ *              Failure: H5I_INVALID_HID, a negative value.
+ * ---------------------------------------------------------------------------
+ */
+static hid_t
+create_dcpl_id(int rank, const hsize_t dset_dims[], hid_t dxpl_id)
+{
+    hsize_t chunk_dims[1];
+    hid_t   ret_value = H5I_INVALID_HID;
 
+    if ((ret_value = H5Pcreate(H5P_DATASET_CREATE)) < 0)
+        TEST_ERROR;
+
+    if (enable_compression) {
+        if (H5Pset_dxpl_mpio(dxpl_id, H5FD_MPIO_COLLECTIVE) < 0)
+            TEST_ERROR;
+        chunk_dims[0] = dset_dims[0] / 2;
+        if (H5Pset_chunk(ret_value, rank, chunk_dims) < 0)
+            TEST_ERROR;
+        if (H5Pset_deflate(ret_value, DEFAULT_DEFLATE_LEVEL) < 0)
+            TEST_ERROR;
+    }
+
+    return ret_value;
+
+error:
+    if ((H5I_INVALID_HID != ret_value) && (H5Pclose(ret_value) < 0)) {
+        H5_FAILED();
+        AT();
+    }
+
+    return H5I_INVALID_HID;
+}
 /*
  * A simple test that creates and closes a file with the
  * subfiling VFD
@@ -200,7 +245,7 @@ test_create_and_close(void)
         TESTING_2("file creation and immediate close");
 
     /* Get a default Subfiling FAPL */
-    fapl_id = create_subfiling_ioc_fapl(comm_g, info_g, FALSE, NULL, 0);
+    fapl_id = create_subfiling_ioc_fapl(comm_g, info_g, false, NULL, 0);
     VRFY((fapl_id >= 0), "FAPL creation succeeded");
 
     file_id = H5Fcreate(SUBF_FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id);
@@ -302,7 +347,7 @@ test_config_file(void)
     cfg.stripe_size   = (stripe_size_g > 0) ? stripe_size_g : stripe_size;
     cfg.stripe_count  = num_iocs_g > 1 ? (num_iocs_g / 2) : 1;
 
-    fapl_id = create_subfiling_ioc_fapl(comm_g, info_g, TRUE, &cfg, H5FD_IOC_DEFAULT_THREAD_POOL_SIZE);
+    fapl_id = create_subfiling_ioc_fapl(comm_g, info_g, true, &cfg, H5FD_IOC_DEFAULT_THREAD_POOL_SIZE);
     VRFY((fapl_id >= 0), "FAPL creation succeeded");
 
     file_id = H5Fcreate(SUBF_FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id);
@@ -325,8 +370,8 @@ test_config_file(void)
         config_filename = malloc(PATH_MAX);
         VRFY(config_filename, "malloc succeeded");
 
-        HDsnprintf(config_filename, PATH_MAX, "%s/" H5FD_SUBFILING_CONFIG_FILENAME_TEMPLATE, config_dir,
-                   SUBF_FILENAME, (uint64_t)file_info.st_ino);
+        snprintf(config_filename, PATH_MAX, "%s/" H5FD_SUBFILING_CONFIG_FILENAME_TEMPLATE, config_dir,
+                 SUBF_FILENAME, (uint64_t)file_info.st_ino);
 
         config_file = fopen(config_filename, "r");
         VRFY(config_file, "fopen succeeded");
@@ -347,27 +392,27 @@ test_config_file(void)
         config_buf[config_file_len] = '\0';
 
         /* Check the stripe_size field in the configuration file */
-        substr = HDstrstr(config_buf, "stripe_size");
-        VRFY(substr, "HDstrstr succeeded");
+        substr = strstr(config_buf, "stripe_size");
+        VRFY(substr, "strstr succeeded");
 
-        VRFY((HDsscanf(substr, "stripe_size=%" PRId64, &read_stripe_size) == 1), "HDsscanf succeeded");
+        VRFY((sscanf(substr, "stripe_size=%" PRId64, &read_stripe_size) == 1), "sscanf succeeded");
         VRFY((read_stripe_size == cfg.stripe_size), "Stripe size comparison succeeded");
 
         /* Check the aggregator_count field in the configuration file */
-        substr = HDstrstr(config_buf, "aggregator_count");
-        VRFY(substr, "HDstrstr succeeded");
+        substr = strstr(config_buf, "aggregator_count");
+        VRFY(substr, "strstr succeeded");
 
-        VRFY((HDsscanf(substr, "aggregator_count=%d", &read_aggr_count) == 1), "HDsscanf succeeded");
+        VRFY((sscanf(substr, "aggregator_count=%d", &read_aggr_count) == 1), "sscanf succeeded");
         if (cfg.stripe_count < num_iocs_g)
             VRFY((read_aggr_count == cfg.stripe_count), "Aggregator count comparison succeeded");
         else
             VRFY((read_aggr_count == num_iocs_g), "Aggregator count comparison succeeded");
 
         /* Check the subfile_count field in the configuration file */
-        substr = HDstrstr(config_buf, "subfile_count");
-        VRFY(substr, "HDstrstr succeeded");
+        substr = strstr(config_buf, "subfile_count");
+        VRFY(substr, "strstr succeeded");
 
-        VRFY((HDsscanf(substr, "subfile_count=%d", &read_stripe_count) == 1), "HDsscanf succeeded");
+        VRFY((sscanf(substr, "subfile_count=%d", &read_stripe_count) == 1), "sscanf succeeded");
         VRFY((read_stripe_count == cfg.stripe_count), "Stripe count comparison succeeded");
 
         /* Check the hdf5_file and subfile_dir fields in the configuration file */
@@ -379,21 +424,25 @@ test_config_file(void)
         tmp_buf = malloc(PATH_MAX);
         VRFY(tmp_buf, "malloc succeeded");
 
-        substr = HDstrstr(config_buf, "hdf5_file");
-        VRFY(substr, "HDstrstr succeeded");
+        substr = strstr(config_buf, "hdf5_file");
+        VRFY(substr, "strstr succeeded");
 
-        HDsnprintf(scan_format, sizeof(scan_format), "hdf5_file=%%%zus", (size_t)(PATH_MAX - 1));
-        VRFY((HDsscanf(substr, scan_format, tmp_buf) == 1), "HDsscanf succeeded");
+        H5_GCC_CLANG_DIAG_OFF("format-nonliteral")
+        snprintf(scan_format, sizeof(scan_format), "hdf5_file=%%%zus", (size_t)(PATH_MAX - 1));
+        VRFY((sscanf(substr, scan_format, tmp_buf) == 1), "sscanf succeeded");
+        H5_GCC_CLANG_DIAG_ON("format-nonliteral")
 
-        VRFY((HDstrcmp(tmp_buf, resolved_path) == 0), "HDstrcmp succeeded");
+        VRFY((strcmp(tmp_buf, resolved_path) == 0), "strcmp succeeded");
 
-        substr = HDstrstr(config_buf, "subfile_dir");
-        VRFY(substr, "HDstrstr succeeded");
+        substr = strstr(config_buf, "subfile_dir");
+        VRFY(substr, "strstr succeeded");
 
-        HDsnprintf(scan_format, sizeof(scan_format), "subfile_dir=%%%zus", (size_t)(PATH_MAX - 1));
-        VRFY((HDsscanf(substr, scan_format, tmp_buf) == 1), "HDsscanf succeeded");
+        H5_GCC_CLANG_DIAG_OFF("format-nonliteral")
+        snprintf(scan_format, sizeof(scan_format), "subfile_dir=%%%zus", (size_t)(PATH_MAX - 1));
+        VRFY((sscanf(substr, scan_format, tmp_buf) == 1), "sscanf succeeded");
+        H5_GCC_CLANG_DIAG_ON("format-nonliteral")
 
-        VRFY((HDstrcmp(tmp_buf, subfile_dir) == 0), "HDstrcmp succeeded");
+        VRFY((strcmp(tmp_buf, subfile_dir) == 0), "strcmp succeeded");
 
         free(tmp_buf);
         H5MM_free(subfile_dir);
@@ -403,20 +452,20 @@ test_config_file(void)
         VRFY(subfile_name, "malloc succeeded");
 
         /* Verify the name of each subfile is in the configuration file */
-        num_digits = (int)(HDlog10(cfg.stripe_count) + 1);
+        num_digits = (int)(log10(cfg.stripe_count) + 1);
         for (size_t i = 0; i < (size_t)cfg.stripe_count; i++) {
-            HDsnprintf(subfile_name, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
-                       (uint64_t)file_info.st_ino, num_digits, (int)i + 1, cfg.stripe_count);
+            snprintf(subfile_name, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
+                     (uint64_t)file_info.st_ino, num_digits, (int)i + 1, cfg.stripe_count);
 
-            substr = HDstrstr(config_buf, subfile_name);
-            VRFY(substr, "HDstrstr succeeded");
+            substr = strstr(config_buf, subfile_name);
+            VRFY(substr, "strstr succeeded");
         }
 
         /* Verify that there aren't too many subfiles */
-        HDsnprintf(subfile_name, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
-                   (uint64_t)file_info.st_ino, num_digits, (int)cfg.stripe_count + 1, cfg.stripe_count);
-        substr = HDstrstr(config_buf, subfile_name);
-        VRFY(substr == NULL, "HDstrstr correctly failed");
+        snprintf(subfile_name, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
+                 (uint64_t)file_info.st_ino, num_digits, (int)cfg.stripe_count + 1, cfg.stripe_count);
+        substr = strstr(config_buf, subfile_name);
+        VRFY(substr == NULL, "strstr correctly failed");
 
         free(subfile_name);
         free(config_buf);
@@ -507,7 +556,7 @@ test_stripe_sizes(void)
             FILE *subfile_ptr;
 
             num_subfiles = 1;
-            num_digits   = (int)(HDlog10(num_subfiles) + 1);
+            num_digits   = (int)(log10(num_subfiles) + 1);
 
             nbytes = (size_t)(cfg.stripe_size * num_subfiles);
 
@@ -518,7 +567,7 @@ test_stripe_sizes(void)
 
             c_write_buf = write_buf;
 
-            fapl_id = create_subfiling_ioc_fapl(MPI_COMM_SELF, MPI_INFO_NULL, TRUE, &cfg,
+            fapl_id = create_subfiling_ioc_fapl(MPI_COMM_SELF, MPI_INFO_NULL, true, &cfg,
                                                 H5FD_IOC_DEFAULT_THREAD_POOL_SIZE);
             VRFY((fapl_id >= 0), "FAPL creation succeeded");
 
@@ -566,8 +615,8 @@ test_stripe_sizes(void)
                 h5_stat_size_t subfile_size;
                 h5_stat_t      subfile_info;
 
-                HDsnprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
-                           (uint64_t)file_info.st_ino, num_digits, j + 1, num_subfiles);
+                snprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
+                         (uint64_t)file_info.st_ino, num_digits, j + 1, num_subfiles);
 
                 /* Ensure file exists */
                 subfile_ptr = fopen(tmp_filename, "r");
@@ -582,8 +631,8 @@ test_stripe_sizes(void)
             }
 
             /* Verify that there aren't too many subfiles */
-            HDsnprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
-                       (uint64_t)file_info.st_ino, num_digits, num_subfiles + 1, num_subfiles);
+            snprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
+                     (uint64_t)file_info.st_ino, num_digits, num_subfiles + 1, num_subfiles);
 
             /* Ensure file doesn't exist */
             subfile_ptr = fopen(tmp_filename, "r");
@@ -612,8 +661,8 @@ test_stripe_sizes(void)
                 h5_stat_size_t subfile_size;
                 h5_stat_t      subfile_info;
 
-                HDsnprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
-                           (uint64_t)file_info.st_ino, num_digits, j + 1, num_subfiles);
+                snprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
+                         (uint64_t)file_info.st_ino, num_digits, j + 1, num_subfiles);
 
                 /* Ensure file exists */
                 subfile_ptr = fopen(tmp_filename, "r");
@@ -628,8 +677,8 @@ test_stripe_sizes(void)
             }
 
             /* Verify that there aren't too many subfiles */
-            HDsnprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
-                       (uint64_t)file_info.st_ino, num_digits, num_subfiles + 1, num_subfiles);
+            snprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
+                     (uint64_t)file_info.st_ino, num_digits, num_subfiles + 1, num_subfiles);
 
             /* Ensure file doesn't exist */
             subfile_ptr = fopen(tmp_filename, "r");
@@ -656,7 +705,7 @@ test_stripe_sizes(void)
 
         cfg.stripe_count = num_iocs_g;
 
-        fapl_id = create_subfiling_ioc_fapl(comm_g, info_g, TRUE, &cfg, H5FD_IOC_DEFAULT_THREAD_POOL_SIZE);
+        fapl_id = create_subfiling_ioc_fapl(comm_g, info_g, true, &cfg, H5FD_IOC_DEFAULT_THREAD_POOL_SIZE);
         VRFY((fapl_id >= 0), "FAPL creation succeeded");
 
         /* Create and close file with H5Fcreate to setup superblock */
@@ -669,7 +718,7 @@ test_stripe_sizes(void)
         VRFY(file_ptr, "H5FDopen succeeded");
 
         num_subfiles = num_iocs_g;
-        num_digits   = (int)(HDlog10(num_subfiles) + 1);
+        num_digits   = (int)(log10(num_subfiles) + 1);
 
         nbytes = (size_t)(cfg.stripe_size * num_subfiles);
 
@@ -732,8 +781,8 @@ test_stripe_sizes(void)
                 h5_stat_size_t subfile_size;
                 h5_stat_t      subfile_info;
 
-                HDsnprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
-                           (uint64_t)file_info.st_ino, num_digits, j + 1, num_subfiles);
+                snprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
+                         (uint64_t)file_info.st_ino, num_digits, j + 1, num_subfiles);
 
                 /* Ensure file exists */
                 subfile_ptr = fopen(tmp_filename, "r");
@@ -748,8 +797,8 @@ test_stripe_sizes(void)
             }
 
             /* Verify that there aren't too many subfiles */
-            HDsnprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
-                       (uint64_t)file_info.st_ino, num_digits, num_subfiles + 1, num_subfiles);
+            snprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
+                     (uint64_t)file_info.st_ino, num_digits, num_subfiles + 1, num_subfiles);
 
             /* Ensure file doesn't exist */
             subfile_ptr = fopen(tmp_filename, "r");
@@ -789,8 +838,8 @@ test_stripe_sizes(void)
                 h5_stat_size_t subfile_size;
                 h5_stat_t      subfile_info;
 
-                HDsnprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
-                           (uint64_t)file_info.st_ino, num_digits, j + 1, num_subfiles);
+                snprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
+                         (uint64_t)file_info.st_ino, num_digits, j + 1, num_subfiles);
 
                 /* Ensure file exists */
                 subfile_ptr = fopen(tmp_filename, "r");
@@ -805,8 +854,8 @@ test_stripe_sizes(void)
             }
 
             /* Verify that there aren't too many subfiles */
-            HDsnprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
-                       (uint64_t)file_info.st_ino, num_digits, num_subfiles + 1, num_subfiles);
+            snprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
+                     (uint64_t)file_info.st_ino, num_digits, num_subfiles + 1, num_subfiles);
 
             /* Ensure file doesn't exist */
             subfile_ptr = fopen(tmp_filename, "r");
@@ -886,7 +935,7 @@ test_selection_strategies(void)
                 char     criteria_buf[256];
                 char     sel_criteria[128]; /* Use char buffer for criteria as we may support
                                                the "with config" strategy in the future */
-                int expected_num_subfiles;
+                int expected_num_subfiles = -1;
 
                 cfg.ioc_selection = strategy;
                 cfg.stripe_size   = H5FD_SUBFILING_DEFAULT_STRIPE_SIZE;
@@ -908,7 +957,7 @@ test_selection_strategies(void)
                         else
                             stride = 16;
 
-                        HDsnprintf(sel_criteria, 128, "%d", stride);
+                        snprintf(sel_criteria, 128, "%d", stride);
 
                         expected_num_subfiles = ((num_active_ranks - 1) / stride) + 1;
 
@@ -930,7 +979,7 @@ test_selection_strategies(void)
                         else
                             n_iocs = 16;
 
-                        HDsnprintf(sel_criteria, 128, "%d", n_iocs);
+                        snprintf(sel_criteria, 128, "%d", n_iocs);
 
                         expected_num_subfiles = n_iocs;
 
@@ -946,10 +995,10 @@ test_selection_strategies(void)
                 }
 
                 if (criteria_format_choice == 0) {
-                    HDsnprintf(criteria_buf, 256, "%d:%s", strategy, sel_criteria);
+                    snprintf(criteria_buf, 256, "%d:%s", strategy, sel_criteria);
                 }
                 else if (criteria_format_choice == 1) {
-                    HDsnprintf(criteria_buf, 256, "%s", sel_criteria);
+                    snprintf(criteria_buf, 256, "%s", sel_criteria);
                 }
 
                 VRFY(HDsetenv(H5FD_SUBFILING_IOC_SELECTION_CRITERIA, criteria_buf, 1) >= 0,
@@ -965,7 +1014,7 @@ test_selection_strategies(void)
                     if (num_active_ranks < mpi_size)
                         file_comm = MPI_COMM_SELF;
 
-                    fapl_id = create_subfiling_ioc_fapl(file_comm, info_g, TRUE, &cfg,
+                    fapl_id = create_subfiling_ioc_fapl(file_comm, info_g, true, &cfg,
                                                         H5FD_IOC_DEFAULT_THREAD_POOL_SIZE);
                     VRFY((fapl_id >= 0), "FAPL creation succeeded");
 
@@ -977,12 +1026,12 @@ test_selection_strategies(void)
                      */
                     VRFY((HDstat(SUBF_FILENAME, &file_info) >= 0), "HDstat succeeded");
 
-                    num_digits = (int)(HDlog10(expected_num_subfiles) + 1);
+                    num_digits = (int)(log10(expected_num_subfiles) + 1);
 
                     /* Ensure all the subfiles are present */
                     for (int i = 0; i < expected_num_subfiles; i++) {
-                        HDsnprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
-                                   (uint64_t)file_info.st_ino, num_digits, i + 1, expected_num_subfiles);
+                        snprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
+                                 (uint64_t)file_info.st_ino, num_digits, i + 1, expected_num_subfiles);
 
                         /* Ensure file exists */
                         subfile_ptr = fopen(tmp_filename, "r");
@@ -991,9 +1040,9 @@ test_selection_strategies(void)
                     }
 
                     /* Ensure no extra subfiles are present */
-                    HDsnprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
-                               (uint64_t)file_info.st_ino, num_digits, expected_num_subfiles + 1,
-                               expected_num_subfiles);
+                    snprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
+                             (uint64_t)file_info.st_ino, num_digits, expected_num_subfiles + 1,
+                             expected_num_subfiles);
 
                     /* Ensure file doesn't exist */
                     subfile_ptr = fopen(tmp_filename, "r");
@@ -1056,6 +1105,7 @@ test_read_different_stripe_size(void)
     hid_t                   fapl_id      = H5I_INVALID_HID;
     hid_t                   dset_id      = H5I_INVALID_HID;
     hid_t                   dxpl_id      = H5I_INVALID_HID;
+    hid_t                   dcpl_id      = H5I_INVALID_HID;
     hid_t                   fspace_id    = H5I_INVALID_HID;
     char                   *tmp_filename = NULL;
     void                   *buf          = NULL;
@@ -1079,7 +1129,7 @@ test_read_different_stripe_size(void)
     cfg.stripe_size   = (stripe_size_g > 0) ? stripe_size_g : 1048576;
     cfg.stripe_count  = num_iocs_g;
 
-    fapl_id = create_subfiling_ioc_fapl(comm_g, info_g, TRUE, &cfg, H5FD_IOC_DEFAULT_THREAD_POOL_SIZE);
+    fapl_id = create_subfiling_ioc_fapl(comm_g, info_g, true, &cfg, H5FD_IOC_DEFAULT_THREAD_POOL_SIZE);
     VRFY((fapl_id >= 0), "FAPL creation succeeded");
 
     file_id = H5Fcreate(SUBF_FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id);
@@ -1102,7 +1152,10 @@ test_read_different_stripe_size(void)
     fspace_id = H5Screate_simple(1, dset_dims, NULL);
     VRFY((fspace_id >= 0), "H5Screate_simple succeeded");
 
-    dset_id = H5Dcreate2(file_id, "DSET", SUBF_HDF5_TYPE, fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    dcpl_id = create_dcpl_id(1, dset_dims, dxpl_id);
+    VRFY((dcpl_id >= 0), "DCPL creation succeeded");
+
+    dset_id = H5Dcreate2(file_id, "DSET", SUBF_HDF5_TYPE, fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT);
     VRFY((dset_id >= 0), "Dataset creation succeeded");
 
     /* Select hyperslab */
@@ -1125,6 +1178,7 @@ test_read_different_stripe_size(void)
 
     VRFY((H5Sclose(fspace_id) >= 0), "File dataspace close succeeded");
     VRFY((H5Dclose(dset_id) >= 0), "Dataset close succeeded");
+    VRFY((H5Pclose(dcpl_id) >= 0), "DCPL close succeeded");
     VRFY((H5Fclose(file_id) >= 0), "File close succeeded");
 
     /* Ensure all the subfiles are present */
@@ -1132,7 +1186,7 @@ test_read_different_stripe_size(void)
         h5_stat_t file_info;
         FILE     *subfile_ptr;
         int       num_subfiles = cfg.stripe_count;
-        int       num_digits   = (int)(HDlog10(num_subfiles) + 1);
+        int       num_digits   = (int)(log10(num_subfiles) + 1);
 
         VRFY((HDstat(SUBF_FILENAME, &file_info) >= 0), "HDstat succeeded");
 
@@ -1140,8 +1194,8 @@ test_read_different_stripe_size(void)
             h5_stat_size_t subfile_size;
             h5_stat_t      subfile_info;
 
-            HDsnprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
-                       (uint64_t)file_info.st_ino, num_digits, j + 1, num_subfiles);
+            snprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
+                     (uint64_t)file_info.st_ino, num_digits, j + 1, num_subfiles);
 
             /* Ensure file exists */
             subfile_ptr = fopen(tmp_filename, "r");
@@ -1149,10 +1203,12 @@ test_read_different_stripe_size(void)
             VRFY((fclose(subfile_ptr) >= 0), "fclose on subfile succeeded");
 
             /* Check file size */
-            VRFY((HDstat(tmp_filename, &subfile_info) >= 0), "HDstat succeeded");
-            subfile_size = (h5_stat_size_t)subfile_info.st_size;
+            if (!enable_compression) {
+                VRFY((HDstat(tmp_filename, &subfile_info) >= 0), "HDstat succeeded");
+                subfile_size = (h5_stat_size_t)subfile_info.st_size;
 
-            VRFY((subfile_size >= cfg.stripe_size), "File size verification succeeded");
+                VRFY((subfile_size >= cfg.stripe_size), "File size verification succeeded");
+            }
         }
     }
 
@@ -1163,7 +1219,7 @@ test_read_different_stripe_size(void)
     cfg.stripe_size += (cfg.stripe_size / 2);
     cfg.stripe_count *= 2;
 
-    fapl_id = create_subfiling_ioc_fapl(comm_g, info_g, TRUE, &cfg, H5FD_IOC_DEFAULT_THREAD_POOL_SIZE);
+    fapl_id = create_subfiling_ioc_fapl(comm_g, info_g, true, &cfg, H5FD_IOC_DEFAULT_THREAD_POOL_SIZE);
     VRFY((fapl_id >= 0), "FAPL creation succeeded");
 
     file_id = H5Fopen(SUBF_FILENAME, H5F_ACC_RDONLY, fapl_id);
@@ -1205,13 +1261,13 @@ test_read_different_stripe_size(void)
         h5_stat_t file_info;
         FILE     *subfile_ptr;
         int       num_subfiles = cfg.stripe_count;
-        int       num_digits   = (int)(HDlog10(num_subfiles / 2) + 1);
+        int       num_digits   = (int)(log10(num_subfiles / 2) + 1);
 
         VRFY((HDstat(SUBF_FILENAME, &file_info) >= 0), "HDstat succeeded");
 
         for (int j = 0; j < num_subfiles; j++) {
-            HDsnprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
-                       (uint64_t)file_info.st_ino, num_digits, j + 1, num_subfiles / 2);
+            snprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
+                     (uint64_t)file_info.st_ino, num_digits, j + 1, num_subfiles / 2);
 
             if (j < (num_subfiles / 2)) {
                 /* Ensure file exists */
@@ -1317,7 +1373,7 @@ test_subfiling_precreate_rank_0(void)
         cfg.stripe_size   = (stripe_size_g > 0) ? stripe_size_g : H5FD_SUBFILING_DEFAULT_STRIPE_SIZE;
         cfg.stripe_count  = num_iocs_g;
 
-        fapl_id = create_subfiling_ioc_fapl(MPI_COMM_SELF, MPI_INFO_NULL, TRUE, &cfg,
+        fapl_id = create_subfiling_ioc_fapl(MPI_COMM_SELF, MPI_INFO_NULL, true, &cfg,
                                             H5FD_IOC_DEFAULT_THREAD_POOL_SIZE);
         VRFY((fapl_id >= 0), "FAPL creation succeeded");
 
@@ -1353,7 +1409,7 @@ test_subfiling_precreate_rank_0(void)
          */
 
         num_subfiles = cfg.stripe_count;
-        num_digits   = (int)(HDlog10(num_subfiles) + 1);
+        num_digits   = (int)(log10(num_subfiles) + 1);
 
         VRFY((HDstat(SUBF_FILENAME, &file_info) >= 0), "HDstat succeeded");
 
@@ -1363,8 +1419,8 @@ test_subfiling_precreate_rank_0(void)
         for (int i = 0; i < num_subfiles; i++) {
             h5_stat_t subfile_info;
 
-            HDsnprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
-                       (uint64_t)file_info.st_ino, num_digits, i + 1, num_subfiles);
+            snprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
+                     (uint64_t)file_info.st_ino, num_digits, i + 1, num_subfiles);
 
             /* Ensure file exists */
             subfile_ptr = fopen(tmp_filename, "r");
@@ -1372,15 +1428,17 @@ test_subfiling_precreate_rank_0(void)
             VRFY((fclose(subfile_ptr) >= 0), "fclose on subfile succeeded");
 
             /* Check file size */
-            VRFY((HDstat(tmp_filename, &subfile_info) >= 0), "HDstat succeeded");
-            file_size = (h5_stat_size_t)subfile_info.st_size;
+            if (!enable_compression) {
+                VRFY((HDstat(tmp_filename, &subfile_info) >= 0), "HDstat succeeded");
+                file_size = (h5_stat_size_t)subfile_info.st_size;
 
-            VRFY((file_size >= cfg.stripe_size), "File size verification succeeded");
+                VRFY((file_size >= cfg.stripe_size), "File size verification succeeded");
+            }
         }
 
         /* Verify that there aren't too many subfiles */
-        HDsnprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
-                   (uint64_t)file_info.st_ino, num_digits, num_subfiles + 1, num_subfiles);
+        snprintf(tmp_filename, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME,
+                 (uint64_t)file_info.st_ino, num_digits, num_subfiles + 1, num_subfiles);
 
         /* Ensure file doesn't exist */
         subfile_ptr = fopen(tmp_filename, "r");
@@ -1395,7 +1453,7 @@ test_subfiling_precreate_rank_0(void)
 
     /* Open the file on all ranks */
 
-    fapl_id = create_subfiling_ioc_fapl(comm_g, info_g, FALSE, NULL, 0);
+    fapl_id = create_subfiling_ioc_fapl(comm_g, info_g, false, NULL, 0);
     VRFY((fapl_id >= 0), "FAPL creation succeeded");
 
     file_id = H5Fopen(SUBF_FILENAME, H5F_ACC_RDONLY, fapl_id);
@@ -1466,6 +1524,7 @@ test_subfiling_write_many_read_one(void)
     hid_t   fapl_id   = H5I_INVALID_HID;
     hid_t   dset_id   = H5I_INVALID_HID;
     hid_t   dxpl_id   = H5I_INVALID_HID;
+    hid_t   dcpl_id   = H5I_INVALID_HID;
     hid_t   fspace_id = H5I_INVALID_HID;
     void   *buf       = NULL;
 
@@ -1481,7 +1540,7 @@ test_subfiling_write_many_read_one(void)
         TESTING_2("reading back file with single MPI rank");
 
     /* Get a default Subfiling FAPL */
-    fapl_id = create_subfiling_ioc_fapl(comm_g, info_g, FALSE, NULL, 0);
+    fapl_id = create_subfiling_ioc_fapl(comm_g, info_g, false, NULL, 0);
     VRFY((fapl_id >= 0), "FAPL creation succeeded");
 
     /* Create file on all ranks */
@@ -1513,7 +1572,10 @@ test_subfiling_write_many_read_one(void)
     fspace_id = H5Screate_simple(1, dset_dims, NULL);
     VRFY((fspace_id >= 0), "H5Screate_simple succeeded");
 
-    dset_id = H5Dcreate2(file_id, "DSET", SUBF_HDF5_TYPE, fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    dcpl_id = create_dcpl_id(1, dset_dims, dxpl_id);
+    VRFY((dcpl_id >= 0), "DCPL creation succeeded");
+
+    dset_id = H5Dcreate2(file_id, "DSET", SUBF_HDF5_TYPE, fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT);
     VRFY((dset_id >= 0), "Dataset creation succeeded");
 
     /* Select hyperslab */
@@ -1535,13 +1597,14 @@ test_subfiling_write_many_read_one(void)
     buf = NULL;
 
     VRFY((H5Dclose(dset_id) >= 0), "Dataset close succeeded");
+    VRFY((H5Pclose(dcpl_id) >= 0), "DCPL close succeeded");
     VRFY((H5Fclose(file_id) >= 0), "File close succeeded");
 
     mpi_code_g = MPI_Barrier(comm_g);
     VRFY((mpi_code_g == MPI_SUCCESS), "MPI_Barrier succeeded");
 
     if (MAINPROCESS) {
-        fapl_id = create_subfiling_ioc_fapl(MPI_COMM_SELF, MPI_INFO_NULL, FALSE, NULL, 0);
+        fapl_id = create_subfiling_ioc_fapl(MPI_COMM_SELF, MPI_INFO_NULL, false, NULL, 0);
         VRFY((fapl_id >= 0), "FAPL creation succeeded");
 
         file_id = H5Fopen(SUBF_FILENAME, H5F_ACC_RDONLY, fapl_id);
@@ -1606,12 +1669,13 @@ test_subfiling_write_many_read_few(void)
     hsize_t  start[1];
     hsize_t  count[1];
     hsize_t  dset_dims[1];
-    hbool_t  reading_file = FALSE;
+    bool     reading_file = false;
     size_t   target_size;
     hid_t    file_id   = H5I_INVALID_HID;
     hid_t    fapl_id   = H5I_INVALID_HID;
     hid_t    dset_id   = H5I_INVALID_HID;
     hid_t    dxpl_id   = H5I_INVALID_HID;
+    hid_t    dcpl_id   = H5I_INVALID_HID;
     hid_t    fspace_id = H5I_INVALID_HID;
     void    *buf       = NULL;
 
@@ -1637,7 +1701,7 @@ test_subfiling_write_many_read_few(void)
     }
 
     /* Get a default Subfiling FAPL */
-    fapl_id = create_subfiling_ioc_fapl(comm_g, info_g, FALSE, NULL, 0);
+    fapl_id = create_subfiling_ioc_fapl(comm_g, info_g, false, NULL, 0);
     VRFY((fapl_id >= 0), "FAPL creation succeeded");
 
     /* Create file on all ranks */
@@ -1669,7 +1733,10 @@ test_subfiling_write_many_read_few(void)
     fspace_id = H5Screate_simple(1, dset_dims, NULL);
     VRFY((fspace_id >= 0), "H5Screate_simple succeeded");
 
-    dset_id = H5Dcreate2(file_id, "DSET", SUBF_HDF5_TYPE, fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    dcpl_id = create_dcpl_id(1, dset_dims, dxpl_id);
+    VRFY((dcpl_id >= 0), "DCPL creation succeeded");
+
+    dset_id = H5Dcreate2(file_id, "DSET", SUBF_HDF5_TYPE, fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT);
     VRFY((dset_id >= 0), "Dataset creation succeeded");
 
     /* Select hyperslab */
@@ -1691,6 +1758,7 @@ test_subfiling_write_many_read_few(void)
     buf = NULL;
 
     VRFY((H5Dclose(dset_id) >= 0), "Dataset close succeeded");
+    VRFY((H5Pclose(dcpl_id) >= 0), "DCPL close succeeded");
     VRFY((H5Fclose(file_id) >= 0), "File close succeeded");
 
     /*
@@ -1717,17 +1785,17 @@ test_subfiling_write_many_read_few(void)
         }
 
         if (color)
-            reading_file = TRUE;
+            reading_file = true;
     }
     else {
         if (node_local_rank == 0) {
             sub_comm     = ioc_comm;
-            reading_file = TRUE;
+            reading_file = true;
         }
     }
 
     if (reading_file) {
-        fapl_id = create_subfiling_ioc_fapl(sub_comm, MPI_INFO_NULL, FALSE, NULL, 0);
+        fapl_id = create_subfiling_ioc_fapl(sub_comm, MPI_INFO_NULL, false, NULL, 0);
         VRFY((fapl_id >= 0), "FAPL creation succeeded");
 
         file_id = H5Fopen(SUBF_FILENAME, H5F_ACC_RDONLY, fapl_id);
@@ -1804,6 +1872,7 @@ test_subfiling_h5fuse(void)
     hid_t     fapl_id   = H5I_INVALID_HID;
     hid_t     dset_id   = H5I_INVALID_HID;
     hid_t     dxpl_id   = H5I_INVALID_HID;
+    hid_t     dcpl_id   = H5I_INVALID_HID;
     hid_t     fspace_id = H5I_INVALID_HID;
     void     *buf       = NULL;
     int       skip_test = 0;
@@ -1848,7 +1917,7 @@ test_subfiling_h5fuse(void)
     }
 
     /* Get a default Subfiling FAPL */
-    fapl_id = create_subfiling_ioc_fapl(comm_g, info_g, FALSE, NULL, 0);
+    fapl_id = create_subfiling_ioc_fapl(comm_g, info_g, false, NULL, 0);
     VRFY((fapl_id >= 0), "FAPL creation succeeded");
 
     /* Create file on all ranks */
@@ -1894,7 +1963,10 @@ test_subfiling_h5fuse(void)
     fspace_id = H5Screate_simple(1, dset_dims, NULL);
     VRFY((fspace_id >= 0), "H5Screate_simple succeeded");
 
-    dset_id = H5Dcreate2(file_id, "DSET", SUBF_HDF5_TYPE, fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    dcpl_id = create_dcpl_id(1, dset_dims, dxpl_id);
+    VRFY((dcpl_id >= 0), "DCPL creation succeeded");
+
+    dset_id = H5Dcreate2(file_id, "DSET", SUBF_HDF5_TYPE, fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT);
     VRFY((dset_id >= 0), "Dataset creation succeeded");
 
     /* Select hyperslab */
@@ -1915,8 +1987,11 @@ test_subfiling_h5fuse(void)
     free(buf);
     buf = NULL;
 
+    VRFY((H5Pset_dxpl_mpio(dxpl_id, H5FD_MPIO_INDEPENDENT) >= 0), "H5Pset_dxpl_mpio succeeded");
+
     VRFY((H5Sclose(fspace_id) >= 0), "File dataspace close succeeded");
     VRFY((H5Dclose(dset_id) >= 0), "Dataset close succeeded");
+    VRFY((H5Pclose(dcpl_id) >= 0), "DCPL close succeeded");
     VRFY((H5Fclose(file_id) >= 0), "File close succeeded");
 
     if (MAINPROCESS) {
@@ -1935,16 +2010,15 @@ test_subfiling_h5fuse(void)
             VRFY(tmp_filename, "malloc succeeded");
 
             /* Generate name for configuration file */
-            HDsnprintf(tmp_filename, PATH_MAX, "%s/" H5FD_SUBFILING_CONFIG_FILENAME_TEMPLATE, config_dir,
-                       SUBF_FILENAME, file_inode);
+            snprintf(tmp_filename, PATH_MAX, "%s/" H5FD_SUBFILING_CONFIG_FILENAME_TEMPLATE, config_dir,
+                     SUBF_FILENAME, file_inode);
 
-            args[0] = HDstrdup("env");
-            args[1] = HDstrdup("sh");
-            args[2] = HDstrdup("h5fuse.sh");
-            args[3] = HDstrdup("-q");
-            args[4] = HDstrdup("-f");
-            args[5] = tmp_filename;
-            args[6] = NULL;
+            args[0] = strdup("env");
+            args[1] = strdup("./h5fuse.sh");
+            args[2] = strdup("-q");
+            args[3] = strdup("-f");
+            args[4] = tmp_filename;
+            args[5] = NULL;
 
             /* Call h5fuse script from MPI rank 0 */
             execvp("env", args);
@@ -1970,8 +2044,10 @@ test_subfiling_h5fuse(void)
         }
 
         /* Verify the size of the fused file */
-        VRFY((HDstat(SUBF_FILENAME, &file_info) >= 0), "HDstat succeeded");
-        VRFY(((size_t)file_info.st_size >= target_size), "File size verification succeeded");
+        if (!enable_compression) {
+            VRFY((HDstat(SUBF_FILENAME, &file_info) >= 0), "HDstat succeeded");
+            VRFY(((size_t)file_info.st_size >= target_size), "File size verification succeeded");
+        }
 
         /* Re-open file with sec2 driver and verify the data */
         file_id = H5Fopen(SUBF_FILENAME, H5F_ACC_RDONLY, H5P_DEFAULT);
@@ -2013,7 +2089,7 @@ test_subfiling_h5fuse(void)
     if (MAINPROCESS) {
         char *filename_buf;
         int   num_subfiles = num_iocs_g;
-        int   num_digits   = (int)(HDlog10(num_subfiles) + 1);
+        int   num_digits   = (int)(log10(num_subfiles) + 1);
 
         /* Delete the regular HDF5 file */
         H5Pset_fapl_sec2(fapl_id);
@@ -2028,8 +2104,8 @@ test_subfiling_h5fuse(void)
         VRFY(filename_buf, "malloc succeeded");
 
         /* Generate name for configuration file */
-        HDsnprintf(filename_buf, PATH_MAX, "%s/" H5FD_SUBFILING_CONFIG_FILENAME_TEMPLATE, config_dir,
-                   SUBF_FILENAME, file_inode);
+        snprintf(filename_buf, PATH_MAX, "%s/" H5FD_SUBFILING_CONFIG_FILENAME_TEMPLATE, config_dir,
+                 SUBF_FILENAME, file_inode);
 
         /* Delete the configuration file */
         if (HDremove(filename_buf) < 0) {
@@ -2039,8 +2115,8 @@ test_subfiling_h5fuse(void)
 
         for (int i = 0; i < num_subfiles; i++) {
             /* Generate name for each subfile */
-            HDsnprintf(filename_buf, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME, file_inode,
-                       num_digits, i + 1, num_subfiles);
+            snprintf(filename_buf, PATH_MAX, H5FD_SUBFILING_FILENAME_TEMPLATE, SUBF_FILENAME, file_inode,
+                     num_digits, i + 1, num_subfiles);
 
             /* Delete the subfile */
             if (HDremove(filename_buf) < 0) {
@@ -2072,13 +2148,13 @@ parse_subfiling_env_vars(void)
 {
     char *env_value;
 
-    if (NULL != (env_value = HDgetenv(H5FD_SUBFILING_STRIPE_SIZE))) {
+    if (NULL != (env_value = getenv(H5FD_SUBFILING_STRIPE_SIZE))) {
         stripe_size_g = strtoll(env_value, NULL, 0);
         if ((ERANGE == errno) || (stripe_size_g <= 0))
             stripe_size_g = -1;
     }
 
-    if (NULL != (env_value = HDgetenv(H5FD_SUBFILING_IOC_PER_NODE))) {
+    if (NULL != (env_value = getenv(H5FD_SUBFILING_IOC_PER_NODE))) {
         ioc_per_node_g = strtol(env_value, NULL, 0);
         if ((ERANGE == errno) || (ioc_per_node_g <= 0))
             ioc_per_node_g = -1;
@@ -2092,16 +2168,16 @@ parse_subfiling_env_vars(void)
             ioc_per_node_g = node_local_size;
     }
 
-    if (NULL != (env_value = HDgetenv(H5FD_IOC_THREAD_POOL_SIZE))) {
+    if (NULL != (env_value = getenv(H5FD_IOC_THREAD_POOL_SIZE))) {
         ioc_thread_pool_size_g = atoi(env_value);
         if (ioc_thread_pool_size_g <= 0)
             ioc_thread_pool_size_g = -1;
     }
 
-    if (NULL != (env_value = HDgetenv(H5FD_SUBFILING_CONFIG_FILE_PREFIX))) {
+    if (NULL != (env_value = getenv(H5FD_SUBFILING_CONFIG_FILE_PREFIX))) {
         assert(config_dir);
 
-        HDstrncpy(config_dir, env_value, PATH_MAX);
+        strncpy(config_dir, env_value, PATH_MAX);
 
         /* Just in case.. */
         config_dir[PATH_MAX - 1] = '\0';
@@ -2117,11 +2193,10 @@ int
 main(int argc, char **argv)
 {
     unsigned seed;
-    hbool_t  must_unset_stripe_size_env      = FALSE;
-    hbool_t  must_unset_ioc_per_node_env     = FALSE;
-    hbool_t  must_unset_ioc_thread_count_env = FALSE;
-    hbool_t  must_unset_config_dir_env       = FALSE;
-    char    *env_value                       = NULL;
+    bool     must_unset_stripe_size_env      = false;
+    bool     must_unset_ioc_per_node_env     = false;
+    bool     must_unset_ioc_thread_count_env = false;
+    bool     must_unset_config_dir_env       = false;
     int      required                        = MPI_THREAD_MULTIPLE;
     int      provided                        = 0;
 
@@ -2257,7 +2332,7 @@ main(int argc, char **argv)
     }
 
     /* Initialize to current working directory for now */
-    HDsnprintf(config_dir, PATH_MAX, ".");
+    snprintf(config_dir, PATH_MAX, ".");
 
     /* Grab values from environment variables if set */
     parse_subfiling_env_vars();
@@ -2283,7 +2358,7 @@ main(int argc, char **argv)
     }
 
     if (MAINPROCESS)
-        HDputs("");
+        puts("");
 
     /*
      * Set any unset Subfiling environment variables and re-run
@@ -2308,7 +2383,7 @@ main(int argc, char **argv)
             VRFY((mpi_code_g == MPI_SUCCESS), "MPI_Bcast succeeded");
         }
 
-        HDsnprintf(tmp, sizeof(tmp), "%" PRId64, stripe_size);
+        snprintf(tmp, sizeof(tmp), "%" PRId64, stripe_size);
 
         if (HDsetenv(H5FD_SUBFILING_STRIPE_SIZE, tmp, 1) < 0) {
             if (MAINPROCESS)
@@ -2317,7 +2392,7 @@ main(int argc, char **argv)
             goto exit;
         }
 
-        must_unset_stripe_size_env = TRUE;
+        must_unset_stripe_size_env = true;
     }
     if (ioc_per_node_g < 0) {
         const char *ioc_per_node_str;
@@ -2334,7 +2409,7 @@ main(int argc, char **argv)
             goto exit;
         }
 
-        must_unset_ioc_per_node_env = TRUE;
+        must_unset_ioc_per_node_env = true;
     }
     if (ioc_thread_pool_size_g < 0) {
         if (HDsetenv(H5FD_IOC_THREAD_POOL_SIZE, "2", 1) < 0) {
@@ -2344,10 +2419,10 @@ main(int argc, char **argv)
             goto exit;
         }
 
-        must_unset_ioc_thread_count_env = TRUE;
+        must_unset_ioc_thread_count_env = true;
     }
 
-    if (!(env_value = HDgetenv(H5FD_SUBFILING_CONFIG_FILE_PREFIX))) {
+    if (NULL == getenv(H5FD_SUBFILING_CONFIG_FILE_PREFIX)) {
         int rand_value = 0;
 
         if (MAINPROCESS)
@@ -2397,7 +2472,7 @@ main(int argc, char **argv)
             }
         }
 
-        must_unset_config_dir_env = TRUE;
+        must_unset_config_dir_env = true;
     }
 
     /* Grab values from environment variables */
@@ -2412,9 +2487,28 @@ main(int argc, char **argv)
     if (num_iocs_g > mpi_size)
         num_iocs_g = mpi_size;
 
-    if (MAINPROCESS) {
-        printf("Re-running tests with environment variables set\n");
+    if (MAINPROCESS)
+        printf(" Re-running tests with compression enabled\n");
+
+#ifdef H5_HAVE_FILTER_DEFLATE
+    enable_compression = true;
+    for (size_t i = 0; i < ARRAY_SIZE(tests); i++) {
+        if (MPI_SUCCESS == (mpi_code_g = MPI_Barrier(comm_g))) {
+            (*tests[i])();
+        }
+        else {
+            if (MAINPROCESS)
+                MESG("MPI_Barrier failed");
+            nerrors++;
+        }
     }
+    enable_compression = false;
+#else
+    if (MAINPROCESS)
+        SKIPPED();
+#endif
+    if (MAINPROCESS)
+        printf("\nRe-running tests with environment variables set\n");
 
     for (size_t i = 0; i < ARRAY_SIZE(tests); i++) {
         if (MPI_SUCCESS == (mpi_code_g = MPI_Barrier(comm_g))) {
@@ -2428,13 +2522,29 @@ main(int argc, char **argv)
     }
 
     if (MAINPROCESS)
-        HDputs("");
-
+        printf("\n Re-running tests with compression enabled\n");
+#ifdef H5_HAVE_FILTER_DEFLATE
+    enable_compression = true;
+    for (size_t i = 0; i < ARRAY_SIZE(tests); i++) {
+        if (MPI_SUCCESS == (mpi_code_g = MPI_Barrier(comm_g))) {
+            (*tests[i])();
+        }
+        else {
+            if (MAINPROCESS)
+                MESG("MPI_Barrier failed");
+            nerrors++;
+        }
+    }
+    enable_compression = false;
+#else
+    if (MAINPROCESS)
+        SKIPPED();
+#endif
     if (nerrors)
         goto exit;
 
     if (MAINPROCESS)
-        HDputs("All Subfiling VFD tests passed\n");
+        puts("\nAll Subfiling VFD tests passed\n");
 
 exit:
     if (must_unset_stripe_size_env)

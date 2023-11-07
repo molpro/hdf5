@@ -43,6 +43,9 @@
  */
 #define ROS3_STATS 0
 
+/* Max size of the cache, in bytes */
+#define ROS3_MAX_CACHE_SIZE 16777216
+
 /* The driver identification number, initialized at runtime
  */
 static hid_t H5FD_ROS3_g = 0;
@@ -189,6 +192,8 @@ typedef struct H5FD_ros3_t {
     H5FD_ros3_fapl_t fa;
     haddr_t          eoa;
     s3r_t           *s3r_handle;
+    uint8_t         *cache;
+    size_t           cache_size;
 #if ROS3_STATS
     ros3_statsbin meta[ROS3_STATS_BIN_COUNT + 1];
     ros3_statsbin raw[ROS3_STATS_BIN_COUNT + 1];
@@ -225,7 +230,7 @@ static herr_t  H5FD__ros3_read(H5FD_t *_file, H5FD_mem_t type, hid_t fapl_id, ha
                                void *buf);
 static herr_t  H5FD__ros3_write(H5FD_t *_file, H5FD_mem_t type, hid_t fapl_id, haddr_t addr, size_t size,
                                 const void *buf);
-static herr_t  H5FD__ros3_truncate(H5FD_t *_file, hid_t dxpl_id, hbool_t closing);
+static herr_t  H5FD__ros3_truncate(H5FD_t *_file, hid_t dxpl_id, bool closing);
 
 static herr_t H5FD__ros3_validate_config(const H5FD_ros3_fapl_t *fa);
 
@@ -306,7 +311,7 @@ H5FD_ros3_init(void)
 #endif
 
     if (H5I_VFL != H5I_get_type(H5FD_ROS3_g)) {
-        H5FD_ROS3_g = H5FD_register(&H5FD_ros3_g, sizeof(H5FD_class_t), FALSE);
+        H5FD_ROS3_g = H5FD_register(&H5FD_ros3_g, sizeof(H5FD_class_t), false);
         if (H5I_INVALID_HID == H5FD_ROS3_g) {
             HGOTO_ERROR(H5E_ID, H5E_CANTREGISTER, H5I_INVALID_HID, "unable to register ros3");
         }
@@ -423,7 +428,7 @@ H5FD__ros3_validate_config(const H5FD_ros3_fapl_t *fa)
         HGOTO_ERROR(H5E_ARGS, H5E_BADVALUE, FAIL, "Unknown H5FD_ros3_fapl_t version");
 
     /* if set to authenticate, region and id cannot be empty strings */
-    if (fa->authenticate == TRUE)
+    if (fa->authenticate == true)
         if ((fa->aws_region[0] == '\0') || (fa->secret_id[0] == '\0'))
             HGOTO_ERROR(H5E_ARGS, H5E_BADVALUE, FAIL, "Inconsistent authentication information");
 
@@ -623,7 +628,7 @@ H5Pget_fapl_ros3_token(hid_t fapl_id, size_t size, char *token_dst /*out*/)
     }
 
     /* Copy the token data out */
-    tokenlen = HDstrlen(token_src);
+    tokenlen = strlen(token_src);
     if (size <= tokenlen) {
         tokenlen = size - 1;
     }
@@ -659,7 +664,7 @@ H5FD__ros3_str_token_copy(const char H5_ATTR_UNUSED *name, size_t H5_ATTR_UNUSED
 #endif
 
     if (*value)
-        if (NULL == (*value = HDstrdup(*value)))
+        if (NULL == (*value = strdup(*value)))
             HGOTO_ERROR(H5E_RESOURCE, H5E_CANTALLOC, FAIL, "can't copy string property token");
 
 done:
@@ -691,7 +696,7 @@ H5FD__ros3_str_token_cmp(const void *_value1, const void *_value2, size_t H5_ATT
 
     if (*value1) {
         if (*value2)
-            ret_value = HDstrcmp(*value1, *value2);
+            ret_value = strcmp(*value1, *value2);
         else
             ret_value = 1;
     }
@@ -798,7 +803,7 @@ H5Pset_fapl_ros3_token(hid_t fapl_id, const char *token)
         HGOTO_ERROR(H5E_PLIST, H5E_BADTYPE, FAIL, "not a file access property list");
     if (H5FD_ROS3 != H5P_peek_driver(plist))
         HGOTO_ERROR(H5E_PLIST, H5E_BADVALUE, FAIL, "incorrect VFL driver");
-    if (HDstrlen(token) > H5FD_ROS3_MAX_SECRET_TOK_LEN)
+    if (strlen(token) > H5FD_ROS3_MAX_SECRET_TOK_LEN)
         HGOTO_ERROR(H5E_PLIST, H5E_BADVALUE, FAIL,
                     "specified token exceeds the internally specified maximum string length");
 
@@ -809,13 +814,13 @@ H5Pset_fapl_ros3_token(hid_t fapl_id, const char *token)
         if (H5P_get(plist, ROS3_TOKEN_PROP_NAME, &token_src) < 0)
             HGOTO_ERROR(H5E_PLIST, H5E_CANTGET, FAIL, "unable to get token value");
 
-        memcpy(token_src, token, HDstrlen(token) + 1);
+        H5MM_memcpy(token_src, token, strlen(token) + 1);
     }
     else {
         token_src = (char *)malloc(sizeof(char) * (H5FD_ROS3_MAX_SECRET_TOK_LEN + 1));
         if (token_src == NULL)
             HGOTO_ERROR(H5E_RESOURCE, H5E_NOSPACE, FAIL, "cannot make space for token_src variable.");
-        memcpy(token_src, token, HDstrlen(token) + 1);
+        H5MM_memcpy(token_src, token, strlen(token) + 1);
         if (H5P_insert(plist, ROS3_TOKEN_PROP_NAME, sizeof(char *), &token_src, NULL, NULL, NULL, NULL,
                        H5FD__ros3_str_token_delete, H5FD__ros3_str_token_copy, H5FD__ros3_str_token_cmp,
                        H5FD__ros3_str_token_close) < 0)
@@ -957,10 +962,10 @@ H5FD__ros3_open(const char *url, unsigned flags, hid_t fapl_id, haddr_t maxaddr)
     /* open file; procedure depends on whether or not the fapl instructs to
      * authenticate requests or not.
      */
-    if (fa.authenticate == TRUE) {
+    if (fa.authenticate == true) {
         /* compute signing key (part of AWS/S3 REST API)
          * can be re-used by user/key for 7 days after creation.
-         * find way to re-use/share
+         * find way to reuse/share
          */
         now = gmnow();
         assert(now != NULL);
@@ -1000,6 +1005,18 @@ H5FD__ros3_open(const char *url, unsigned flags, hid_t fapl_id, haddr_t maxaddr)
         HGOTO_ERROR(H5E_INTERNAL, H5E_UNINITIALIZED, NULL, "unable to reset file statistics");
 #endif /* ROS3_STATS */
 
+    /* Cache the initial bytes of the file */
+    {
+        size_t filesize = H5FD_s3comms_s3r_get_filesize(file->s3r_handle);
+
+        file->cache_size = (filesize < ROS3_MAX_CACHE_SIZE) ? filesize : ROS3_MAX_CACHE_SIZE;
+
+        if (NULL == (file->cache = (uint8_t *)H5MM_calloc(file->cache_size)))
+            HGOTO_ERROR(H5E_VFL, H5E_NOSPACE, NULL, "unable to allocate cache memory");
+        if (H5FD_s3comms_s3r_read(file->s3r_handle, 0, file->cache_size, file->cache) == FAIL)
+            HGOTO_ERROR(H5E_VFL, H5E_READERROR, NULL, "unable to execute read");
+    }
+
     ret_value = (H5FD_t *)file;
 
 done:
@@ -1007,8 +1024,10 @@ done:
         if (handle != NULL)
             if (FAIL == H5FD_s3comms_s3r_close(handle))
                 HDONE_ERROR(H5E_VFL, H5E_CANTCLOSEFILE, NULL, "unable to close s3 file handle");
-        if (file != NULL)
+        if (file != NULL) {
+            H5MM_xfree(file->cache);
             file = H5FL_FREE(H5FD_ros3_t, file);
+        }
         curl_global_cleanup(); /* early cleanup because open failed */
     }                          /* end if null return value (error) */
 
@@ -1084,7 +1103,7 @@ ros3_fprint_stats(FILE *stream, const H5FD_ros3_t *file)
     unsigned long long max_raw      = 0;
     unsigned long long bytes_raw    = 0;
     unsigned long long bytes_meta   = 0;
-    double             re_dub       = 0.0; /* re-usable double variable */
+    double             re_dub       = 0.0; /* reusable double variable */
     unsigned           suffix_i     = 0;
     const char         suffixes[]   = {' ', 'K', 'M', 'G', 'T', 'P'};
 
@@ -1335,6 +1354,7 @@ H5FD__ros3_close(H5FD_t H5_ATTR_UNUSED *_file)
 #endif /* ROS3_STATS */
 
     /* Release the file info */
+    H5MM_xfree(file->cache);
     file = H5FL_FREE(H5FD_ros3_t, file);
 
 done:
@@ -1398,16 +1418,16 @@ H5FD__ros3_cmp(const H5FD_t *_f1, const H5FD_t *_f2)
     assert(purl2->host != NULL);
 
     /* URL: SCHEME */
-    if (HDstrcmp(purl1->scheme, purl2->scheme))
+    if (strcmp(purl1->scheme, purl2->scheme))
         HGOTO_DONE(-1);
 
     /* URL: HOST */
-    if (HDstrcmp(purl1->host, purl2->host))
+    if (strcmp(purl1->host, purl2->host))
         HGOTO_DONE(-1);
 
     /* URL: PORT */
     if (purl1->port && purl2->port) {
-        if (HDstrcmp(purl1->port, purl2->port))
+        if (strcmp(purl1->port, purl2->port))
             HGOTO_DONE(-1);
     }
     else if (purl1->port)
@@ -1417,7 +1437,7 @@ H5FD__ros3_cmp(const H5FD_t *_f1, const H5FD_t *_f2)
 
     /* URL: PATH */
     if (purl1->path && purl2->path) {
-        if (HDstrcmp(purl1->path, purl2->path))
+        if (strcmp(purl1->path, purl2->path))
             HGOTO_DONE(-1);
     }
     else if (purl1->path && !purl2->path)
@@ -1427,7 +1447,7 @@ H5FD__ros3_cmp(const H5FD_t *_f1, const H5FD_t *_f2)
 
     /* URL: QUERY */
     if (purl1->query && purl2->query) {
-        if (HDstrcmp(purl1->query, purl2->query))
+        if (strcmp(purl1->query, purl2->query))
             HGOTO_DONE(-1);
     }
     else if (purl1->query && !purl2->query)
@@ -1437,7 +1457,7 @@ H5FD__ros3_cmp(const H5FD_t *_f1, const H5FD_t *_f2)
 
     /* FAPL: AWS_REGION */
     if (f1->fa.aws_region[0] != '\0' && f2->fa.aws_region[0] != '\0') {
-        if (HDstrcmp(f1->fa.aws_region, f2->fa.aws_region))
+        if (strcmp(f1->fa.aws_region, f2->fa.aws_region))
             HGOTO_DONE(-1);
     }
     else if (f1->fa.aws_region[0] != '\0')
@@ -1447,7 +1467,7 @@ H5FD__ros3_cmp(const H5FD_t *_f1, const H5FD_t *_f2)
 
     /* FAPL: SECRET_ID */
     if (f1->fa.secret_id[0] != '\0' && f2->fa.secret_id[0] != '\0') {
-        if (HDstrcmp(f1->fa.secret_id, f2->fa.secret_id))
+        if (strcmp(f1->fa.secret_id, f2->fa.secret_id))
             HGOTO_DONE(-1);
     }
     else if (f1->fa.secret_id[0] != '\0')
@@ -1457,7 +1477,7 @@ H5FD__ros3_cmp(const H5FD_t *_f1, const H5FD_t *_f2)
 
     /* FAPL: SECRET_KEY */
     if (f1->fa.secret_key[0] != '\0' && f2->fa.secret_key[0] != '\0') {
-        if (HDstrcmp(f1->fa.secret_key, f2->fa.secret_key))
+        if (strcmp(f1->fa.secret_key, f2->fa.secret_key))
             HGOTO_DONE(-1);
     }
     else if (f1->fa.secret_key[0] != '\0')
@@ -1666,41 +1686,50 @@ H5FD__ros3_read(H5FD_t *_file, H5FD_mem_t H5_ATTR_UNUSED type, hid_t H5_ATTR_UNU
     fprintf(stdout, "H5FD__ros3_read() called.\n");
 #endif
 
-    assert(file != NULL);
-    assert(file->s3r_handle != NULL);
-    assert(buf != NULL);
+    assert(file);
+    assert(file->cache);
+    assert(file->s3r_handle);
+    assert(buf);
 
     filesize = H5FD_s3comms_s3r_get_filesize(file->s3r_handle);
 
     if ((addr > filesize) || ((addr + size) > filesize))
         HGOTO_ERROR(H5E_ARGS, H5E_OVERFLOW, FAIL, "range exceeds file address");
 
-    if (H5FD_s3comms_s3r_read(file->s3r_handle, addr, size, buf) == FAIL)
-        HGOTO_ERROR(H5E_VFL, H5E_READERROR, FAIL, "unable to execute read");
+    /* Copy from the cache when accessing the first N bytes of the file.
+     * Saves network I/O operations when opening files.
+     */
+    if (addr + size < file->cache_size) {
+        memcpy(buf, file->cache + addr, size);
+    }
+    else {
+        if (H5FD_s3comms_s3r_read(file->s3r_handle, addr, size, buf) == FAIL)
+            HGOTO_ERROR(H5E_VFL, H5E_READERROR, FAIL, "unable to execute read");
 
 #if ROS3_STATS
 
-    /* Find which "bin" this read fits in. Can be "overflow" bin.  */
-    for (bin_i = 0; bin_i < ROS3_STATS_BIN_COUNT; bin_i++)
-        if ((unsigned long long)size < ros3_stats_boundaries[bin_i])
-            break;
-    bin = (type == H5FD_MEM_DRAW) ? &file->raw[bin_i] : &file->meta[bin_i];
+        /* Find which "bin" this read fits in. Can be "overflow" bin.  */
+        for (bin_i = 0; bin_i < ROS3_STATS_BIN_COUNT; bin_i++)
+            if ((unsigned long long)size < ros3_stats_boundaries[bin_i])
+                break;
+        bin = (type == H5FD_MEM_DRAW) ? &file->raw[bin_i] : &file->meta[bin_i];
 
-    /* Store collected stats in appropriate bin */
-    if (bin->count == 0) {
-        bin->min = size;
-        bin->max = size;
-    }
-    else {
-        if (size < bin->min)
+        /* Store collected stats in appropriate bin */
+        if (bin->count == 0) {
             bin->min = size;
-        if (size > bin->max)
             bin->max = size;
-    }
-    bin->count++;
-    bin->bytes += (unsigned long long)size;
+        }
+        else {
+            if (size < bin->min)
+                bin->min = size;
+            if (size > bin->max)
+                bin->max = size;
+        }
+        bin->count++;
+        bin->bytes += (unsigned long long)size;
 
 #endif /* ROS3_STATS */
+    }
 
 done:
     FUNC_LEAVE_NOAPI(ret_value)
@@ -1757,8 +1786,7 @@ done:
  *-------------------------------------------------------------------------
  */
 static herr_t
-H5FD__ros3_truncate(H5FD_t H5_ATTR_UNUSED *_file, hid_t H5_ATTR_UNUSED dxpl_id,
-                    hbool_t H5_ATTR_UNUSED closing)
+H5FD__ros3_truncate(H5FD_t H5_ATTR_UNUSED *_file, hid_t H5_ATTR_UNUSED dxpl_id, bool H5_ATTR_UNUSED closing)
 {
     herr_t ret_value = SUCCEED;
 

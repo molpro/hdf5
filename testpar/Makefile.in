@@ -137,7 +137,7 @@ DIST_COMMON = $(srcdir)/Makefile.am $(am__DIST_COMMON)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/src/H5config.h \
 	$(top_builddir)/fortran/src/H5config_f.inc
-CONFIG_CLEAN_FILES = testpflush.sh
+CONFIG_CLEAN_FILES = testpflush.sh h5fuse.sh
 CONFIG_CLEAN_VPATH_FILES =
 @SUBFILING_VFD_CONDITIONAL_TRUE@am__EXEEXT_1 =  \
 @SUBFILING_VFD_CONDITIONAL_TRUE@	t_subfiling_vfd$(EXEEXT)
@@ -668,6 +668,7 @@ HAVE_LIBHDFS = @HAVE_LIBHDFS@
 HAVE_MERCURY = @HAVE_MERCURY@
 HAVE_PTHREAD = @HAVE_PTHREAD@
 HDF5_DOXYGEN = @HDF5_DOXYGEN@
+HDF5_DOXY_WARNINGS = @HDF5_DOXY_WARNINGS@
 HDF5_HL = @HDF5_HL@
 HDF5_HL_GIF_TOOLS = @HDF5_HL_GIF_TOOLS@
 HDF5_HL_TOOLS = @HDF5_HL_TOOLS@
@@ -913,7 +914,7 @@ TRACE = perl $(top_srcdir)/bin/trace
 # go is used for debugging. See testphdf5.c.
 CHECK_CLEANFILES = *.chkexe *.chklog MPItest.h5 Para*.h5 bigio_test.h5 \
 	CacheTestDummy.h5 ShapeSameTest.h5 shutdown.h5 pmulti_dset.h5 \
-	after_mpi_fin.h5 go
+	after_mpi_fin.h5 go noflush.h5 mpio_select_test_file.h5 *.btr
 
 # Test scripts--
 #       testpflush.sh:

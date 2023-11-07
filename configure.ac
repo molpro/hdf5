@@ -22,7 +22,7 @@ AC_PREREQ([2.71])
 ## NOTE: Do not forget to change the version number here when we do a
 ## release!!!
 ##
-AC_INIT([HDF5], [1.14.2], [help@hdfgroup.org])
+AC_INIT([HDF5], [1.14.3], [help@hdfgroup.org])
 
 AC_CONFIG_SRCDIR([src/H5.c])
 AC_CONFIG_HEADERS([src/H5config.h])
@@ -112,6 +112,10 @@ AC_CONFIG_COMMANDS([pubconf], [
   sed '/^#/d' < src/libhdf5.settings > libhdf5.settings.TMP
   cp libhdf5.settings.TMP src/libhdf5.settings
   rm -f libhdf5.settings.TMP
+  echo "Post process src/H5build_settings.c"
+  sed '/^# /d' < src/H5build_settings.c > H5build_settings.TMP
+  cp H5build_settings.TMP src/H5build_settings.c
+  rm -f H5build_settings.TMP
 ])
 
 ## It's possible to configure for a host other than the one on which
@@ -1070,14 +1074,6 @@ H5_FORTRAN_SHARED="no"
 if test "X${HDF_FORTRAN}" = "Xyes" && test "X${enable_shared}" != "Xno"; then
   AC_MSG_CHECKING([if shared Fortran libraries are supported])
   H5_FORTRAN_SHARED="yes"
-  ## tell libtool to do the right thing with COMMON symbols, this fixes
-  ## corrupt values with COMMON and EQUIVALENCE when building shared
-  ## Fortran libraries on OSX with gnu and Intel compilers (HDFFV-2772).
-  case "`uname`" in
-    Darwin*)
-    H5_LDFLAGS="$H5_LDFLAGS -Wl,-commons,use_dylibs"
-    ;;
-  esac
 
   ## Report results of check(s)
 
@@ -1211,6 +1207,30 @@ AC_ARG_ENABLE([doxygen],
 
 AC_MSG_RESULT([$HDF5_DOXYGEN])
 
+## Check if they would like to enable doxygen warnings as errors
+##
+
+## This needs to be exposed for the library info file.
+AC_SUBST([HDF5_DOXY_WARNINGS])
+
+## Default is to consider doxygen warnings as errors
+DOXY_ERR=yes
+
+AC_MSG_CHECKING([if doxygen warnings as errors is enabled])
+
+AC_ARG_ENABLE([doxygen-errors],
+              [AS_HELP_STRING([--enable-doxygen-errors],
+                              [Error on HDF5 doxygen warnings [default=yes]])],
+              [DOXY_ERR=$enableval])
+
+if test "X$DOXY_ERR" = "Xyes"; then
+    HDF5_DOXY_WARNINGS="FAIL_ON_WARNINGS"
+else
+    HDF5_DOXY_WARNINGS="NO"
+
+fi
+AC_MSG_RESULT([$HDF5_DOXY_WARNINGS])
+
 if test "X$HDF5_DOXYGEN" = "Xyes"; then
   DX_DOXYGEN_FEATURE(ON)
   DX_DOT_FEATURE(OFF)
@@ -1273,6 +1293,7 @@ if test "X$HDF5_DOXYGEN" = "Xyes"; then
   DOXYGEN_STRIP_FROM_PATH='$(SRCDIR)'
   DOXYGEN_STRIP_FROM_INC_PATH='$(SRCDIR)'
   DOXYGEN_PREDEFINED='H5_HAVE_DIRECT H5_HAVE_LIBHDFS H5_HAVE_MAP_API H5_HAVE_PARALLEL H5_HAVE_ROS3_VFD H5_DOXYGEN H5_HAVE_SUBFILING_VFD H5_HAVE_IOC_VFD H5_HAVE_MIRROR_VFD'
+  DOXYGEN_WARN_AS_ERROR=${HDF5_DOXY_WARNINGS}
 
   DX_INIT_DOXYGEN([HDF5], [./doxygen/Doxyfile], [hdf5lib_docs])
 fi
@@ -1557,7 +1578,7 @@ AC_ARG_WITH([fnord],
 ## ----------------------------------------------------------------------
 ## Make the external filters list available to *.in files
 ## At this point it's unset (no external filters by default) but it
-## will be filled in during the deflate (zlib) and szip processing
+## will be filled in during the deflate/zlib and szip/libaec processing
 ## below.
 ##
 AC_SUBST([EXTERNAL_FILTERS])
@@ -1662,13 +1683,18 @@ fi
 ## command-line switch. The value is an include path and/or a library path.
 ## If the library path is specified then it must be preceded by a comma.
 ##
+## libaec also implements Space Data System Standard 121.0-B-2 and has
+## an szip compatibility header. Since the AEC library is BSD licensed
+## for both encoding and decoding, we now build with the filter enabled
+## by default when the library is found.
+##
 AC_SUBST([LL_PATH])
 AC_SUBST([USE_FILTER_SZIP]) USE_FILTER_SZIP="no"
 AC_ARG_WITH([szlib],
             [AS_HELP_STRING([--with-szlib=DIR],
                             [Use szlib library for external szlib I/O
-                             filter [default=no]])],,
-            [withval=no])
+                             filter [default=yes]])],,
+            [withval=yes])
 
 case "X-$withval" in
   X-yes)
@@ -2029,7 +2055,7 @@ case "`uname`" in
   CYGWIN*)
     ;;
   *)
-    AC_CHECK_FUNCS([GetConsoleScreenBufferInfo getpwuid])
+    AC_CHECK_FUNCS([GetConsoleScreenBufferInfo])
     ;;
 esac
 AC_CHECK_FUNCS([_scrsize ioctl])
@@ -2483,8 +2509,8 @@ AC_SUBST([INTERNAL_DEBUG_OUTPUT])
 ## too specialized or have huge performance hits. These
 ## are not listed in the "all" packages list.
 ##
-## all_packages="AC,B,B2,D,F,FA,FL,FS,HL,I,O,S,T,Z"
-all_packages="AC,B2,CX,D,F,HL,I,O,S,T,Z"
+## all_packages="AC,B,B2,D,F,FA,FL,FS,HL,I,MM,O,S,T,Z"
+all_packages="AC,B2,CX,D,F,HL,I,MM,O,S,T,Z"
 
 case "X-$INTERNAL_DEBUG_OUTPUT" in
   X-yes|X-all)
@@ -3916,9 +3942,11 @@ AC_ARG_ENABLE([embedded-libinfo],
 
    if test "${enable_embedded_libinfo}" = "yes"; then
       AC_MSG_RESULT([yes])
+      BUILD_SETTINGS_FILE="src/H5build_settings.autotools.c.in"
       AC_DEFINE([HAVE_EMBEDDED_LIBINFO], [1],
                 [Define if library information should be embedded in the executables])
    else
+      BUILD_SETTINGS_FILE="src/H5build_settings.off.c.in"
       AC_MSG_RESULT([no])
     fi
 
@@ -4055,6 +4083,7 @@ AC_CONFIG_FILES([Makefile
                  doxygen/Doxyfile
                  src/Makefile
                  src/libhdf5.settings
+                 src/H5build_settings.c:${BUILD_SETTINGS_FILE}
                  test/Makefile
                  test/H5srcdir_str.h
                  test/test_abort_fail.sh
@@ -4189,6 +4218,11 @@ AC_CONFIG_FILES([Makefile
                  hl/fortran/examples/run-hlfortran-ex.sh])
 
 AC_CONFIG_FILES([utils/subfiling_vfd/h5fuse.sh], [chmod +x utils/subfiling_vfd/h5fuse.sh])
+if test -n "$TESTPARALLEL"; then
+  if test "X$SUBFILING_VFD" = "Xyes"; then
+    AC_CONFIG_LINKS([testpar/h5fuse.sh:utils/subfiling_vfd/h5fuse.sh])
+  fi
+fi
 
 AC_CONFIG_COMMANDS([.classes], [], [$MKDIR_P java/src/.classes;
                 $MKDIR_P java/test/.classes;
@@ -4216,14 +4250,17 @@ if test "X$HDF_FORTRAN" = "Xyes"; then
       ;;
   esac
 
-  ### libtool does not pass the correct argument linking (-Wl,-Wl,,) for the NAG Fortran compiler
+  ### libtool does not pass the correct linker options for some Fortran compilers
   ### on Linux (other OSs have not been tested).
-  ### Therefore, detect if we are using the NAG Fortran compiler, and replace the wl="-Wl," for Fortran to
-  ### wl="-Wl,-Wl,," in the libtool file. (HDFFV-10037)
   case "`uname`" in
     Linux*)
+      ### NAG Fortran needs to replace "-Wl," with "-Wl,-Wl,," (HDFFV-10037)
       if test "X$FC_BASENAME" = "Xnagfor"; then
          cat libtool | awk '/BEGIN LIBTOOL TAG CONFIG: FC/{flag=1}flag&&/wl=/{$NF="wl=\"-Wl,-Wl,,\"";flag=0}1' > libtool.tmp && mv -f libtool.tmp libtool && chmod 755 libtool
+      fi
+      ### Flang needs to replace "", with "-Wl," (avoids unknown option: -soname issues)
+      if test "X$FC_BASENAME" = "Xflang"; then
+         cat libtool | awk '/BEGIN LIBTOOL TAG CONFIG: FC/{flag=1}flag&&/wl=/{$NF="wl=\"-Wl,\"";flag=0}1' > libtool.tmp && mv -f libtool.tmp libtool && chmod 755 libtool
       fi
       ;;
   esac
