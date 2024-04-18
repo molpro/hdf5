@@ -4118,6 +4118,8 @@ test_select_hyper_offset(void)
     CHECK(ret, FAIL, "H5Soffset_simple");
     valid = H5Sselect_valid(sid1);
     VERIFY(valid, true, "H5Sselect_valid");
+    ret = H5S__verify_offsets(sid1, offset);
+    CHECK(ret, FAIL, "H5S__verify_offsets");
 
     /* Check an invalid offset */
     offset[0] = 10;
@@ -4127,6 +4129,8 @@ test_select_hyper_offset(void)
     CHECK(ret, FAIL, "H5Soffset_simple");
     valid = H5Sselect_valid(sid1);
     VERIFY(valid, false, "H5Sselect_valid");
+    ret = H5S__verify_offsets(sid1, offset);
+    CHECK(ret, FAIL, "H5S__verify_offsets");
 
     /* Reset offset */
     offset[0] = 0;
@@ -4136,6 +4140,28 @@ test_select_hyper_offset(void)
     CHECK(ret, FAIL, "H5Soffset_simple");
     valid = H5Sselect_valid(sid1);
     VERIFY(valid, true, "H5Sselect_valid");
+    ret = H5S__verify_offsets(sid1, offset);
+    CHECK(ret, FAIL, "H5S__verify_offsets");
+
+    /* Check behavior of NULL offset parameter */
+
+    /* Set a valid offset */
+    offset[0] = -1;
+    offset[1] = 0;
+    offset[2] = 0;
+    ret       = H5Soffset_simple(sid1, offset);
+    CHECK(ret, FAIL, "H5Soffset_simple");
+    valid = H5Sselect_valid(sid1);
+    VERIFY(valid, true, "H5Sselect_valid");
+    /* Reset using NULL */
+    ret = H5Soffset_simple(sid1, NULL);
+    CHECK(ret, FAIL, "H5Soffset_simple");
+    valid = H5Sselect_valid(sid1);
+    VERIFY(valid, true, "H5Sselect_valid");
+    /* Validate offset */
+    offset[0] = 0;
+    ret       = H5S__verify_offsets(sid1, offset);
+    CHECK(ret, FAIL, "H5S__verify_offsets");
 
     /* Select 15x26 hyperslab for memory dataset */
     start[0]  = 15;
@@ -16052,16 +16078,14 @@ test_select(void)
     size_t      rdcc_nbytes;                  /* Raw data number of bytes */
     double      rdcc_w0;                      /* Raw data write percentage */
     hssize_t    offset[SPACE7_RANK] = {1, 1}; /* Offset for testing selection offsets */
-    const char *env_h5_drvr;                  /* File Driver value from environment */
+    const char *driver_name;                  /* File Driver value from environment */
     herr_t      ret;                          /* Generic return value        */
 
     /* Output message about test being performed */
     MESSAGE(5, ("Testing Selections\n"));
 
     /* Get the VFD to use */
-    env_h5_drvr = getenv(HDF5_DRIVER);
-    if (env_h5_drvr == NULL)
-        env_h5_drvr = "nomatch";
+    driver_name = h5_get_test_driver_name();
 
     /* Create a dataset transfer property list */
     plist_id = H5Pcreate(H5P_DATASET_XFER);
@@ -16126,7 +16150,7 @@ test_select(void)
     test_select_hyper_valid_combination(); /* Test different input combinations */
 
     /* The following tests are currently broken with the Direct VFD */
-    if (strcmp(env_h5_drvr, "direct") != 0) {
+    if (strcmp(driver_name, "direct") != 0) {
         test_select_hyper_and_2d();  /* Test hyperslab intersection (AND) code for 2-D dataset */
         test_select_hyper_xor_2d();  /* Test hyperslab XOR code for 2-D dataset */
         test_select_hyper_notb_2d(); /* Test hyperslab NOTB code for 2-D dataset */

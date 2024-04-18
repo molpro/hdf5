@@ -1,15 +1,16 @@
-HDF5 version 1.14.3 released on 2023-10-27
+HDF5 version 1.14.4-2 released on 2024-04-15
 
 ![HDF5 Logo](doxygen/img/HDF5.png)
 
-[![1.14 build status](https://img.shields.io/github/actions/workflow/status/HDFGroup/hdf5/main.yml?branch=hdf5_1_14&label=1.14)](https://github.com/HDFGroup/hdf5/actions?query=branch%3Ahdf5_1_14)
-[![BSD](https://img.shields.io/badge/License-BSD-blue.svg)](https://github.com/HDFGroup/hdf5/blob/develop/COPYING)
+[![1.14 cmake build status](https://img.shields.io/github/actions/workflow/status/HDFGroup/hdf5/cmake.yml?branch=hdf5_1_14&label=HDF5%201.14%20CMake%20CI)](https://github.com/HDFGroup/hdf5/actions/workflows/cmake.yml?query=branch%3Ahdf5_1_14)
+[![1.14 autotools build status](https://img.shields.io/github/actions/workflow/status/HDFGroup/hdf5/autotools.yml?branch=hdf5_1_14&label=HDF5%201.14%20Autotools%20CI)](https://github.com/HDFGroup/hdf5/actions/workflows/autotools.yml?query=branch%3Ahdf5_1_14)
+[![BSD](https://img.shields.io/badge/License-BSD-blue.svg)](https://github.com/HDFGroup/hdf5/blob/hdf5_1_14/COPYING)
 
 *Please refer to the release_docs/INSTALL file for installation instructions.*
 
 This repository contains a high-performance library's source code and a file format
-specification that implement the HDF5® data model. The model has been adopted across
-many industries and this implementation has become a de facto data management standard
+specification that implements the HDF5® data model. The model has been adopted across
+many industries, and this implementation has become a de facto data management standard
 in science, engineering, and research communities worldwide.
 
 The HDF Group is the developer, maintainer, and steward of HDF5 software. Find more
@@ -20,20 +21,20 @@ DOCUMENTATION
 -------------
 This release is fully functional for the API described in the documentation.
 
-   https://portal.hdfgroup.org/display/HDF5/The+HDF5+API
+   https://docs.hdfgroup.org/hdf5/v1_14_4/_l_b_a_p_i.html
 
 Full Documentation and Programming Resources for this release can be found at
 
-   https://portal.hdfgroup.org/display/HDF5
+   https://docs.hdfgroup.org/hdf5/v1_14_4/index.html
 
-The latest doxygen documentation generated on changes to develop is available at:
+The latest doxygen documentation generated on changes to HDF5 1.14.x is available at:
 
    https://hdfgroup.github.io/hdf5/
 
-See the [RELEASE.txt](/release_docs/RELEASE.txt) file in the [release_docs/](/release_docs/) directory for information specific
+See the [RELEASE.txt](release_docs/RELEASE.txt) file in the [release_docs/](release_docs/) directory for information specific
 to the features and updates included in this release of the library.
 
-Several more files are located within the [release_docs/](/release_docs/) directory with specific
+Several more files are located within the [release_docs/](release_docs/) directory with specific
 details for several common platforms and configurations.
 
     INSTALL - Start Here. General instructions for compiling and installing the library
@@ -47,7 +48,7 @@ HELP AND SUPPORT
 ----------------
 Information regarding Help Desk and Support services is available at
 
-   https://portal.hdfgroup.org/display/support/The+HDF+Help+Desk
+   https://help.hdfgroup.org 
 
 
 
@@ -77,7 +78,7 @@ Periodically development code snapshots are provided at the following URL:
 
 Source packages for current and previous releases are located at:
     
-   https://portal.hdfgroup.org/display/support/Downloads
+   https://portal.hdfgroup.org/Downloads
 
 Development code is available at our Github location:
     

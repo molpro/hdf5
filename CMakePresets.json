@@ -85,24 +85,20 @@
       }
     },
     {
-      "name": "ci-ExamplesVars",
+      "name": "ci-StdExamples",
       "hidden": true,
+      "inherits": ["ci-base", "ci-base-tgz"],
       "cacheVariables": {
-        "HDF5_EXAMPLES_COMPRESSED": {"type": "STRING", "value": "hdf5-examples-master.tar.gz"},
-        "HDF5_EXAMPLES_COMPRESSED_DIR": {"type": "PATH", "value": "${sourceParentDir}/temp"},
-        "EXAMPLES_TGZ_ORIGPATH": {"type": "STRING", "value": "https://github.com/HDFGroup/hdf5-examples/releases/download/snapshot"},
-        "EXAMPLES_TGZ_ORIGNAME": {"type": "STRING", "value": "hdf5-examples-2.0.4.tar.gz"}
+        "HDF5_PACK_EXAMPLES": "ON",
+        "EXAMPLES_DOWNLOAD": "ON"
       }
     },
     {
-      "name": "ci-StdExamples",
+      "name": "ci-S3",
       "hidden": true,
-      "inherits": ["ci-base", "ci-ExamplesVars", "ci-base-tgz"],
       "cacheVariables": {
-        "EXAMPLES_USE_RELEASE_NAME": "ON",
-        "EXAMPLES_USE_LOCALCONTENT": "OFF",
-        "HDF5_PACK_EXAMPLES": "ON",
-        "EXAMPLES_DOWNLOAD": "ON"
+        "HDF5_ENABLE_ROS3_VFD": "ON",
+        "HDF5_ENABLE_HDFS": "OFF"
       }
     },
     {
@@ -160,6 +156,25 @@
         "ci-Java",
         "ci-StdShar"
       ]
+    },
+    {
+      "name": "ci-StdShar-GNUC-S3",
+      "description": "GNUC S3 Config for x64 (Release)",
+      "inherits": [
+        "ci-StdShar-GNUC",
+        "ci-S3"
+      ]
+    },
+    {
+      "name": "ci-StdShar-Intel",
+      "description": "Intel Standard Config for x64 (Release)",
+      "inherits": [
+        "ci-x64-Release-Intel",
+        "ci-CPP",
+        "ci-Fortran",
+        "ci-Java",
+        "ci-StdShar"
+      ]
     }
   ],
   "buildPresets": [
@@ -187,6 +202,24 @@
       "inherits": [
         "ci-x64-Release-GNUC"
       ]
+    },
+    {
+      "name": "ci-StdShar-GNUC-S3",
+      "description": "GNUC S3 Build for x64 (Release)",
+      "configurePreset": "ci-StdShar-GNUC-S3",
+      "verbose": true,
+      "inherits": [
+        "ci-x64-Release-GNUC"
+      ]
+    },
+    {
+      "name": "ci-StdShar-Intel",
+      "description": "Intel Standard Build for x64 (Release)",
+      "configurePreset": "ci-StdShar-Intel",
+      "verbose": true,
+      "inherits": [
+        "ci-x64-Release-Intel"
+      ]
     }
   ],
   "testPresets": [
@@ -210,10 +243,58 @@
       ]
     },
     {
+      "name": "ci-StdShar-OSX-Clang",
+      "configurePreset": "ci-StdShar-Clang",
+      "inherits": [
+        "ci-x64-Release-Clang"
+      ],
+      "execution": {
+        "noTestsAction": "error",
+        "timeout": 180,
+        "jobs": 2
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+    {
       "name": "ci-StdShar-GNUC",
       "configurePreset": "ci-StdShar-GNUC",
       "inherits": [
         "ci-x64-Release-GNUC"
+      ]
+    },
+    {
+      "name": "ci-StdShar-GNUC-S3",
+      "configurePreset": "ci-StdShar-GNUC-S3",
+      "inherits": [
+        "ci-x64-Release-GNUC"
+      ]
+    },
+    {
+      "name": "ci-StdShar-win-Intel",
+      "configurePreset": "ci-StdShar-Intel",
+      "inherits": [
+        "ci-x64-Release-Intel"
+      ],
+      "filter": {
+        "exclude": {
+          "name": "H5DUMP-tfloatsattrs"
+        }
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "ci-StdShar-Intel",
+      "configurePreset": "ci-StdShar-Intel",
+      "inherits": [
+        "ci-x64-Release-Intel"
       ]
     }
   ],
@@ -232,6 +313,16 @@
       "name": "ci-StdShar-GNUC",
       "configurePreset": "ci-StdShar-GNUC",
       "inherits": "ci-x64-Release-GNUC"
+    },
+    {
+      "name": "ci-StdShar-GNUC-S3",
+      "configurePreset": "ci-StdShar-GNUC-S3",
+      "inherits": "ci-x64-Release-GNUC"
+    },
+    {
+      "name": "ci-StdShar-Intel",
+      "configurePreset": "ci-StdShar-Intel",
+      "inherits": "ci-x64-Release-Intel"
     }
   ],
   "workflowPresets": [
@@ -254,12 +345,48 @@
       ]
     },
     {
+      "name": "ci-StdShar-OSX-Clang",
+      "steps": [
+        {"type": "configure", "name": "ci-StdShar-Clang"},
+        {"type": "build", "name": "ci-StdShar-Clang"},
+        {"type": "test", "name": "ci-StdShar-OSX-Clang"},
+        {"type": "package", "name": "ci-StdShar-Clang"}
+      ]
+    },
+    {
       "name": "ci-StdShar-GNUC",
       "steps": [
         {"type": "configure", "name": "ci-StdShar-GNUC"},
         {"type": "build", "name": "ci-StdShar-GNUC"},
         {"type": "test", "name": "ci-StdShar-GNUC"},
         {"type": "package", "name": "ci-StdShar-GNUC"}
+      ]
+    },
+    {
+      "name": "ci-StdShar-GNUC-S3",
+      "steps": [
+        {"type": "configure", "name": "ci-StdShar-GNUC-S3"},
+        {"type": "build", "name": "ci-StdShar-GNUC-S3"},
+        {"type": "test", "name": "ci-StdShar-GNUC-S3"},
+        {"type": "package", "name": "ci-StdShar-GNUC-S3"}
+      ]
+    },
+    {
+      "name": "ci-StdShar-Intel",
+      "steps": [
+        {"type": "configure", "name": "ci-StdShar-Intel"},
+        {"type": "build", "name": "ci-StdShar-Intel"},
+        {"type": "test", "name": "ci-StdShar-Intel"},
+        {"type": "package", "name": "ci-StdShar-Intel"}
+      ]
+    },
+    {
+      "name": "ci-StdShar-win-Intel",
+      "steps": [
+        {"type": "configure", "name": "ci-StdShar-Intel"},
+        {"type": "build", "name": "ci-StdShar-Intel"},
+        {"type": "test", "name": "ci-StdShar-win-Intel"},
+        {"type": "package", "name": "ci-StdShar-Intel"}
       ]
     }
   ]

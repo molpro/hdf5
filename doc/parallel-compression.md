@@ -64,9 +64,9 @@ H5Dwrite(..., dxpl_id, ...);
 The following are two simple examples of using the parallel
 compression feature:
 
-[ph5_filtered_writes.c](https://github.com/HDFGroup/hdf5/blob/develop/examples/ph5_filtered_writes.c)
+[ph5_filtered_writes.c](https://github.com/HDFGroup/hdf5/blob/hdf5_1_14/HDF5Examples/C/H5PAR/ph5_filtered_writes.c)
 
-[ph5_filtered_writes_no_sel.c](https://github.com/HDFGroup/hdf5/blob/develop/examples/ph5_filtered_writes_no_sel.c)
+[ph5_filtered_writes_no_sel.c](https://github.com/HDFGroup/hdf5/blob/hdf5_1_14/HDF5Examples/C/H5PAR/ph5_filtered_writes_no_sel.c)
 
 The former contains simple examples of using the parallel
 compression feature to write to compressed datasets, while the
@@ -154,7 +154,7 @@ optimal performance out of the parallel compression feature.
 
 ### Begin with a good chunking strategy
 
-[Starting with a good chunking strategy](https://portal.hdfgroup.org/display/HDF5/Chunking+in+HDF5)
+[Starting with a good chunking strategy](https://portal.hdfgroup.org/documentation/hdf5-docs/chunking_in_hdf5.html)
 will generally have the largest impact on overall application
 performance. The different chunking parameters can be difficult
 to fine-tune, but it is essential to start with a well-performing
@@ -166,7 +166,7 @@ chosen chunk size becomes a very important factor when compression
 is involved, as data chunks have to be completely read and
 re-written to perform partial writes to the chunk.
 
-[Improving I/O performance with HDF5 compressed datasets](http://portal.hdfgroup.org/display/HDF5/Improving+IO+Performance+When+Working+with+HDF5+Compressed+Datasets)
+[Improving I/O performance with HDF5 compressed datasets](https://docs.hdfgroup.org/archive/support/HDF5/doc/TechNotes/TechNote-HDF5-ImprovingIOPerformanceCompressedDatasets.pdf)
 is a useful reference for more information on getting good
 performance when using a chunked dataset layout.
 
